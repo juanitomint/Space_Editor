@@ -289,7 +289,7 @@ function updateFileBrowserFromFileList(filesAndInfo) {
             if (fileHasExtention(f, ".css") || fileHasExtention(f, ".less") || fileHasExtention(f, ".styl")) {
                 cssHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
             } else {
-                if (fileHasExtention(f, ".html")) {
+                if (fileHasExtention(f, ".html") || fileHasExtention(f, ".php") ) {
                     htmlHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
                 } else {
                     mediaHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
@@ -856,6 +856,12 @@ $(window).ready(function() {
         PROJECT = getProject;
     }
     document.title = PROJECT;
+    //-----load FileTree
+    $('#fileTree').treeview(
+            {
+                url: "getFileTree"
+            }
+    );
     //-----enable bootstrap tabs
     $('#myTab a').click(function(e) {
         e.preventDefault()

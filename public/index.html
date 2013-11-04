@@ -33,12 +33,12 @@
                     <div class='fileBrowserMenuItem' onclick='createNewFile(this);'>New File...</div>
                 </div>
                 <div class='fileBrowserSection'>
-                    <div class='fileBrowserSectTitle'>MEDIA</div>
-                    <div class='fileBrowserSectFiles' id='fileBrowser_Media'></div>
+                    <div class='fileBrowserSectTitle'>PHP/HTML</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_HTML'></div>
                 </div>
                 <div class='fileBrowserSection'>
-                    <div class='fileBrowserSectTitle'>HTML</div>
-                    <div class='fileBrowserSectFiles' id='fileBrowser_HTML'></div>
+                    <div class='fileBrowserSectTitle'>MEDIA</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_Media'></div>
                 </div>
                 <div class='fileBrowserSection'>
                     <div class='fileBrowserSectTitle'>CSS</div>
@@ -61,7 +61,7 @@
             <!-- -->
             <div id='joinRoot' class='join joinLR'>
                 <div class='joinLeft'>
-                    <div id="pane_0" class='editPane'></div>
+                    <div id="fileTree" data-url="/example_data/"></div>
                 </div>
                 <div class='divLR' style='left: 300px;'></div>
                 <div class='joinRight'>
@@ -97,6 +97,11 @@
         <script src='js/jquery.min.js'></script>
         <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js'></script>
         <script src="js/bootstrap/js/bootstrap.min.js"></script>
+        <!-- TREE -->
+        <script src="js/tree/lib/jquery.js" type="text/javascript"></script>
+        <script src="js/tree/lib/jquery.cookie.js" type="text/javascript"></script>
+        <script src="js/tree/jquery.treeview.js" type="text/javascript"></script>
+        <script src="js/tree/jquery.treeview.async.js" type="text/javascript"></script>
         <script type="text/javascript" src='./editProject.js'></script>
     </body>
 </html>
