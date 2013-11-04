@@ -146,16 +146,28 @@ function safelyOpenFileFromEntry(el) {
         closeFileBrowser();
     }
 }
+function registerCloseEvent() {
+
+    $(".closeTab").click(function() {
+
+        //there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
+        var tabContentId = $(this).parent().attr("href");
+        $(this).parent().parent().remove(); //remove li of tab
+        $('#myTab a:last').tab('show'); // Select first tab
+        $(tabContentId).remove(); //remove respective tab content
+
+    });
+}
 function createEditPane(fname) {
     if (fname) {
         fname_stripped = fname.replace('.', '_');
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-        $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab">' + fname + '</a></li>');
+        $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
         $('#tabContent').append('<div class="tab-pane tab editPane" id="' + fname_stripped + '"></div>');
         $('#myTab a[href="#' + fname_stripped + '"]').tab('show');
-
+        registerCloseEvent();
+        populateEditPane($('#' + fname_stripped), fname);
     }
-    populateEditPane($('#' + fname_stripped), fname);
 }
 function populateEditPane(editPane, fname) {
     if (fname) {
@@ -854,6 +866,7 @@ $(window).ready(function() {
     //populateEditPane($("#pane_0"), "application/modules/bpm/controllers/kpi.php");
     createEditPane("dev-1.php");
     createEditPane("dev-2.php");
+    registerCloseEvent();
     $(".join").each(function(index, el) {
         setupJoin(el);
     });

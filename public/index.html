@@ -1,102 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <title>_______</title> 
-  <link href="index.css"  rel="stylesheet" type="text/css" />
-  <link rel="icon" type="image/png" href="/png/favicon.png"> 
-</head>
-<body>
-<div style='position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden;'>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>_______</title> 
+        <link href="js/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="index.css"  rel="stylesheet" type="text/css" />
 
-  <div id="bottom">
-    <div id="filebrowserButton" onmousedown='toggleFileBrowser();'></div>
-    <div id="fileHistory">
-      <div class="openFileHeader" id='recentFile_0'></div>
-      <div class="openFileHeader" id='recentFile_1' style='opacity: 0.5;'  onclick='safelyOpenFileFromEntry(this);'></div>
-      <div class="openFileHeader" id='recentFile_2' style='opacity: 0.25;' onclick='safelyOpenFileFromEntry(this);'></div>
-      <div class="openFileHeader" id='recentFile_3' style='opacity: 0.25;' onclick='safelyOpenFileFromEntry(this);'></div>
-    </div>
-    <div id="preflightButton" onclick='openShiftShiftAsCommit();'>COMMIT</div>
-    <div id="launchButton" onclick='launchProject();'>LAUNCH</div>
-  </div>
-  
-  <div id='logOutput'><iframe id='logOutputIFrame'></iframe></div>
-  
-  <div id="fileBrowser">
-    <div id='fileBrowserMenu'>
-      <div class='fileBrowserMenuItem' onclick='safelyOpenFileFromEntry(this);'>Output Log</div>
-      <div class='fileBrowserMenuItem' onclick='createNewFile(this);'>New File...</div>
-    </div>
-    <div class='fileBrowserSection'>
-      <div class='fileBrowserSectTitle'>MEDIA</div>
-      <div class='fileBrowserSectFiles' id='fileBrowser_Media'></div>
-    </div>
-    <div class='fileBrowserSection'>
-      <div class='fileBrowserSectTitle'>HTML</div>
-      <div class='fileBrowserSectFiles' id='fileBrowser_HTML'></div>
-    </div>
-    <div class='fileBrowserSection'>
-      <div class='fileBrowserSectTitle'>CSS</div>
-      <div class='fileBrowserSectFiles' id='fileBrowser_CSS'></div>
-    </div>
-    <div class='fileBrowserSection'>
-      <div class='fileBrowserSectTitle'>JS</div>
-      <div class='fileBrowserSectFiles' id='fileBrowser_JS'></div>
-    </div>
-  </div>
-  
-  <div id='shiftshift'>
-    <div id='shiftshiftTitle'>BROADCAST</div>
-    <div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftKeydown(event);'/></div>
-  </div>
-  
-  <div id='logWindow'><div id='logWindowCaret'></div><div id='logWindowContent'></div></div>
-  <!--<div id='hud'><div id='hudTitle'>HUD</div><div id='hudClose' onclick='toggleHUD();'>&times;</div><div id='hudData'></div></div>-->
-  
-  <!-- -->
-  <div id='joinRoot' class='join joinLR'>
-    <div class='joinLeft'>
-      <div id="pane_0" class='editPane'></div>
-    </div>
-    <div class='divLR' style='left: 300px;'></div>
-    <div class='joinRight'>
-      <div class='join joinTB'>
-        <div class='joinTop'>
-          <div id="pane_1" class='editPane'></div>
+        <link rel="icon" type="image/png" href="/png/favicon.png"> 
+    </head>
+    <body>
+        <div style='position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden;'>
+
+            <div id="bottom">
+                <div id="filebrowserButton" onmousedown='toggleFileBrowser();'></div>
+                <div id="fileHistory">
+                    <div class="openFileHeader" id='recentFile_0'></div>
+                    <div class="openFileHeader" id='recentFile_1' style='opacity: 0.5;'  onclick='safelyOpenFileFromEntry(this);'></div>
+                    <div class="openFileHeader" id='recentFile_2' style='opacity: 0.25;' onclick='safelyOpenFileFromEntry(this);'></div>
+                    <div class="openFileHeader" id='recentFile_3' style='opacity: 0.25;' onclick='safelyOpenFileFromEntry(this);'></div>
+                </div>
+                <div id="preflightButton" onclick='openShiftShiftAsCommit();'>COMMIT</div>
+                <div id="launchButton" onclick='launchProject();'>LAUNCH</div>
+            </div>
+
+            <div id='logOutput'><iframe id='logOutputIFrame'></iframe></div>
+
+            <div id="fileBrowser">
+                <div id='fileBrowserMenu'>
+                    <div class='fileBrowserMenuItem' onclick='safelyOpenFileFromEntry(this);'>Output Log</div>
+                    <div class='fileBrowserMenuItem' onclick='createNewFile(this);'>New File...</div>
+                </div>
+                <div class='fileBrowserSection'>
+                    <div class='fileBrowserSectTitle'>MEDIA</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_Media'></div>
+                </div>
+                <div class='fileBrowserSection'>
+                    <div class='fileBrowserSectTitle'>HTML</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_HTML'></div>
+                </div>
+                <div class='fileBrowserSection'>
+                    <div class='fileBrowserSectTitle'>CSS</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_CSS'></div>
+                </div>
+                <div class='fileBrowserSection'>
+                    <div class='fileBrowserSectTitle'>JS</div>
+                    <div class='fileBrowserSectFiles' id='fileBrowser_JS'></div>
+                </div>
+            </div>
+
+            <div id='shiftshift'>
+                <div id='shiftshiftTitle'>BROADCAST</div>
+                <div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftKeydown(event);'/></div>
+            </div>
+
+            <div id='logWindow'><div id='logWindowCaret'></div><div id='logWindowContent'></div></div>
+            <!--<div id='hud'><div id='hudTitle'>HUD</div><div id='hudClose' onclick='toggleHUD();'>&times;</div><div id='hudData'></div></div>-->
+
+            <!-- -->
+            <div id='joinRoot' class='join joinLR'>
+                <div class='joinLeft'>
+                    <div id="pane_0" class='editPane'></div>
+                </div>
+                <div class='divLR' style='left: 300px;'></div>
+                <div class='joinRight'>
+                    <div class='join joinTB '>
+                        <div class='joinTop '>
+
+                            <ul id="myTab" class="nav nav-tabs">
+                                <li><a href="#settings" data-toggle="tab">Settings</a></li>
+                            </ul>
+
+                            <!-- Tab panes -->
+                            <div id="tabContent" class="tab-content">
+                                <div class="tab-pane tab" id="settings">
+                                    Settings Settings Settings Settings Settings Settings Settings Settings Settings Settings Settings  
+                                </div>
+                            </div>
+                        </div>
+                        <!--
+                              <div class='divTB' style='top: 400px;'></div>
+                              <div class='joinBottom'>
+                                <div id="pane_2" class='editPane'></div>
+                              </div>
+                              <div class='divScreen'></div>
+                        -->
+                    </div>
+                </div>
+                <div class='divScreen'></div>
+            </div>
+            <!-- -->   
+
         </div>
-        <div class='divTB' style='top: 400px;'></div>
-        <div class='joinBottom'>
-          <div id="pane_2" class='editPane'></div>
-        </div>
-        <div class='divScreen'></div>
-      </div>
-    </div>
-    <div class='divScreen'></div>
-  </div>
-  <!-- -->   
 
-</div>
-
-<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
-<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js'></script>
-<script type="text/javascript" src='./editProject.js'></script>
-
-<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-24671742-1']);
-  _gaq.push(['_setDomainName', 'chaoscollective.org']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
-
-</body>
+        <script src='js/jquery.min.js'></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js'></script>
+        <script src="js/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src='./editProject.js'></script>
+    </body>
 </html>
