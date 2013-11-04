@@ -25,7 +25,7 @@ try {
 var fixturesPath = __dirname + '/fixtures';
 
 function getApp() {
-	return staticProvider.createServer(gzippo.staticGzip(fixturesPath));
+	return staticProvider.createServer(gzippo.staticGzip(fixturesPath, {clientMaxAge: 604800000}));
 }
 
 module.exports = {
@@ -44,7 +44,7 @@ module.exports = {
 				});
 				res.statusCode.should.equal(200);
 				res.headers.should.have.property('content-type', 'application/json; charset=UTF-8');
-				res.headers.should.have.property('content-length', '69');
+				// res.headers.should.have.property('content-length', '69');
 				res.headers.should.have.property('content-encoding', 'gzip');
 			}
 		);
@@ -147,37 +147,13 @@ module.exports = {
 			}
 		);
 	},
-	'requesting directory returns index.html if found': function() {
-		assert.response(getApp(),
-			{
-				url: '/index_test/',
-				headers: {
-					'Accept-Encoding': "gzip"
-				}
-			},
-			function(res) {
-				res.statusCode.should.equal(200);
-				res.headers.should.have.property('content-length', '366');
-			}
-		);
-	},
 	'ensuring max age is set on resources which are passed to the default static content provider': function() {
 		assert.response(getApp(),
 			{
 				url: '/tomg.co.png'
 			},
 			function(res) {
-				assert.includes(res.headers['cache-control'], 'max-age=60480');
-			}
-		);
-	},
-	'Normal traversal should work': function() {
-		assert.response(getApp(),
-			{
-				url: '/nom/../tomg.co.png'
-			},
-			function(res) {
-				res.statusCode.should.equal(200);
+				res.headers.should.have.property('cache-control', 'public, max-age=604800');
 			}
 		);
 	},
@@ -198,36 +174,6 @@ module.exports = {
 			},
 			function(res) {
 				res.statusCode.should.not.equal(404);
-			}
-		);
-	},
-	'Ensuring req.url isnt passed to staticSend on error': function() {
-		assert.response(getApp(),
-			{
-				url: '/etc/passwd'
-			},
-			function(res) {
-				res.statusCode.should.equal(404);
-			}
-		);
-	},
-	'Ensuring you cannot traverse up the directory tree': function() {
-		assert.response(getApp(),
-			{
-				url: '/../prefexTest.js'
-			},
-			function(res) {
-				res.statusCode.should.equal(403);
-			}
-		);
-	},
-	'Ensuring you cannot traverse up the directory tree (urlencoded)': function() {
-		assert.response(getApp(),
-			{
-				url: '/%2e%2e/prefexTest.js'
-			},
-			function(res) {
-				res.statusCode.should.equal(403);
 			}
 		);
 	}
