@@ -21,7 +21,7 @@ function authorize(user, pw) {
   userIsOk |= (user === 'user' && pw === 'password');
   return userIsOk;
 }
-var app  = express.createServer();
+var app  = express();
 app.use(express.bodyParser());
 app.use(express.cookieParser());
 app.use(express.session({ 
@@ -56,14 +56,14 @@ app.get('/',function(req,res,next){
   staticProvider(req, res, next);
 });
 var port = process.env.PORT || 3149;
-var server = app.listen(port); 
+var server = app.listen(port,'0.0.0.0'); 
  
-var EDITABLE_APPS_DIR = "/APPS/"; 
+var EDITABLE_APPS_DIR = "/var/www/"; 
 var ENABLE_LAUNCH     = false;
 
 // -----------------------------------------------------
 // for demo clean-up (remove if this gives you problems)
-var REPLACE_SANDBOX_APP_DEMO_FILES = true;
+var REPLACE_SANDBOX_APP_DEMO_FILES = false;
 if(REPLACE_SANDBOX_APP_DEMO_FILES){
   fs.copyF = function (src, dst, cb) {
     function copy(err) {
@@ -115,14 +115,14 @@ if(REPLACE_SANDBOX_APP_DEMO_FILES){
 // ------------------------------------------------------
 
 var thisAppDirName = __dirname.substring(__dirname.lastIndexOf("/")+1);
-var teamID = "SandboxApp";
+var teamID = "dna2bpm";
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 // TODO: check credentials before doing any of these GET/POST...
 app.get("/allProjectFiles", function(req, res){
   if(req.query.project && req.query.project.length > 2){
     var project = req.query.project.replace(/\.\./g, "");
-    var projectRoot = EDITABLE_APPS_DIR+project;
+        var projectRoot = EDITABLE_APPS_DIR+project;
     console.log("Listing all project files [" + projectRoot+"] for user: "+req.user.displayName + " --> (~"+usersInGroup[project]+" sockets)");
     try{
       var walker = walk.walk(projectRoot, {followLinks: false});
