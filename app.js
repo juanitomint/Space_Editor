@@ -39,11 +39,11 @@ function authorize(user, pw) {
 //   have a database of user records, the complete Google profile is serialized
 //   and deserialized.
 passport.serializeUser(function(user, done) {
-  done(null, user);
+    done(null, user);
 });
 
 passport.deserializeUser(function(obj, done) {
-  done(null, obj);
+    done(null, obj);
 });
 
 
@@ -52,16 +52,16 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
 //   callback with a user object.
 passport.use(new GoogleStrategy({
-    returnURL: 'http://localhost:'+port+'/auth/google/return',
-    realm: 'http://localhost:'+port+'/'
-  },
-  function(identifier, profile, done) {
+    returnURL: 'http://localhost:' + port + '/auth/google/return',
+    realm: 'http://localhost:' + port + '/'
+},
+function(identifier, profile, done) {
     // asynchronous verification, for effect...
-    process.nextTick(function () {
+    process.nextTick(function() {
         profile.identifier = identifier;
-      return done(null, profile);
+        return done(null, profile);
     });
-  }
+}
 ));
 
 var app = express();
@@ -84,84 +84,82 @@ app.use(express.session({
 //   the request will proceed.  Otherwise, the user will be redirected to the
 //   login page.
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/login')
+    if (req.isAuthenticated()) {
+        console.log(req.user);
+        return next();
+    }
+    res.redirect('/login')
 }
 
 // configure Express
 app.configure(function() {
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
-  // Initialize Passport!  Also use passport.session() middleware, to support
-  // persistent login sessions (recommended).
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(app.router);
-  app.use(express.static(__dirname + '/../../public'));
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'ejs');
+    app.use(express.logger());
+    app.use(express.cookieParser());
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(express.session({secret: 'keyboard cat'}));
+    // Initialize Passport!  Also use passport.session() middleware, to support
+    // persistent login sessions (recommended).
+    app.use(passport.initialize());
+    app.use(passport.session());
+    app.use(app.router);
+    app.use(express.static(__dirname + '/../../public'));
 });
 
-app.get('/account', ensureAuthenticated, function(req, res){
-  res.render('account', { user: req.user });
+app.get('/account', ensureAuthenticated, function(req, res) {
+    res.render('account', {user: req.user});
 });
 
-app.get('/login', function(req, res){
-  res.render('login', { user: req.user });
+app.get('/login', function(req, res) {
+    res.render('login', {user: req.user});
 });
 // GET /auth/google
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  The first step in Google authentication will involve redirecting
 //   the user to google.com.  After authenticating, Google will redirect the
 //   user back to this application at /auth/google/return
-app.get('/auth/google', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  function(req, res) {
+app.get('/auth/google',
+        passport.authenticate('google', {failureRedirect: '/login'}),
+function(req, res) {
     res.redirect('/');
-  });
+});
 
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-app.get('/auth/google/return', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  function(req, res) {
+app.get('/auth/google/return',
+        passport.authenticate('google', {failureRedirect: '/login'}),
+function(req, res) {
     res.redirect('/');
-  });
+});
 
-app.get('/logout', function(req, res){
-  req.logout();
-  res.redirect('/');
+app.get('/logout', function(req, res) {
+    req.logout();
+    res.redirect('/');
 });
 
 //app.use(express.basicAuth(authorize));
 var uCount = (new Date()).getTime() % 99999;
-app.use(function(req, res, next) {
-    req.user = req.user || {};
-    if (req.cookies && req.cookies["_username"]) {
-        req.user.displayName = req.cookies["_username"];
-    } else {
-        req.user.displayName = "user_" + (uCount++);
-        res.cookie("_username", req.user.displayName);
-        console.log("say hello to new user: " + req.user.displayName);
-    }
-    next();
-});
+
 var staticProvider = express.static(__dirname + '/public');
 app.use(staticProvider); // this is where static files will be served (html, css, js, media, etc.)
 // ------------------------------------------------
 // ------------------------------------------------
 
-app.get('/', ensureAuthenticated,function(req, res, next) {
+app.get('/', ensureAuthenticated, function(req, res, next) {
     req.url = "index.html";
     staticProvider(req, res, next);
 });
-
+app.use(function(req, res, next) {
+    req.user = req.user || {};
+    res.cookie("_username", req.user.displayName);
+    console.log("say hello to new user: " + req.user.displayName);
+    next();
+});
 var server = app.listen(port, '0.0.0.0');
 
 var EDITABLE_APPS_DIR = "/var/www/";
