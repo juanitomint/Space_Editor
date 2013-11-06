@@ -156,67 +156,14 @@ app.get('/', ensureAuthenticated, function(req, res, next) {
 });
 app.use(function(req, res, next) {
     req.user = req.user || {};
-    res.cookie("_username", req.user.displayName);
-    console.log("say hello to new user: " + req.user.displayName);
+    res.cookie("_username", req.user.emails[0]);
+    console.log("say hello to new user: " + req.user.displayName+' knwon as'.req.user.emails[0]);
     next();
 });
 var server = app.listen(port, '0.0.0.0');
 
 var EDITABLE_APPS_DIR = "/var/www/";
 var ENABLE_LAUNCH = false;
-
-// -----------------------------------------------------
-// for demo clean-up (remove if this gives you problems)
-var REPLACE_SANDBOX_APP_DEMO_FILES = false;
-if (REPLACE_SANDBOX_APP_DEMO_FILES) {
-    fs.copyF = function(src, dst, cb) {
-        function copy(err) {
-            var is
-                    , os
-                    ;
-
-            if (!err) {
-                return cb(new Error("File " + dst + " exists."));
-            }
-
-            fs.stat(src, function(err) {
-                if (err) {
-                    return cb(err);
-                }
-                is = fs.createReadStream(src);
-                os = fs.createWriteStream(dst);
-                util.pump(is, os, cb);
-            });
-        }
-        fs.stat(dst, copy);
-    };
-    fs.unlinkSync(EDITABLE_APPS_DIR + "SandboxApp/app.js");
-    fs.copyF(__dirname + "/app.js", EDITABLE_APPS_DIR + "SandboxApp/app.js", function(err) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("copied app.js to SandboxApp");
-        }
-    });
-    fs.unlinkSync(EDITABLE_APPS_DIR + "SandboxApp/public/index.less");
-    fs.copyF(__dirname + "/public/index.css", EDITABLE_APPS_DIR + "SandboxApp/public/index.less", function(err) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("copied public/index.less to SandboxApp");
-        }
-    });
-    fs.unlinkSync(EDITABLE_APPS_DIR + "SandboxApp/public/index.js");
-    fs.copyF(__dirname + "/public/editFile.js", EDITABLE_APPS_DIR + "SandboxApp/public/index.js", function(err) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log("copied public/index.js to SandboxApp");
-        }
-    });
-}
-// end of demo clean-up section.
-// ------------------------------------------------------
 
 var thisAppDirName = __dirname.substring(__dirname.lastIndexOf("/") + 1);
 var teamID = "dna2bpm";
