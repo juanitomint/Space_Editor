@@ -630,7 +630,7 @@ body {
 }
 .collab_cursor_nametagFlag {
     position: absolute;
-    top: 6px;
+    top: 12px;
     left: -6px;
     width: 0px;
     height: 0px;
