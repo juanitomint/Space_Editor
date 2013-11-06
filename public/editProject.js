@@ -289,7 +289,7 @@ function updateFileBrowserFromFileList(filesAndInfo) {
             if (fileHasExtention(f, ".css") || fileHasExtention(f, ".less") || fileHasExtention(f, ".styl")) {
                 cssHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
             } else {
-                if (fileHasExtention(f, ".html") || fileHasExtention(f, ".php") ) {
+                if (fileHasExtention(f, ".html") || fileHasExtention(f, ".php")) {
                     htmlHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
                 } else {
                     mediaHTML += "<div class='fileEntry' onclick='safelyOpenFileFromEntry(this);' fname='" + f + "'>" + styledFile + uAddon + szAddon + tdAddon + fmAddon + "</div>";
@@ -856,22 +856,29 @@ $(window).ready(function() {
         PROJECT = getProject;
     }
     document.title = PROJECT;
-    //-----load FileTree
-    $('#fileTree').treeview(
-            {
-                url: "getFileTree"
-            }
-    );
     //-----enable bootstrap tabs
     $('#myTab a').click(function(e) {
         e.preventDefault()
         $(this).tab('show');
     });
+    //-----load FileTree
+    url = '/getFileTree';
+    $.ajax({
+        dataType: "json",
+        url: url,
+        data: {project: PROJECT},
+        success: function(data) {
+            $('#fileTree').tree({
+                data: data[0].children,
+                autoOpen: true,
+            })
+        }
+    });
 
-    createEditPane('dev-3.php');
-    //populateEditPane($("#pane_0"), "application/modules/bpm/controllers/kpi.php");
-    createEditPane("dev-1.php");
-    createEditPane("dev-2.php");
+//createEditPane('dev-3.php');
+//populateEditPane($("#pane_0"), "application/modules/bpm/controllers/kpi.php");
+//createEditPane("dev-1.php");
+//createEditPane("dev-2.php");
     registerCloseEvent();
     $(".join").each(function(index, el) {
         setupJoin(el);
@@ -898,7 +905,7 @@ $(window).ready(function() {
      }
      });
      */
-    //setTimeout(function(){alert("\nWelcome to Space!\n\nSpace is a real-time, collaborative code editor created by the Chaos Collective.\n\nWhen other users are online, you'll see their cursors directly in the code. Click the button at the bottom left to open the file browser and see where users are.\n\nGo forth, explore Space, and write some code with your friends!")}, 5000);
+//setTimeout(function(){alert("\nWelcome to Space!\n\nSpace is a real-time, collaborative code editor created by the Chaos Collective.\n\nWhen other users are online, you'll see their cursors directly in the code. Click the button at the bottom left to open the file browser and see where users are.\n\nGo forth, explore Space, and write some code with your friends!")}, 5000);
 });
 
 
