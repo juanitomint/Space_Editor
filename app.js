@@ -155,9 +155,11 @@ app.get('/', ensureAuthenticated, function(req, res, next) {
     staticProvider(req, res, next);
 });
 app.use(function(req, res, next) {
-    req.user = req.user || {};
-    res.cookie("_username", req.user.emails[0]);
-    console.log("say hello to new user: " + req.user.displayName+' knwon as'.req.user.emails[0]);
+    if (req.user) {
+        req.user = req.user || {};
+        res.cookie("_username", req.user.emails[0].value);
+        console.log("say hello to new user: " + req.user.displayName + ' knwon as'.req.user.emails[0].value);
+    }
     next();
 });
 var server = app.listen(port, '0.0.0.0');
@@ -488,7 +490,7 @@ nowjs.on('connect', function() {
     // now populate it..
     this.user.about = {};
     this.user.about._id = u._id || 0;
-    this.user.about.name = u.nameGiven || u.displayName || this.user.cookie["_username"] || "???";
+    this.user.about.name = u.nameGiven || u.displayName || decodeURIComponent(this.user.cookie["_username"]) || "???";
     this.user.about.email = u.emailPrimary || "anon@chaoscollective.org";
     // -----
     this.now.name = this.user.about.name;
