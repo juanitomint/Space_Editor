@@ -386,10 +386,10 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser) {
     if (name.indexOf("_") > 0) {
         uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
     }
-    var userColor = userColorMap[uid % userColorMap.length];
+    var userColor = userColorMap[(name.charCodeAt(0)+name.charCodeAt(name.length-1)) % userColorMap.length];
     cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
     cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
-        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'><span class='.glyphicon .glyphicon-map-marker'></span>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
     }, false); // range, clazz, type, inFront
     cInfo['isShown'] = true;
 }
