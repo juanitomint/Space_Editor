@@ -244,6 +244,137 @@ app.get("/allProjectFiles", function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
+app.get("/getFileTree", function(req, res) {
+    if (req.query.project && req.query.project.length > 2) {
+        var project = req.query.project.replace(/\.\./g, "");
+        var projectRoot = EDITABLE_APPS_DIR + project;
+        console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
+        try {
+            var walker = walk.walk(projectRoot, {followLinks: false});
+            var filesAndInfo = [];
+            walker.on("names", function(root, nodeNamesArray) {
+                // use this to remove/sort files before doing the more expensive "stat" operation.
+                for (var i = nodeNamesArray.length - 1; i >= 0; i--) {
+                    if (nodeNamesArray[i] == ".git" || nodeNamesArray[i] == "node_modules" || nodeNamesArray[i] == "_db") {
+                        nodeNamesArray.splice(i, 1);
+                    }
+                }
+            });
+            walker.on("file", function(root, fileStats, next) {
+                var rt = root.substring(projectRoot.length + 1);
+                if (rt.length > 0) {
+                    rt += "/";
+                }
+                var fname = rt + fileStats.name;
+                var sz = fileSizeCache[project + "/" + fname];
+                if (sz === undefined) {
+                    // first time checking files size.. get it!
+                    sz = fileStats.size;
+                    fileSizeCache[project + "/" + fname] = sz;
+                }
+                var td = fileTodoCache[project + "/" + fname];
+                var fd = null;
+                if (td === undefined && sz < 1000000) {
+                    fd = fs.readFileSync(projectRoot + "/" + fname, "utf8");
+                    td = occurrences(fd, "TODO");
+                    fileTodoCache[project + "/" + fname] = td;
+                }
+                var fm = fileFixMeCache[project + "/" + fname];
+                if (fm === undefined && sz < 1000000) {
+                    if (fd === null) {
+                        fd = fs.readFileSync(projectRoot + "/" + fname, "utf8");
+                    }
+                    fm = occurrences(fd, "FIXME");
+                    fileFixMeCache[project + "/" + fname] = fm;
+                }
+                var n = usersInGroup[project + "/" + fname];
+                if (n) {
+                    filesAndInfo.push([fname, n, sz, td, fm]);
+                } else {
+                    filesAndInfo.push([fname, 0, sz, td, fm]);
+                }
+                fd = null;
+                next();
+            });
+            walker.on("end", function() {
+                //console.log("Recursively listed project files for: " + project);
+                // indicate total team members online.
+                var n = usersInGroup[project];
+                if (n) {
+                    filesAndInfo.push(["", n]);
+                } else {
+                    filesAndInfo.push(["", 0]);
+                }
+                //res.send(JSON.stringify(filesAndInfo));
+                filesAndInfo=[
+	{
+		"text": "1. Pre Lunch (120 min)",
+		"expanded": true,
+		"classes": "important",
+		"children":
+		[
+			{
+				"text": "1.1 The State of the Powerdome (30 min)"
+			},
+		 	{
+				"text": "1.2 The Future of jQuery (30 min)"
+			},
+		 	{
+				"text": "1.2 jQuery UI - A step to richnessy (60 min)"
+			}
+		]
+	},
+	{
+		"text": "2. Lunch  (60 min)"
+	},
+	{
+		"text": "3. After Lunch  (120+ min)",
+		"children":
+		[
+			{
+				"text": "3.1 jQuery Calendar Success Story (20 min)"
+			},
+		 	{
+				"text": "3.2 jQuery and Ruby Web Frameworks (20 min)"
+			},
+		 	{
+				"text": "3.3 Hey, I Can Do That! (20 min)"
+			},
+		 	{
+				"text": "3.4 Taconite and Form (20 min)"
+			},
+		 	{
+				"text": "3.5 Server-side JavaScript with jQuery and AOLserver (20 min)"
+			},
+		 	{
+				"text": "3.6 The Onion: How to add features without adding features (20 min)",
+				"id": "36",
+				"hasChildren": true
+			},
+		 	{
+				"text": "3.7 Visualizations with JavaScript and Canvas (20 min)"
+			},
+		 	{
+				"text": "3.8 ActiveDOM (20 min)"
+			},
+		 	{
+				"text": "3.8 Growing jQuery (20 min)"
+			}
+		]
+	}
+];
+
+                res.send(JSON.stringify(filesAndInfo));
+                //callback(null, filesAndInfo);
+            });
+        } catch (ex) {
+            console.log("<span style='color: #F00;'>*** exception walking files!</span>");
+            console.log(err);
+        }
+    } else {
+        res.send("FAIL: no project name.");
+    }
+});
 app.post("/launchProject", function(req, res) {
     if (!ENABLE_LAUNCH) {
         res.send("FAIL: Sorry, but launching projects is not currently enabled.");
