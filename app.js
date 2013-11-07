@@ -252,14 +252,14 @@ app.get("/allProjectFiles", function(req, res) {
 function dirTree(filename,projectRoot) {
     //----return if file contains dot
 
-    var stats = fs.lstatSync(filename);
+    var stats = fs.statSync(filename);
         var info = {
             path: filename.replace(projectRoot,''),
             name: path.basename(filename),
             label: path.basename(filename)
         };
 
-        console.log(stats.isDirectory(), path.basename(filename), stats.isDirectory() && path.basename(filename)[0] !== '.')
+        //console.log(filename,stats);
         if (stats.isDirectory() && path.basename(filename)[0] !== '.') {
             info.type = "folder";
             info.children = fs.readdirSync(filename).map(function(child) {
@@ -269,6 +269,7 @@ function dirTree(filename,projectRoot) {
             // Assuming it's a file. In real life it could be a symlink or
             // something else!
             info.type = "file";
+            info.filesize=stats.size;
         }
 
         return info;
