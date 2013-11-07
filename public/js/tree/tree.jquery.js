@@ -1341,7 +1341,9 @@ limitations under the License.
         }
         class_string = li_classes.join(' ');
         escaped_name = escapeIfNecessary(node.name);
-        return $("<li class=\"" + class_string + "\"><div class=\"jqtree-element jqtree_common\"><span class=\"jqtree-title jqtree_common\">" + escaped_name + "</span></div></li>");
+        
+        addsize=(node.filesize!=null) ? addsize='<div class="fileEntrySize">'+Math.floor(node.filesize / 10.24) / 100+'k</div>':'';
+        return $("<li class=\"" + class_string + "\"><div class=\"jqtree-element jqtree_common\"><span class=\"jqtree-title jqtree_common\">" + escaped_name + "</span>"+addsize+"</div></li>");
       };
       createFolderLi = function(node) {
         var button_char, button_classes, escaped_name, folder_classes, getButtonClasses, getFolderClasses;
