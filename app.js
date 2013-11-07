@@ -81,6 +81,35 @@ app.use(express.session({
         maxAge: 1000 * 60 * 60 * 24 * 30 * 2    //60 days
     }
 }));
+// Passport local
+var LocalStrategy = require('passport-local').Strategy;
+
+passport.use(new LocalStrategy(
+        function(username, password, done) {
+            // asynchronous verification, for effect...
+            process.nextTick(function() {
+
+                // Find the user by username. If there is no user with the given
+                // username, or the password is not correct, set the user to `false` to
+                // indicate failure and set a flash message. Otherwise, return the
+//      // authenticated `user`.
+//      findByUsername(username, function(err, user) {
+//        if (err) { return done(err); }
+//        if (!user) { return done(null, false, { message: 'Unknown user ' + username }); }
+//        if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
+//        return done(null, user);
+//      })
+
+            //---fake obj
+                user = {
+                    username: username,
+                    displayName: username,
+                    emails: [{value:username}]
+                };
+                return done(null, user);
+            });
+        }
+));
 
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
@@ -138,6 +167,20 @@ function(req, res) {
 app.get('/auth/google/return',
         passport.authenticate('google', {failureRedirect: '/login'}),
 function(req, res) {
+    req.user = req.user || {};
+    res.cookie("_username", req.user.emails[0].value);
+    console.log("say hello to new user: " + req.user.displayName + ' knwon as:'+req.user.emails[0].value);
+    res.redirect('/');
+});
+/*
+ * 
+ */
+app.post('/auth/simple',
+        passport.authenticate('local', {failureRedirect: '/login', failureFlash: true}),
+function(req, res) {
+    req.user = req.user || {};
+    res.cookie("_username", req.user.emails[0].value);
+    console.log("say hello to new user: " + req.user.displayName);
     res.redirect('/');
 });
 
@@ -249,31 +292,31 @@ app.get("/allProjectFiles", function(req, res) {
     }
 });
 
-function dirTree(filename,projectRoot) {
+function dirTree(filename, projectRoot) {
     //----return if file contains dot
 
     var stats = fs.statSync(filename);
-        var info = {
-            path: filename.replace(projectRoot,''),
-            name: path.basename(filename),
-            label: path.basename(filename)
-        };
+    var info = {
+        path: filename.replace(projectRoot, ''),
+        name: path.basename(filename),
+        label: path.basename(filename)
+    };
 
-        //console.log(filename,stats);
-        if (stats.isDirectory() && path.basename(filename)[0] !== '.') {
-            info.type = "folder";
-            info.children = fs.readdirSync(filename).map(function(child) {
-                return dirTree(filename + '/' + child,projectRoot);
-            });
-        } else {
-            // Assuming it's a file. In real life it could be a symlink or
-            // something else!
-            info.type = "file";
-            info.filesize=stats.size;
-        }
+    //console.log(filename,stats);
+    if (stats.isDirectory() && path.basename(filename)[0] !== '.') {
+        info.type = "folder";
+        info.children = fs.readdirSync(filename).map(function(child) {
+            return dirTree(filename + '/' + child, projectRoot);
+        });
+    } else {
+        // Assuming it's a file. In real life it could be a symlink or
+        // something else!
+        info.type = "file";
+        info.filesize = stats.size;
+    }
 
-        return info;
-    
+    return info;
+
 }
 
 app.get("/getFileTree", function(req, res) {
@@ -282,7 +325,7 @@ app.get("/getFileTree", function(req, res) {
         var projectRoot = EDITABLE_APPS_DIR + project;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
-            filesAndInfo = dirTree(projectRoot,projectRoot+'/');
+            filesAndInfo = dirTree(projectRoot, projectRoot + '/');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");
