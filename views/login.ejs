@@ -1,1 +1,71 @@
-<a href="/auth/google">Sign On with Google</a>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>_______</title> 
+        <link href="../js/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <style>
+body {
+    background-color: #f5f5f5;
+}
+.container .well{
+    margin-top: 4em;
+    background-color: white;
+}
+
+.div_text i {
+    font-size: large;
+}
+.div_text input {
+    font-size: x-large;
+}
+
+        </style>
+</head>
+<body>
+<div class="container">
+    <div class="well col-lg-4 col-lg-offset-4">
+        <form id="formAuth" action="/login/simple" method="post">
+            <h1>Welcome</h1>
+            <!-- username -->
+            <div class="div_text">
+                <div class="input-prepend">
+                    <span class="add-on">
+                        <i class="icon-user">
+                        </i>Username
+                    </span>
+                    <input name="username" id="log inputIcon" value="" class="username span2" type="text">
+                </div>
+
+            </div>
+            <!-- password -->
+            <div class="div_text">
+                <div class="input-prepend">
+                    <span class="add-on">
+                        <i class="icon-lock">
+                        </i>Password
+                    </span>
+                    <input name="password" id="pwd inputIcon" class="password span2" type="password">
+                </div>
+
+            </div>
+            <!--
+            <label class="checkbox">
+                <input type="checkbox" value="remember-me">{lang rememberButton}
+            </label>
+            -->
+            <button class="btn  btn-success" type="submit">logIn</button>
+            <br/>
+            <br/>
+        </form>
+            <a href="/auth/google">Sign On with Google</a>
+
+    </div> 
+</div> 
+<!-- /container -->
+        <script src='../js/jquery.min.js'></script>
+        <script src="../js/bootstrap/js/bootstrap.min.js"></script>
+    </body>
+</html>
