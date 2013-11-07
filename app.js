@@ -18,8 +18,8 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
 var port = process.env.PORT || 3149;
-console.log(dirTree('/var/www/git.test'));
-process.exit();
+//console.log(dirTree('/var/www/git.test'));
+//process.exit();
 // 
 // ------------------------------------------------
 // BASIC USER AUTH w/ EXPRESS
@@ -249,15 +249,12 @@ app.get("/allProjectFiles", function(req, res) {
     }
 });
 
-function dirTree(filename) {
+function dirTree(filename,projectRoot) {
     //----return if file contains dot
 
     var stats = fs.lstatSync(filename);
-    if (stats.isDirectory() && path.basename(filename)[0] == '.') {
-
-    } else {
         var info = {
-            path: filename,
+            path: filename.replace(projectRoot,''),
             name: path.basename(filename),
             label: path.basename(filename)
         };
@@ -266,7 +263,7 @@ function dirTree(filename) {
         if (stats.isDirectory() && path.basename(filename)[0] !== '.') {
             info.type = "folder";
             info.children = fs.readdirSync(filename).map(function(child) {
-                return dirTree(filename + '/' + child);
+                return dirTree(filename + '/' + child,projectRoot);
             });
         } else {
             // Assuming it's a file. In real life it could be a symlink or
@@ -275,7 +272,7 @@ function dirTree(filename) {
         }
 
         return info;
-    }
+    
 }
 
 app.get("/getFileTree", function(req, res) {
@@ -284,7 +281,7 @@ app.get("/getFileTree", function(req, res) {
         var projectRoot = EDITABLE_APPS_DIR + project;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
-            filesAndInfo = dirTree(projectRoot);
+            filesAndInfo = dirTree(projectRoot,projectRoot+'/');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");

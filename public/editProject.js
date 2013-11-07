@@ -162,11 +162,13 @@ function createEditPane(fname) {
     if (fname) {
         fname_stripped = fname.replace('.', '_');
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-        $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
-        $('#tabContent').append('<div class="tab-pane tab editPane" id="' + fname_stripped + '"></div>');
+        if (!$('#myTab a[href="#' + fname_stripped + '"]').length) {
+            $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
+            $('#tabContent').append('<div class="tab-pane tab editPane" id="' + fname_stripped + '"></div>');
+            registerCloseEvent();
+            populateEditPane($('#' + fname_stripped), fname);
+        }
         $('#myTab a[href="#' + fname_stripped + '"]').tab('show');
-        registerCloseEvent();
-        populateEditPane($('#' + fname_stripped), fname);
     }
 }
 function populateEditPane(editPane, fname) {
