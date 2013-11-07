@@ -3,9 +3,16 @@
 // Edit the Stylus file (index.styl) instead... :) 
 */
 
-@font-face {
+/*@font-face {
     font-family: "Inconsolata";
     src: url("./fonts/Inconsolata.otf");
+}*/
+body {
+    overflow: hidden;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #000;
+    opacity: .99;
 }
 .tab-content {
     height: 100%;
@@ -14,12 +21,8 @@
     border: 1px red dashed;
     height: 100%;
 }
-body {
-    overflow: hidden;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #000;
-    opacity: .99;
+#fileTree{
+    padding: 5px;
 }
 
 /*OLD SCROLLBAR*/

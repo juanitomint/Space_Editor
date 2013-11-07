@@ -870,8 +870,17 @@ $(window).ready(function() {
         success: function(data) {
             $('#fileTree').tree({
                 data: data[0].children,
-                autoOpen: true,
-            })
+                autoOpen: false,
+            });
+            $('#fileTree').bind(
+                    'tree.dblclick',
+                    function(e) {
+                        // e.node is the clicked node
+                        if (e.node.type == 'file') {
+                            createEditPane(e.node.path);
+                        }
+                    }
+            );
         }
     });
 
