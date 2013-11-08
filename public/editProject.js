@@ -873,6 +873,7 @@ $(window).ready(function() {
             $('#fileTree').tree({
                 data: data[0].children,
                 autoOpen: true,
+                saveState: true
             });
             $('#fileTree').bind(
                     'tree.dblclick',
