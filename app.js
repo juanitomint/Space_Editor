@@ -18,8 +18,8 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
 var port = process.env.PORT || 3149;
-//console.log(dirTree('/var/www/git.test'));
-//process.exit();
+console.log(dirTree('/var/www/git.test'));
+process.exit();
 // 
 // ------------------------------------------------
 // BASIC USER AUTH w/ EXPRESS
