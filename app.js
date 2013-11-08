@@ -18,8 +18,11 @@ var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
 var port = process.env.PORT || 3149;
-console.log(dirTree('/var/www/git.test'));
-process.exit();
+// for showing hide dot folders/files
+var showDotFolders = false;
+var showDotFiles = true;
+//console.log(dirTree('/var/www/git.test'));
+//process.exit();
 // 
 // ------------------------------------------------
 // BASIC USER AUTH w/ EXPRESS
@@ -100,11 +103,11 @@ passport.use(new LocalStrategy(
 //        return done(null, user);
 //      })
 
-            //---fake obj
+                //---fake obj
                 user = {
                     username: username,
                     displayName: username,
-                    emails: [{value:username}]
+                    emails: [{value: username}]
                 };
                 return done(null, user);
             });
@@ -169,7 +172,7 @@ app.get('/auth/google/return',
 function(req, res) {
     req.user = req.user || {};
     res.cookie("_username", req.user.emails[0].value);
-    console.log("say hello to new user: " + req.user.displayName + ' knwon as:'+req.user.emails[0].value);
+    console.log("say hello to new user: " + req.user.displayName + ' knwon as:' + req.user.emails[0].value);
     res.redirect('/');
 });
 /*
@@ -293,7 +296,7 @@ app.get("/allProjectFiles", function(req, res) {
 });
 
 function dirTree(filename, projectRoot) {
-    //----return if file contains dot
+//----return if file contains dot
 
     var stats = fs.statSync(filename);
     var info = {
@@ -301,28 +304,36 @@ function dirTree(filename, projectRoot) {
         name: path.basename(filename),
         label: path.basename(filename)
     };
-
     //console.log(filename,stats);
-    if (stats.isDirectory() && path.basename(filename)[0] !== '.') {
-        info.type = "folder";
-        info.children = fs.readdirSync(filename).map(function(child) {
-            return dirTree(filename + '/' + child, projectRoot);
-        });
+    //console.log(filename,stats.isDirectory(), path.basename(filename)[0] !== '.', stats.isDirectory() && path.basename(filename)[0] !== '.');
+    if (stats.isDirectory()) {
+        if (path.basename(filename)[0] !== '.' || showDotFolders) {
+            info.type = "folder";
+            info.children = fs.readdirSync(filename).map(function(child) {
+                return dirTree(filename + '/' + child, projectRoot);
+            });
+            info.children=info.children.filter(function(n){if(n) return n;});
+        return info;
+        }
     } else {
-        // Assuming it's a file. In real life it could be a symlink or
-        // something else!
-        info.type = "file";
-        info.filesize = stats.size;
-    }
-
+        if (path.basename(filename)[0] !== '.' || showDotFiles) {
+            // Assuming it's a file. In real life it could be a symlink or
+            // something else!
+            info.type = "file";
+            info.filesize = stats.size;
+        }
     return info;
-
+    }
 }
 
 app.get("/getFileTree", function(req, res) {
     if (req.query.project && req.query.project.length > 2) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
+        //---set globals 4 show/hide dot files/folders
+        if(req.query.showDotFolders){
+            showDotFolders=true;
+        }
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
             filesAndInfo = dirTree(projectRoot, projectRoot + '/');
@@ -402,7 +413,7 @@ app.post("/createFile", function(req, res) {
                     console.log(err);
                     return res.send("FAIL: Error creating new file.");
                 } else {
-                    localFileIsMostRecent[projectName + "/" + safeFName] = true;  // mark file as saved with no pending changes.
+                    localFileIsMostRecent[projectName + "/" + safeFName] = true; // mark file as saved with no pending changes.
                     console.log("FILE SAVED: " + safeFName);
                     res.send(safeFName);
                 }
@@ -1031,7 +1042,7 @@ function localFileSave(userObj, fname, fcontents, fileSaverCallback) {
         if (err) {
             console.log(err);
         } else {
-            localFileIsMostRecent[team + "/" + fname] = true;  // mark file as saved with no pending changes.
+            localFileIsMostRecent[team + "/" + fname] = true; // mark file as saved with no pending changes.
             console.log("FILE SAVED: " + team + "/" + fname);
             var filegroup = nowjs.getGroup(team + "/" + fname);
             filegroup.now.c_fileStatusChanged(fname, "saved");
@@ -1063,7 +1074,7 @@ function localFileCreate(userObj, fname, fileCreatorCallback) {
             if (err) {
                 console.log(err);
             } else {
-                localFileIsMostRecent[teamID + safeFName] = true;  // mark file as saved with no pending changes.
+                localFileIsMostRecent[teamID + safeFName] = true; // mark file as saved with no pending changes.
                 console.log("FILE SAVED: " + safeFName);
                 var filegroup = nowjs.getGroup(teamID + safeFName);
                 filegroup.now.c_fileStatusChanged(safeFName, "saved");
@@ -1177,9 +1188,7 @@ function localProjectDeploy(userObj, deployerCallback) {
     var fromUserId = userObj.clientId;
     var projPath = EDITABLE_APPS_DIR + team;
     var projectName = team;
-
     console.log("DEPLOYMENT PLACEHOLDER: " + projectName);
-
     exec('stop node_' + userObj.teamID, {
         encoding: 'utf8',
         timeout: 30000,
