@@ -13,6 +13,7 @@ body {
     font-family: Arial, sans-serif;
     background: #2a3239;
     opacity: .99;
+    color: #fefefe;
 }
 .tab-content {
     height: 100%;
