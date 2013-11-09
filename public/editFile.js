@@ -386,7 +386,7 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser) {
     if (name.indexOf("_") > 0) {
         uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
     }
-    var userColor = userColorMap[(name.charCodeAt(0)+name.charCodeAt(name.length-1)) % userColorMap.length];
+    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
     cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
         html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
@@ -418,68 +418,67 @@ now.c_fileStatusChanged = function(fname, status) {
     }
 }
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
-    /*
-     if(fromUserId == now.core.clientId){
-     return;
-     }
-     */
-    /*
-     var uInfo = allCollabInfo[fromUserId];
-     var uName = "???";
-     if(uInfo != undefined){
-     uName = uInfo.name;
-     }
-     if(fromUserId == now.core.clientId){
-     uName = now.name;
-     }
-     console.log("UserFileEvent: " + event + " >> " + fname + " >> " + uName + ", usersInFile: " + usersInFile);
-     if(event == "joinFile"){
-     setUsersInFile(fname, usersInFile);
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "joined file: <div class='itemType_fileAction'>"+fname+"</div>");
-     console.log("added notify for joinFile");
-     }
-     if(event == "leaveFile"){
-     setUsersInFile(fname, usersInFile);
-     if(fname == infile){
-     // remove the user's marker, they just left!
-     var cInfo = allCollabInfo[fromUserId];
-     if(cInfo != undefined){
-     cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
-     }
-     }
-     }
-     if(event == "deleteFile"){
-     removeFileFromList(fname);
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "deleted file: <div class='itemType_fileAction'>"+fname+"</div>");
-     }
-     if(event == "createFile"){
-     addFileToList(fname);
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "created file: <div class='itemType_fileAction'>"+fname+"</div>");
-     }
-     if(event == "renameFile" && secondaryFilename != undefined){
-     removeFileFromList(fname);
-     addFileToList(secondaryFilename);
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "renamed file: <div class='itemType_fileAction'>"+fname+"</div><div style='text-align: right'>to</div><div class='itemType_fileAction'>"+secondaryFilename+"</div>");
-     }
-     if(event == "duplicateFile" && secondaryFilename != undefined){
-     addFileToList(secondaryFilename);
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "duplicated file: <div class='itemType_fileAction'>"+fname+"</div><div style='text-align: right'>as</div><div class='itemType_fileAction'>"+secondaryFilename+"</div>");
-     }
-     if(event == "commitProject"){
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "commited project with note: <div class='itemType_projectAction'>"+msg+"</div>");
-     }
-     if(event == "launchProject"){
-     console.log("launch!");
-     var userColor = userColorMap[fromUserId%userColorMap.length];
-     notifyAndAddMessageToLog(userColor, uName, "<div class='itemType_projectAction'>Launched the project!</div>");
-     }
-     */
+
+    if (fromUserId == now.core.clientId) {
+        return;
+    }
+
+    var uInfo = allCollabInfo[fromUserId];
+    var uName = "???";
+    if (uInfo != undefined) {
+        uName = uInfo.name;
+    }
+    if (fromUserId == now.core.clientId) {
+        uName = now.name;
+    }
+    console.log("UserFileEvent: " + event + " >> " + fname + " >> " + uName + ", usersInFile: " + usersInFile);
+    if (event == "joinFile") {
+        setUsersInFile(fname, usersInFile);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "joined file: <div class='itemType_fileAction'>" + fname + "</div>");
+        console.log("added notify for joinFile");
+    }
+    if (event == "leaveFile") {
+        setUsersInFile(fname, usersInFile);
+        if (fname == infile) {
+            // remove the user's marker, they just left!
+            var cInfo = allCollabInfo[fromUserId];
+            if (cInfo != undefined) {
+                cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+            }
+        }
+    }
+    if (event == "deleteFile") {
+        removeFileFromList(fname);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "deleted file: <div class='itemType_fileAction'>" + fname + "</div>");
+    }
+    if (event == "createFile") {
+        addFileToList(fname);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "created file: <div class='itemType_fileAction'>" + fname + "</div>");
+    }
+    if (event == "renameFile" && secondaryFilename != undefined) {
+        removeFileFromList(fname);
+        addFileToList(secondaryFilename);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "renamed file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>to</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
+    }
+    if (event == "duplicateFile" && secondaryFilename != undefined) {
+        addFileToList(secondaryFilename);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "duplicated file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>as</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
+    }
+    if (event == "commitProject") {
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "commited project with note: <div class='itemType_projectAction'>" + msg + "</div>");
+    }
+    if (event == "launchProject") {
+        console.log("launch!");
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "<div class='itemType_projectAction'>Launched the project!</div>");
+    }
+
 }
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
@@ -493,7 +492,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
         cInfo['timeLastSeen'] = 0;
     }
     console.log("UserEvent: " + event + " >> " + fromUserName);
-    var userColor = userColorMap[fromUserId % userColorMap.length];
+    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     if (event == "join") {
         mostRecentTotalUserCount++;
         notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
@@ -504,7 +503,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
 }
 now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
     console.log("msg from " + fromUserId + ": " + message);
-    var userColor = userColorMap[fromUserId % userColorMap.length];
+    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     notifyAndAddMessageToLog(userColor, fromUserName, msg);
 }
@@ -1009,195 +1008,198 @@ function autoFoldCodeProgressive() {
 // ---------------------------------------------------------
 // Shift+Shift
 // ---------------------------------------------------------
-/*
- var preShiftShiftFocusElement = null;
- var shiftShiftMouseDownFn = function(event){
- if($(event.target).attr('id') != "shiftshift" && $(event.target).parents("#shiftshift").length == 0 && $(event.target).parents("#topMenu").length == 0){
- $(document).unbind('mousedown', shiftShiftMouseDownFn);
- closeShiftShift();
- }
- }
- function toggleShiftShift(){
- if($("#shiftshift").is(":visible")){
- closeShiftShift();
- }else{
- openShiftShiftAsBroadcast();
- }
- }
- function openShiftShift(html, height, borderColor){
- if(!$("#shiftshift").is(":visible")){
- // open it.
- preShiftShiftFocusElement = document.activeElement;
- $("#shiftshift").css({height: height, "border-color": borderColor}).html(html).show();
- $("#topMenu_CMD").addClass("topMenuItemOpen");
- $(document).unbind('mousedown', shiftShiftMouseDownFn);
- $(document).bind('mousedown', shiftShiftMouseDownFn);
- }
- }
- function closeShiftShift(){
- if($("#shiftshift").is(":visible")){
- // close it.
- $("#shiftshift").hide();
- $("#topMenu_CMD").removeClass("topMenuItemOpen");
- $("#shiftshiftInputDiv input").blur();
- $(preShiftShiftFocusElement).focus();
- }
- }
- function shiftshiftBroadcastKeydown(event){
- if(event.keyCode == 13){
- // ENTER was pressed
- var txt = $("#shiftshiftInputDiv input").val();
- if(txt != ""){
- var usedAsCommand = false;
- if(txt.length == 1){
- switch(txt.toLowerCase()){
- case "f":{
- toggleFileBrowser();
- usedAsCommand = true;
- break;
- }
- case "l":{
- toggleLog();
- usedAsCommand = true;
- break;
- }
- case "o":{
- toggleLogOutput();
- usedAsCommand = true;
- break;
- }
- }
- }
- if(!usedAsCommand){
- now.s_teamMessageBroadcast("personal", txt);
- }
- }
- $("#shiftshiftInputDiv input").val("");
- if(!event.shiftKey){
- toggleShiftShift();
- }
- return false;
- }
- if(event.keyCode == 27){
- // ESC was pressed
- toggleShiftShift();
- return false;
- }
- return true;
- }
- function shiftshiftRenameKeydown(event, fname){
- if(event.keyCode == 13){
- // ENTER was pressed
- var txt = $("#shiftshiftInputDiv input").val();
- if(txt != ""){
- if(getUsersInFile(fname) != 0){
- alert("cannot delete file, there are still users editing it!");
- return;
- }
- now.s_renameFile(fname, txt, function(fname, errs){
- if(errs && errs.length > 0){
- console.log(errs);
- alert("Error renaming file: "+fname+"\n\n" + errs[0]);
- }else{
- console.log("I just renamed the file. > " + fname);
- }
- })
- }
- $("#shiftshiftInputDiv input").val("");
- toggleShiftShift();
- return false;
- }
- }
- function shiftshiftDuplicateKeydown(event, fname){
- if(event.keyCode == 13){
- // ENTER was pressed
- var txt = $("#shiftshiftInputDiv input").val();
- if(txt != ""){
- if(getUsersInFile(fname) != 0){
- alert("cannot duplicate file, there are still users editing it!");
- return;
- }
- now.s_duplicateFile(fname, txt, function(fname, errs){
- if(errs && errs.length > 0){
- console.log(errs);
- alert("Error duplicating file: "+fname+"\n\n" + errs[0]);
- }else{
- console.log("I just duplicated the file. > " + fname);
- }
- })
- }
- $("#shiftshiftInputDiv input").val("");
- toggleShiftShift();
- return false;
- }
- }
- function shiftshiftCommitKeydown(event){
- if(event.keyCode == 13){
- // ENTER was pressed
- var txt = $("#shiftshiftInputDiv input").val();
- now.s_commitProject(txt, function(errs){
- if(errs){
- console.log(errs);
- alert("Error committing project: \n\n >> " + errs.message);
- }else{
- console.log("I just committed the project.");
- }
- });
- $("#shiftshiftInputDiv input").val("");
- toggleShiftShift();
- return false;
- }
- }
- function openShiftShiftAsBroadcast(){
- var html = "";
- html += "<div id='shiftshiftTitle'>BROADCAST</div>";
- html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftBroadcastKeydown(event);'/></div>";
- openShiftShift(html, 90, "#00ACED");
- $("#shiftshiftInputDiv input").val("").focus();
- }
- function openShiftShiftAsRename(fname){
- var html = "";
- html += "<div id='shiftshiftTitle'>RENAME</div>";
- html += "<div id='shiftshiftFilename'>"+fname+" <span>to...</span></div>";
- html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftRenameKeydown(event, \""+fname+"\");'/></div>";
- openShiftShift(html, 130, "#FFF100");
- setTimeout(function(){
- $("#shiftshiftInputDiv input").val(fname).focus();
- }, 50);
- }
- function openShiftShiftAsDuplicate(fname){
- var html = "";
- html += "<div id='shiftshiftTitle'>DUPLICATE</div>";
- html += "<div id='shiftshiftFilename'>"+fname+" <span>as...</span></div>";
- html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftDuplicateKeydown(event, \""+fname+"\");'/></div>";
- openShiftShift(html, 130, "#FFF100");
- setTimeout(function(){
- $("#shiftshiftInputDiv input").val(fname).focus();
- }, 50);
- }
- function openShiftShiftAsDelete(fname){
- var html = "";
- html += "<div id='shiftshiftTitle'>DELETE</div>";
- html += "<div id='shiftshiftFilename'>"+fname+"</div>";
- html += "<div id='shiftshiftBtn_Cancel' class='shiftshiftBtn' onclick='closeShiftShift();'>cancel file termination</div>";
- html += "<div id='shiftshiftBtn_Delete' class='shiftshiftBtn' onclick='deleteFile(\""+fname+"\"); closeShiftShift();'>DELETE</div>"; 
- openShiftShift(html, 130, "#FF3600");
- $("#shiftshiftInputDiv input").val("").focus();
- }
- function openShiftShiftAsCommit(){
- var html = "";
- html += "<div id='shiftshiftTitle'>COMMIT</div>";
- html += "<div id='shiftshiftFilename'><span>Notes...</span></div>";
- html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftCommitKeydown(event);'/></div>";
- openShiftShift(html, 130, "#FFF100");
- setTimeout(function(){
- $("#shiftshiftInputDiv input").val("").focus();
- }, 50);
- if(fileIsUnsaved){
- saveFileToServer();
- }
- }
- */
+
+var preShiftShiftFocusElement = null;
+var shiftShiftMouseDownFn = function(event) {
+    if ($(event.target).attr('id') != "shiftshift" && $(event.target).parents("#shiftshift").length == 0 && $(event.target).parents("#topMenu").length == 0) {
+        $(document).unbind('mousedown', shiftShiftMouseDownFn);
+        closeShiftShift();
+    }
+}
+function toggleShiftShift() {
+    if ($("#shiftshift").is(":visible")) {
+        closeShiftShift();
+    } else {
+        openShiftShiftAsBroadcast();
+    }
+}
+function openShiftShift(html, height, borderColor) {
+    if (!$("#shiftshift").is(":visible")) {
+        // open it.
+        preShiftShiftFocusElement = document.activeElement;
+        $("#shiftshift").css({height: height, "border-color": borderColor}).html(html).show();
+        $("#topMenu_CMD").addClass("topMenuItemOpen");
+        $(document).unbind('mousedown', shiftShiftMouseDownFn);
+        $(document).bind('mousedown', shiftShiftMouseDownFn);
+    }
+}
+function closeShiftShift() {
+    if ($("#shiftshift").is(":visible")) {
+        // close it.
+        $("#shiftshift").hide();
+        $("#topMenu_CMD").removeClass("topMenuItemOpen");
+        $("#shiftshiftInputDiv input").blur();
+        $(preShiftShiftFocusElement).focus();
+    }
+}
+function shiftshiftBroadcastKeydown(event) {
+    if (event.keyCode == 13) {
+        // ENTER was pressed
+        var txt = $("#shiftshiftInputDiv input").val();
+        if (txt != "") {
+            var usedAsCommand = false;
+            if (txt.length == 1) {
+                switch (txt.toLowerCase()) {
+                    case "f":
+                        {
+                            toggleFileBrowser();
+                            usedAsCommand = true;
+                            break;
+                        }
+                    case "l":
+                        {
+                            toggleLog();
+                            usedAsCommand = true;
+                            break;
+                        }
+                    case "o":
+                        {
+                            toggleLogOutput();
+                            usedAsCommand = true;
+                            break;
+                        }
+                }
+            }
+            if (!usedAsCommand) {
+                now.s_teamMessageBroadcast("personal", txt);
+            }
+        }
+        $("#shiftshiftInputDiv input").val("");
+        if (!event.shiftKey) {
+            toggleShiftShift();
+        }
+        return false;
+    }
+    if (event.keyCode == 27) {
+        // ESC was pressed
+        toggleShiftShift();
+        return false;
+    }
+    return true;
+}
+function shiftshiftRenameKeydown(event, fname) {
+    if (event.keyCode == 13) {
+        // ENTER was pressed
+        var txt = $("#shiftshiftInputDiv input").val();
+        if (txt != "") {
+            if (getUsersInFile(fname) != 0) {
+                alert("cannot delete file, there are still users editing it!");
+                return;
+            }
+            now.s_renameFile(fname, txt, function(fname, errs) {
+                if (errs && errs.length > 0) {
+                    console.log(errs);
+                    alert("Error renaming file: " + fname + "\n\n" + errs[0]);
+                } else {
+                    console.log("I just renamed the file. > " + fname);
+                }
+            })
+        }
+        $("#shiftshiftInputDiv input").val("");
+        toggleShiftShift();
+        return false;
+    }
+}
+function shiftshiftDuplicateKeydown(event, fname) {
+    if (event.keyCode == 13) {
+        // ENTER was pressed
+        var txt = $("#shiftshiftInputDiv input").val();
+        if (txt != "") {
+            if (getUsersInFile(fname) != 0) {
+                alert("cannot duplicate file, there are still users editing it!");
+                return;
+            }
+            now.s_duplicateFile(fname, txt, function(fname, errs) {
+                if (errs && errs.length > 0) {
+                    console.log(errs);
+                    alert("Error duplicating file: " + fname + "\n\n" + errs[0]);
+                } else {
+                    console.log("I just duplicated the file. > " + fname);
+                }
+            })
+        }
+        $("#shiftshiftInputDiv input").val("");
+        toggleShiftShift();
+        return false;
+    }
+}
+function shiftshiftCommitKeydown(event) {
+    if (event.keyCode == 13) {
+        // ENTER was pressed
+        var txt = $("#shiftshiftInputDiv input").val();
+        now.s_commitProject(txt, function(errs) {
+            if (errs) {
+                console.log(errs);
+                alert("Error committing project: \n\n >> " + errs.message);
+            } else {
+                console.log("I just committed the project.");
+            }
+        });
+        $("#shiftshiftInputDiv input").val("");
+        toggleShiftShift();
+        return false;
+    }
+}
+function openShiftShiftAsBroadcast() {
+    var html = "";
+    html += "<div id='shiftshiftTitle'>BROADCAST</div>";
+    html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftBroadcastKeydown(event);'/></div>";
+    openShiftShift(html, 90, "#00ACED");
+    $("#shiftshiftInputDiv input").val("").focus();
+}
+function openShiftShiftAsRename(fname) {
+    var html = "";
+    html += "<div id='shiftshiftTitle'>RENAME</div>";
+    html += "<div id='shiftshiftFilename'>" + fname + " <span>to...</span></div>";
+    html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftRenameKeydown(event, \"" + fname + "\");'/></div>";
+    openShiftShift(html, 130, "#FFF100");
+    setTimeout(function() {
+        $("#shiftshiftInputDiv input").val(fname).focus();
+    }, 50);
+}
+function openShiftShiftAsDuplicate(fname) {
+    var html = "";
+    html += "<div id='shiftshiftTitle'>DUPLICATE</div>";
+    html += "<div id='shiftshiftFilename'>" + fname + " <span>as...</span></div>";
+    html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftDuplicateKeydown(event, \"" + fname + "\");'/></div>";
+    openShiftShift(html, 130, "#FFF100");
+    setTimeout(function() {
+        $("#shiftshiftInputDiv input").val(fname).focus();
+    }, 50);
+}
+function openShiftShiftAsDelete(fname) {
+    var html = "";
+    html += "<div id='shiftshiftTitle'>DELETE</div>";
+    html += "<div id='shiftshiftFilename'>" + fname + "</div>";
+    html += "<div id='shiftshiftBtn_Cancel' class='shiftshiftBtn' onclick='closeShiftShift();'>cancel file termination</div>";
+    html += "<div id='shiftshiftBtn_Delete' class='shiftshiftBtn' onclick='deleteFile(\"" + fname + "\"); closeShiftShift();'>DELETE</div>";
+    openShiftShift(html, 130, "#FF3600");
+    $("#shiftshiftInputDiv input").val("").focus();
+}
+function openShiftShiftAsCommit() {
+    var html = "";
+    html += "<div id='shiftshiftTitle'>COMMIT</div>";
+    html += "<div id='shiftshiftFilename'><span>Notes...</span></div>";
+    html += "<div id='shiftshiftInputDiv'><input type='text' onkeydown='return shiftshiftCommitKeydown(event);'/></div>";
+    openShiftShift(html, 130, "#FFF100");
+    setTimeout(function() {
+        $("#shiftshiftInputDiv input").val("").focus();
+    }, 50);
+    if (fileIsUnsaved) {
+        saveFileToServer();
+    }
+}
+
 // ---------------------------------------------------------
 // Shout: parent message passing
 // ---------------------------------------------------------
@@ -1367,7 +1369,7 @@ $(document).ready(function() {
     setInterval(ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave, 1000);
 
     var lastShiftTime = 0;
-    /*
+    /**/
      var SHIFT_SHIFT_THRESH = 300;
      $(document).keydown(function(event){
      if(event.shiftKey && event.keyCode == 16){
@@ -1382,7 +1384,7 @@ $(document).ready(function() {
      lastShiftTime = 0;
      }
      });
-     */
+     /**/
     $("#top").disableSelection();
 
     //if(Math.abs(screen.width-window.innerWidth) > 20 || Math.abs(screen.height-window.innerHeight) > 20) {
