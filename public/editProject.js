@@ -734,7 +734,7 @@ function shoutDuplicatedFile(fname, newfname) {
 // ---------------------------------------------------------
 now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
     console.log("msg from " + fromUserId + ": " + message);
-    name=fromUserId;
+    name = fromUserId;
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     notifyAndAddMessageToLog(userColor, fromUserName, msg);
@@ -744,7 +744,7 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
 // ---------------------------------------------------------
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
-    $("#logWindowContent").append('<span class="" style="color:'+userColor+'">'+fromUserName+': '+msg+'</span>');
+    $("#logWindowContent").append('<span class="" style="color:' + userColor + '">' + fromUserName + ': ' + msg + '</span>');
 }
 // ---------------------------------------------------------
 // URL manipulation.
@@ -880,6 +880,8 @@ $(window).ready(function() {
         e.preventDefault()
         $(this).tab('show');
     });
+    $('#myTab a:first').tab('show'); // Select first tab
+    $('#myTabWest a:first').tab('show'); // Select first tab
     //-----load FileTree
     url = '/getFileTree';
     $.ajax({
@@ -919,21 +921,21 @@ $(window).ready(function() {
 
     var lastShiftTime = 0;
     /**/
-     var SHIFT_SHIFT_THRESH = 300;
-     $(document).keydown(function(event){
-     if(event.shiftKey && event.keyCode == 16){
-     var t = (new Date()).getTime();
-     if((t-lastShiftTime) < SHIFT_SHIFT_THRESH){
-     t = 0;
-     // SHIFT+SHIFT!
-     toggleShiftShift();
-     }
-     lastShiftTime = t;
-     }else{
-     lastShiftTime = 0;
-     }
-     });
-     /**/
+    var SHIFT_SHIFT_THRESH = 300;
+    $(document).keydown(function(event) {
+        if (event.shiftKey && event.keyCode == 16) {
+            var t = (new Date()).getTime();
+            if ((t - lastShiftTime) < SHIFT_SHIFT_THRESH) {
+                t = 0;
+                // SHIFT+SHIFT!
+                toggleShiftShift();
+            }
+            lastShiftTime = t;
+        } else {
+            lastShiftTime = 0;
+        }
+    });
+    /**/
 //setTimeout(function(){alert("\nWelcome to Space!\n\nSpace is a real-time, collaborative code editor created by the Chaos Collective.\n\nWhen other users are online, you'll see their cursors directly in the code. Click the button at the bottom left to open the file browser and see where users are.\n\nGo forth, explore Space, and write some code with your friends!")}, 5000);
 });
 
