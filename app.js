@@ -612,7 +612,7 @@ nowjs.on('disconnect', function() {
     //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.now.name); 
     //---cleanup presence
     for (var fname in groupFilesUsers) {
-        if (fname != '')
+        if (fname)
             removeUserFromFileGroup(this.user, fname);
     }
     var teamgroup = nowjs.getGroup(this.user.teamID);
@@ -648,7 +648,7 @@ everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) 
 everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileRequesterCallback) {
     var callerID = this.user.clientId;
     var userObj = this.user;
-    //addUserToFileGroup(userObj, fname);
+    addUserToFileGroup(userObj, fname);
     //removeUserFromAllFileGroupsAndAddToThis(origUser, fname);
     if (localFileIsMostRecent[userObj.teamID + "/" + fname] === true || localFileIsMostRecent[userObj.teamID + "/" + fname] === undefined) {
         localFileFetch(userObj, fname, fileRequesterCallback);
@@ -1006,9 +1006,19 @@ function addUserToFileGroup(userObj, fname) {
         console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
         //console.log(g.users[userObj.clientId]);
     }
+    update_all_trees();
+}
+function update_all_trees() {
+    console.log('groupFilesUsers', groupFilesUsers);
+    for (var fname in groupFilesUsers) {
+        if (fname != '') {
+            if (groupFilesUsers[fname])
+                everyone.now.setUsersInFile(fname, groupFilesUsers[fname].length);
+        }
+    }
 }
 function removeUserFromFileGroup(userObj, fname) {
-    console.log('Removing: ',userObj.clientId,' from: '+fname);
+    console.log('Removing: ', userObj.clientId, ' from: ' + fname);
     var groupname = userObj.teamID;
     // Find and remove item from an array
     if (groupFilesUsers[fname]) {
