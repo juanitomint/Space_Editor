@@ -417,7 +417,7 @@ now.c_fileStatusChanged = function(fname, status) {
         console.log("saw file status change for wrong file: " + fname);
     }
 }
-/*
+
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
 
     if (fromUserId == now.core.clientId) {
@@ -481,7 +481,7 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
 
 }
-*/
+
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
@@ -515,6 +515,9 @@ now.c_confirmProject = function(teamID) {
     console.log("PROJECT: " + now.teamID);
     // <a href='http://"+teamID+".chaoscollective.org/'
     $("#topProjName").html(teamID + "");
+}
+now.c_updateTree = function(groupFilesUsers) {
+    console.log('groupFilesUsers',groupFilesUsers);
 }
 // ---------------------------------------------------------
 // Main functions...

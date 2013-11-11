@@ -157,9 +157,9 @@ function registerCloseEvent() {
         $(this).parent().parent().remove(); //remove li of tab
         $('#myTab a:last').tab('show'); // Select first tab
         //remove respective tab content
-        $(tabContentId).remove(); 
+        $(tabContentId).remove();
         //remove user from filelist
-        now.s_leaveFile(fname);
+        //now.s_leaveFile(fname);
     });
 }
 function createEditPane(fname) {
@@ -168,12 +168,12 @@ function createEditPane(fname) {
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
         if (!$('#myTab a[href="#' + fname_stripped + '"]').length) {
             $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
-            $('#tabContent').append('<div class="tab-pane tab editPane" fname="'+fname+'" id="' + fname_stripped + '"></div>');
+            $('#tabContent').append('<div class="tab-pane tab editPane" fname="' + fname + '" id="' + fname_stripped + '"></div>');
             registerCloseEvent();
             populateEditPane($('#' + fname_stripped), fname);
         }
         $('#myTab a[href="#' + fname_stripped + '"]').tab('show');
-        now.s_enterFile(fname);
+        //now.s_enterFile(fname);
     }
 }
 function populateEditPane(editPane, fname) {
@@ -743,8 +743,8 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     notifyAndAddMessageToLog(userColor, fromUserName, msg);
-    me= (fromUserId==now.core.clientId) ? true:false;
-    groupChatMsg(fromUserName, msg,me);
+    me = (fromUserId == now.core.clientId) ? true : false;
+    groupChatMsg(fromUserName, msg, me);
 }
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
@@ -830,12 +830,15 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
 
 }
+now.c_updateTree = function(param) {
+}
+now.c_setUsersInFile=setUsersInFile;
 function setUsersInFile(fname, usersInFile) {
-    fname_stripped=fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     if (usersInFile) {
-        $('#f'+fname_stripped).html('(' + usersInFile + ')');
+        $('#f' + fname_stripped).html('(' + usersInFile + ')');
     } else {
-        $('#f'+fname_stripped).html('');
+        $('#f' + fname_stripped).html('');
     }
     return
     console.log("Unable to add user from file: " + fname);
@@ -849,14 +852,14 @@ now.c_confirmProject = function(teamID) {
 // ---------------------------------------------------------
 // MSG Related Functions
 // ---------------------------------------------------------
-function groupChatMsg(fromUserName,msg,me){
-    add=(me) ? 'Me':'Other';
-        $('#groupMsg').append('<div class="groupChatMsg groupChat'+add+'">' + fromUserName + ':<br/>' + msg + '</div>');
+function groupChatMsg(fromUserName, msg, me) {
+    add = (me) ? 'Me' : 'Other';
+    $('#groupMsg').append('<div class="groupChatMsg groupChat' + add + '">' + fromUserName + ':<br/>' + msg + '</div>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
     $("#logWindowContent").append('<span class="" style="color:' + userColor + '">' + fromUserName + ': ' + msg + '</span>');
-   }
+}
 // ---------------------------------------------------------
 // URL manipulation.
 // ---------------------------------------------------------
