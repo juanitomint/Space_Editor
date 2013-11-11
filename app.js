@@ -21,6 +21,7 @@ var port = process.env.PORT || 3149;
 // for showing hide dot folders/files
 var showDotFolders = false;
 var showDotFiles = true;
+var groupFilesUsers = [];
 //console.log(dirTree('/var/www/git.test'));
 //process.exit();
 // 
@@ -301,6 +302,7 @@ function dirTree(filename, projectRoot) {
     var stats = fs.statSync(filename);
     var info = {
         path: filename.replace(projectRoot, ''),
+        id: filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_"),
         name: path.basename(filename),
         label: path.basename(filename)
     };
@@ -312,8 +314,11 @@ function dirTree(filename, projectRoot) {
             info.children = fs.readdirSync(filename).map(function(child) {
                 return dirTree(filename + '/' + child, projectRoot);
             });
-            info.children=info.children.filter(function(n){if(n) return n;});
-        return info;
+            info.children = info.children.filter(function(n) {
+                if (n)
+                    return n;
+            });
+            return info;
         }
     } else {
         if (path.basename(filename)[0] !== '.' || showDotFiles) {
@@ -322,7 +327,7 @@ function dirTree(filename, projectRoot) {
             info.type = "file";
             info.filesize = stats.size;
         }
-    return info;
+        return info;
     }
 }
 
@@ -331,8 +336,8 @@ app.get("/getFileTree", function(req, res) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
         //---set globals 4 show/hide dot files/folders
-        if(req.query.showDotFolders){
-            showDotFolders=true;
+        if (req.query.showDotFolders) {
+            showDotFolders = true;
         }
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
@@ -581,7 +586,7 @@ var everyone = nowjs.initialize(server);
 nowjs.on('connect', function() {
     //console.log("CONNECT    > " + this.user.clientId);
     this.user.teamID = teamID;
-    if (this.now.teamID != '') {
+    if (this.now.teamID != undefined) {
         this.user.teamID = this.now.teamID;
     }
     //console.log(this.user);
@@ -596,6 +601,7 @@ nowjs.on('connect', function() {
     this.user.about.email = u.emailPrimary || "anon@chaoscollective.org";
     // -----
     this.now.name = this.user.about.name;
+    this.now.userID = this.user.about._id;
     // -----
     this.user.grouplist = []; // file groups starts out empty.
     addUserToFileGroup(this.user, ""); // the blank file group is the the team group.
@@ -604,12 +610,19 @@ nowjs.on('connect', function() {
 nowjs.on('disconnect', function() {
     //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
     //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.now.name); 
+    //---cleanup presence
+    for (var fname in groupFilesUsers) {
+        if (fname != '')
+            removeUserFromFileGroup(this.user, fname);
+    }
     var teamgroup = nowjs.getGroup(this.user.teamID);
     // remove user from all file groups.
     if (this.user.grouplist !== undefined) {
         for (var i = this.user.grouplist.length - 1; i >= 0; i--) {
             var g = this.user.grouplist[i];
-            var fname = g.substring(g.indexOf("/") + 1);
+            if (g) {
+                var fname = g.substring(g.indexOf("/") + 1);
+            }
             usersInGroupMinusMinus(g);
             teamgroup.now.c_processUserFileEvent(fname, "leaveFile", this.user.clientId, usersInGroup[g]);
         }
@@ -635,7 +648,7 @@ everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) 
 everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileRequesterCallback) {
     var callerID = this.user.clientId;
     var userObj = this.user;
-    addUserToFileGroup(userObj, fname);
+    //addUserToFileGroup(userObj, fname);
     //removeUserFromAllFileGroupsAndAddToThis(origUser, fname);
     if (localFileIsMostRecent[userObj.teamID + "/" + fname] === true || localFileIsMostRecent[userObj.teamID + "/" + fname] === undefined) {
         localFileFetch(userObj, fname, fileRequesterCallback);
@@ -697,6 +710,14 @@ everyone.now.s_teamMessageBroadcast = function(type, message) {
     var fromUserId = this.user.clientId;
     var fromUserName = this.now.name;
     teamgroup.now.c_processMessage(scope, type, message, fromUserId, fromUserName);
+};
+everyone.now.s_enterFile = function(fname) {
+    var teamgroup = nowjs.getGroup(this.user.teamID);
+    var scope = "team";
+    var fromUserId = this.user.clientId;
+    var fromUserName = this.now.name;
+    addUserToFileGroup(this.user, fname);
+    teamgroup.now.c_processMessage(scope, 'type', "opened:" + fname, fromUserId, fromUserName);
 };
 everyone.now.s_leaveFile = function(fname) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
@@ -952,6 +973,15 @@ function localRepoFetchGitLog(userObj, gitRepoPath, fname, fetcherCallback) {
 var usersInGroup = {};
 function addUserToFileGroup(userObj, fname) {
     var groupname = userObj.teamID;
+    //----keep track of who is where
+    if (groupFilesUsers[fname] == null) {
+        groupFilesUsers[fname] = [];
+    }
+    console.log('add', groupFilesUsers)
+    console.log('-----------------------------------------------');
+    if (groupFilesUsers[fname].indexOf(userObj.clientId) == -1) {
+        groupFilesUsers[fname].push(userObj.clientId);
+    }
     if (fname && fname !== "") {
         groupname += "/" + fname;
     }
@@ -967,10 +997,10 @@ function addUserToFileGroup(userObj, fname) {
         userObj.grouplist.push(groupname);
         // keep track locally of users in group.
         usersInGroupPlusPlus(groupname);
-        if (fname.length > 0) {
-            var teamgroup = nowjs.getGroup(userObj.teamID);
-            teamgroup.now.c_processUserFileEvent(fname, "joinFile", userObj.clientId, usersInGroup[groupname]);
-        }
+        //if (fname.length > 0) {
+        var teamgroup = nowjs.getGroup(userObj.teamID);
+        teamgroup.now.c_processUserFileEvent(fname, "joinFile", userObj.clientId, usersInGroup[groupname]);
+        //} 
         //console.log("Added user " + user + " to group: " + group);
     } else {
         console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
@@ -978,7 +1008,18 @@ function addUserToFileGroup(userObj, fname) {
     }
 }
 function removeUserFromFileGroup(userObj, fname) {
+    console.log('Removing: ',userObj.clientId,' from: '+fname);
     var groupname = userObj.teamID;
+    // Find and remove item from an array
+    if (groupFilesUsers[fname]) {
+        var i = groupFilesUsers[fname].indexOf(userObj.clientId);
+        if (i != -1) {
+            groupFilesUsers[fname].splice(i, 1);
+        }
+    }
+    console.log('removed', groupFilesUsers);
+    console.log('-----------------------------------------------');
+
     if (fname && fname !== "") {
         groupname += "/" + fname;
     }

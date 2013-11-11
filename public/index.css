@@ -588,11 +588,12 @@ body {
     margin-right: 30px;
 }
 .fileEntryUsers {
-    position: absolute;
-    right: 40px;
-    top: 7px;
+    /*position: absolute;*/
+    /*right: 40px;*/
+    margin-left: 5px;
+    /*top: 7px;*/
     color: #cc0;
-    font-size: 17px;
+    /*font-size: 17px;*/
 }
 .fileEntrySize {
     position: absolute;

@@ -1,6 +1,7 @@
 // -----------------------------------------
 // Right-click context menu plugin for jQuery...
 // -----------------------------------------
+var allCollabInfo = [];
 (function($) {
     /**
      * @author corey aufang (with many modifications by seewhatsticks dev team)
@@ -152,10 +153,13 @@ function registerCloseEvent() {
 
         //there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
         var tabContentId = $(this).parent().attr("href");
+        var fname = $(tabContentId).attr('fname');
         $(this).parent().parent().remove(); //remove li of tab
         $('#myTab a:last').tab('show'); // Select first tab
-        $(tabContentId).remove(); //remove respective tab content
-
+        //remove respective tab content
+        $(tabContentId).remove(); 
+        //remove user from filelist
+        now.s_leaveFile(fname);
     });
 }
 function createEditPane(fname) {
@@ -164,11 +168,12 @@ function createEditPane(fname) {
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
         if (!$('#myTab a[href="#' + fname_stripped + '"]').length) {
             $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
-            $('#tabContent').append('<div class="tab-pane tab editPane" id="' + fname_stripped + '"></div>');
+            $('#tabContent').append('<div class="tab-pane tab editPane" fname="'+fname+'" id="' + fname_stripped + '"></div>');
             registerCloseEvent();
             populateEditPane($('#' + fname_stripped), fname);
         }
         $('#myTab a[href="#' + fname_stripped + '"]').tab('show');
+        now.s_enterFile(fname);
     }
 }
 function populateEditPane(editPane, fname) {
@@ -741,14 +746,113 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     me= (fromUserId==now.core.clientId) ? true:false;
     groupChatMsg(fromUserName, msg,me);
 }
+now.c_processUserEvent = function(event, fromUserId, fromUserName) {
+    if (fromUserId == now.core.clientId) {
+        return;
+    }
+    var cInfo = allCollabInfo[fromUserId];
+    if (cInfo == undefined) {
+        allCollabInfo[fromUserId] = [];
+        cInfo = allCollabInfo[fromUserId];
+        cInfo['name'] = fromUserName;
+        cInfo['timeLastSeen'] = 0;
+    }
+    console.log("UserEvent: " + event + " >> " + fromUserName);
+    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+    if (event == "join") {
+        mostRecentTotalUserCount++;
+        notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
+    } else {
+        mostRecentTotalUserCount--;
+        notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
+    }
+}
+now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
 
-function groupChatMsg(fromUserName,msg,me){
-    add=(me) ? 'Me':'Other';
-        $('#groupMsg').append('<div class="groupChatMsg groupChat'+add+'">' + fromUserName + ':<br/>' + msg + '</div>');
+    if (fromUserId == now.core.clientId) {
+        return;
+    }
+
+    var uInfo = allCollabInfo[fromUserId];
+    var uName = "???";
+    if (uInfo != undefined) {
+        uName = uInfo.name;
+    }
+    if (fromUserId == now.core.clientId) {
+        uName = now.name;
+    }
+    console.log("UserFileEvent: " + event + " >> " + fname + " >> " + uName + ", usersInFile: " + usersInFile);
+    if (event == "joinFile") {
+        setUsersInFile(fname, usersInFile);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "joined file: <div class='itemType_fileAction'>" + fname + "</div>");
+        console.log("added notify for joinFile");
+    }
+    if (event == "leaveFile") {
+        setUsersInFile(fname, usersInFile);
+//        if (fname == infile) {
+//            // remove the user's marker, they just left!
+//            var cInfo = allCollabInfo[fromUserId];
+//            if (cInfo != undefined) {
+//                cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+//            }
+//        }
+    }
+    if (event == "deleteFile") {
+        removeFileFromList(fname);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "deleted file: <div class='itemType_fileAction'>" + fname + "</div>");
+    }
+    if (event == "createFile") {
+        addFileToList(fname);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "created file: <div class='itemType_fileAction'>" + fname + "</div>");
+    }
+    if (event == "renameFile" && secondaryFilename != undefined) {
+        removeFileFromList(fname);
+        addFileToList(secondaryFilename);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "renamed file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>to</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
+    }
+    if (event == "duplicateFile" && secondaryFilename != undefined) {
+        addFileToList(secondaryFilename);
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "duplicated file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>as</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
+    }
+    if (event == "commitProject") {
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "commited project with note: <div class='itemType_projectAction'>" + msg + "</div>");
+    }
+    if (event == "launchProject") {
+        console.log("launch!");
+        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        notifyAndAddMessageToLog(userColor, uName, "<div class='itemType_projectAction'>Launched the project!</div>");
+    }
+
+}
+function setUsersInFile(fname, usersInFile) {
+    fname_stripped=fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    if (usersInFile) {
+        $('#f'+fname_stripped).html('(' + usersInFile + ')');
+    } else {
+        $('#f'+fname_stripped).html('');
+    }
+    return
+    console.log("Unable to add user from file: " + fname);
+}
+now.c_confirmProject = function(teamID) {
+    now.teamID = teamID;
+    console.log("PROJECT: " + now.teamID);
+    // <a href='http://"+teamID+".chaoscollective.org/'
+    $("#topProjName").html(teamID + "");
 }
 // ---------------------------------------------------------
 // MSG Related Functions
 // ---------------------------------------------------------
+function groupChatMsg(fromUserName,msg,me){
+    add=(me) ? 'Me':'Other';
+        $('#groupMsg').append('<div class="groupChatMsg groupChat'+add+'">' + fromUserName + ':<br/>' + msg + '</div>');
+}
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
     $("#logWindowContent").append('<span class="" style="color:' + userColor + '">' + fromUserName + ': ' + msg + '</span>');

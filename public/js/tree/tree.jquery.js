@@ -1343,7 +1343,8 @@ limitations under the License.
         escaped_name = escapeIfNecessary(node.name);
         
         addsize=(node.filesize!=null) ? addsize='<div class="fileEntrySize">'+Math.floor(node.filesize / 10.24) / 100+'k</div>':'';
-        return $("<li class=\"" + class_string + "\"><div class=\"jqtree-element jqtree_common\"><span class=\"jqtree-title jqtree_common\">" + escaped_name + "</span>"+addsize+"</div></li>");
+        addusers='<span class="fileEntryUsers" id="f'+node.id+'"/>';
+        return $("<li class=\"" + class_string + "\"><div class=\"jqtree-element jqtree_common\"><span class=\"jqtree-title jqtree_common\">" + escaped_name + addusers+"</span>"+addsize+"</div></li>");
       };
       createFolderLi = function(node) {
         var button_char, button_classes, escaped_name, folder_classes, getButtonClasses, getFolderClasses;

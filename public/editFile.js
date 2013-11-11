@@ -417,6 +417,7 @@ now.c_fileStatusChanged = function(fname, status) {
         console.log("saw file status change for wrong file: " + fname);
     }
 }
+/*
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
 
     if (fromUserId == now.core.clientId) {
@@ -480,6 +481,7 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
 
 }
+*/
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
@@ -667,14 +669,13 @@ function safelyOpenFileFromEntry(el) {
     }
 }
 function setUsersInFile(fname, usersInFile) {
-    for (var i = 0; i < mostRecentFilesAndInfo.length; i++) {
-        var f = mostRecentFilesAndInfo[i];
-        if (f[0] == fname) {
-            f[1] = usersInFile;
-            updateFileBrowserFromFileList(mostRecentFilesAndInfo);
-            return;
-        }
+    fname_stripped=fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    if (usersInFile) {
+        $('#f'+fname_stripped, window.parent.document).html('(' + usersInFile + ')');
+    } else {
+        $('#f'+'#f'+fname_stripped, window.parent.document).html('');
     }
+    return
     console.log("Unable to add user from file: " + fname);
 }
 function getUsersInFile(fname) {
@@ -1370,21 +1371,21 @@ $(document).ready(function() {
 
     var lastShiftTime = 0;
     /**/
-     var SHIFT_SHIFT_THRESH = 300;
-     $(document).keydown(function(event){
-     if(event.shiftKey && event.keyCode == 16){
-     var t = (new Date()).getTime();
-     if((t-lastShiftTime) < SHIFT_SHIFT_THRESH){
-     t = 0;
-     // SHIFT+SHIFT!
-     toggleShiftShift();
-     }
-     lastShiftTime = t;
-     }else{
-     lastShiftTime = 0;
-     }
-     });
-     /**/
+    var SHIFT_SHIFT_THRESH = 300;
+    $(document).keydown(function(event) {
+        if (event.shiftKey && event.keyCode == 16) {
+            var t = (new Date()).getTime();
+            if ((t - lastShiftTime) < SHIFT_SHIFT_THRESH) {
+                t = 0;
+                // SHIFT+SHIFT!
+                toggleShiftShift();
+            }
+            lastShiftTime = t;
+        } else {
+            lastShiftTime = 0;
+        }
+    });
+    /**/
     $("#top").disableSelection();
 
     //if(Math.abs(screen.width-window.innerWidth) > 20 || Math.abs(screen.height-window.innerHeight) > 20) {
