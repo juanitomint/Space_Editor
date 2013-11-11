@@ -745,6 +745,11 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
     $("#logWindowContent").append('<span class="" style="color:' + userColor + '">' + fromUserName + ': ' + msg + '</span>');
+    if (now.name == fromUserName) {
+        $('#groupMsg').append('<div class="groupChatMsg groupChatMe">' + fromUserName + ':<br/>' + msg + '</div>');
+    } else {
+        $('#groupMsg').append('<div class="groupChatMsg groupChatOther">' + fromUserName + ':<br/>' + msg + '</div>');
+    }
 }
 // ---------------------------------------------------------
 // URL manipulation.

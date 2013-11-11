@@ -27,6 +27,26 @@ body {
     overflow:auto;
     height:100%;
 }
+#groupChat{
+    padding: 5px;
+    overflow:auto;
+    height:100%;
+}
+#groupChatText{
+    width: 100%;
+}
+.groupChatMsg {
+    background-color: #fcf8e3;
+    margin: 5px;
+    color: #3b5663;
+    padding: 5px;
+}
+.groupChatMe {
+    margin-right: 20px;
+}
+.groupChatOther {
+    margin-left: 20px;
+}
 
 /*OLD SCROLLBAR*/
 /*::-webkit-scrollbar-thumb {
