@@ -868,6 +868,52 @@ now.c_confirmProject = function(teamID) {
 // ---------------------------------------------------------
 // MSG Related Functions
 // ---------------------------------------------------------
+function BroadcastKeydown(event) {
+    if (event.keyCode == 13) {
+        // ENTER was pressed
+        var txt = this.value;
+        if (txt != "") {
+            var usedAsCommand = false;
+            if (txt.length == 1) {
+                switch (txt.toLowerCase()) {
+                    case "f":
+                        {
+                            followMe();
+                            usedAsCommand = true;
+                            break;
+                        }
+                    case "l":
+                        {
+                            toggleLog();
+                            usedAsCommand = true;
+                            break;
+                        }
+                    case "o":
+                        {
+                            toggleLogOutput();
+                            usedAsCommand = true;
+                            break;
+                        }
+                }
+            }
+            if (!usedAsCommand) {
+                now.s_teamMessageBroadcast("personal", txt);
+            }
+        }
+        this.value='';
+        return false;
+    }
+    if (event.keyCode == 27) {
+        // ESC was pressed
+        toggleShiftShift();
+        return false;
+    }
+    return true;
+}
+function followMe(){
+    
+    now.s_followMe(fname);
+}
 function groupChatMsg(fromUserName, msg, me) {
     add = (me) ? 'Me' : 'Other';
     $('#groupMsg').append('<div class="groupChatMsg groupChat' + add + '">' + fromUserName + ':<br/>' + msg + '</div>');
@@ -1048,7 +1094,8 @@ $(window).ready(function() {
 
 
     //loadAllProjectFiles(true);
-
+    //---groupChat listener
+    $('#groupChatText').keydown(BroadcastKeydown);
     var lastShiftTime = 0;
     /**/
     var SHIFT_SHIFT_THRESH = 300;
