@@ -845,7 +845,6 @@ function setUsersInFile(fname, usersInFile) {
         node.setData({'users': usersInFile});
         if (node.parent != null) {
             node = node.parent;
-            console.log(node);
             users = 0;
             //---walk children to sum
             for (j in node.children) {
