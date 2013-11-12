@@ -1320,7 +1320,7 @@ $(document).ready(function() {
 
     editor.getSession().setTabSize(2);
     editor.getSession().setUseSoftTabs(true);
-    editor.setHighlightActiveLine(false);
+    editor.setHighlightActiveLine(true);
     editor.setShowPrintMargin(false);
     editor.getSession().setUseWrapMode(true);
     editor.getSession().setWrapLimitRange(null, null);

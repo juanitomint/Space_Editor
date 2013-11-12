@@ -385,7 +385,7 @@ function openFileBrowser() {
     fileBrowserIsOpen = true;
     $(document).unbind('mousedown', fileBrowserMouseDownFn);
     $(document).bind('mousedown', fileBrowserMouseDownFn);
-    setTimeout(loadAllProjectFiles, 50);
+    //setTimeout(loadAllProjectFiles, 50);
 }
 function selectPaneScreen(p) {
     $(".paneScreen").removeClass("paneScreenSelected").show();
@@ -1031,7 +1031,7 @@ $(window).ready(function() {
 
 
 
-    loadAllProjectFiles(true);
+    //loadAllProjectFiles(true);
 
     var lastShiftTime = 0;
     /**/
