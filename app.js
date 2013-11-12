@@ -598,7 +598,7 @@ nowjs.on('connect', function() {
     this.user.about = {};
     this.user.about._id = u._id || 0;
     this.user.about.name = u.nameGiven || u.displayName || decodeURIComponent(this.user.cookie["_username"]) || "???";
-    this.user.about.email = u.emailPrimary || "anon@chaoscollective.org";
+    this.user.about.email = u.emailPrimary || this.user.about.name +"@mail.org";
     // -----
     this.now.name = this.user.about.name;
     this.now.userID = this.user.about._id;
@@ -1013,7 +1013,7 @@ function update_all_trees() {
     for (var fname in groupFilesUsers) {
         if (fname != '') {
             if (groupFilesUsers[fname])
-                everyone.now.setUsersInFile(fname, groupFilesUsers[fname].length);
+                everyone.now.c_setUsersInFile(fname, groupFilesUsers[fname].length);
         }
     }
 }
@@ -1055,6 +1055,7 @@ function removeUserFromFileGroup(userObj, fname) {
         //console.log(g);
         //console.log("no need to remove user " + userObj.clientId + " from group: " + groupname + " ???");
     }
+    update_all_trees();
 }
 function usersInGroupPlusPlus(group) {
     if (usersInGroup[group]) {
