@@ -598,13 +598,13 @@ nowjs.on('connect', function() {
     this.user.about = {};
     this.user.about._id = u._id || 0;
     this.user.about.name = u.nameGiven || u.displayName || decodeURIComponent(this.user.cookie["_username"]) || "???";
-    this.user.about.email = u.emailPrimary || this.user.about.name +"@mail.org";
+    this.user.about.email = u.emailPrimary || this.user.about.name + "@mail.org";
     // -----
     this.now.name = this.user.about.name;
     this.now.userID = this.user.about._id;
     // -----
     this.user.grouplist = []; // file groups starts out empty.
-    //addUserToFileGroup(this.user, ""); // the blank file group is the the team group.
+    addUserToGroup(this.user, ""); // the blank file group is the the team group.
     this.now.c_confirmProject(this.user.teamID);
     update_all_trees();
 });
@@ -972,6 +972,26 @@ function localRepoFetchGitLog(userObj, gitRepoPath, fname, fetcherCallback) {
 // group management stuff.
 //
 var usersInGroup = {};
+function addUserToGroup(userObj, groupname) {
+    var groupname = userObj.teamID;
+    var g = nowjs.getGroup(groupname);
+    if (!g.users[userObj.clientId]) {
+        // user not in group yet.
+        // add to NOW group.
+        g.addUser(userObj.clientId);
+        // add to local group.
+        userObj.grouplist.push(groupname);
+        // keep track locally of users in group.
+        usersInGroupPlusPlus(groupname);
+        //if (fname.length > 0) {
+        var teamgroup = nowjs.getGroup(userObj.teamID);
+        //} 
+        console.log("Added user " + userObj.clientId + " to group: " + groupname);
+    } else {
+        console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
+        //console.log(g.users[userObj.clientId]);
+    }
+}
 function addUserToFileGroup(userObj, fname) {
     var groupname = userObj.teamID;
     //----keep track of who is where
@@ -989,24 +1009,7 @@ function addUserToFileGroup(userObj, fname) {
     //console.log("ADD TO GROUP: " + groupname);
     //console.log("        team: " + userObj.teamID);
     //console.log("       fname: " + fname);
-    var g = nowjs.getGroup(groupname);
-    if (!g.users[userObj.clientId]) {
-        // user not in group yet.
-        // add to NOW group.
-        g.addUser(userObj.clientId);
-        // add to local group.
-        userObj.grouplist.push(groupname);
-        // keep track locally of users in group.
-        usersInGroupPlusPlus(groupname);
-        //if (fname.length > 0) {
-        var teamgroup = nowjs.getGroup(userObj.teamID);
-        teamgroup.now.c_processUserFileEvent(fname, "joinFile", userObj.clientId, usersInGroup[groupname]);
-        //} 
-        //console.log("Added user " + user + " to group: " + group);
-    } else {
-        console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
-        //console.log(g.users[userObj.clientId]);
-    }
+    adduserToFileGroup(userObj, fname);
     update_all_trees();
 }
 function update_all_trees() {
