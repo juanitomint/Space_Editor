@@ -832,13 +832,28 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
 }
 now.c_updateTree = function(param) {
 }
-now.c_setUsersInFile=setUsersInFile;
+now.c_setUsersInFile = setUsersInFile;
 function setUsersInFile(fname, usersInFile) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     if (usersInFile) {
         $('#f' + fname_stripped).html('(' + usersInFile + ')');
     } else {
         $('#f' + fname_stripped).html('');
+    }
+    node = $("#fileTree").tree('getNodeById', fname_stripped);
+    node.setData({'users': usersInFile});
+    if (node.parent != null) {
+        node = node.parent;
+        console.log(node);
+        users = 0;
+        //---walk children to sum
+        for (j in node.children) {
+            child = node.children[j];
+            users += (child.users) ? child.users : 0;
+        }
+        //---check if node path exists
+        if (node.path)
+            setUsersInFile(node.path, users);
     }
     return
     console.log("Unable to add user from file: " + fname);

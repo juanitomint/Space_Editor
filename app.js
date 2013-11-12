@@ -606,6 +606,7 @@ nowjs.on('connect', function() {
     this.user.grouplist = []; // file groups starts out empty.
     //addUserToFileGroup(this.user, ""); // the blank file group is the the team group.
     this.now.c_confirmProject(this.user.teamID);
+    update_all_trees();
 });
 nowjs.on('disconnect', function() {
     //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
