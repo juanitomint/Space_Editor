@@ -124,7 +124,7 @@ passport.use(new LocalStrategy(
 //   login page.
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
-        console.log(req.user);
+        //console.log(req.user);
         return next();
     }
     res.redirect('/login')
@@ -216,7 +216,7 @@ app.use(function(req, res, next) {
     next();
 });
 var server = app.listen(port, '0.0.0.0');
-console.log("Listen on port:".port);
+console.log("Listen on port:"+port);
 var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
 
