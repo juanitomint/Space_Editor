@@ -216,7 +216,7 @@ app.use(function(req, res, next) {
     next();
 });
 var server = app.listen(port, '0.0.0.0');
-console.log("Listen on port:"+port);
+console.log("Listen on http://localhost:"+port );
 var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
 
