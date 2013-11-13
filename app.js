@@ -5,6 +5,8 @@
 console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
+console.log("'LOADING CONFIG:'");
+var config = require('./config');
 var express = require("express");
 var util = require("util");
 var fs = require('fs');
@@ -17,7 +19,7 @@ var passport = require('passport'),
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
-var port = process.env.PORT || 3149;
+var port = config.port;
 // for showing hide dot folders/files
 var showDotFolders = false;
 var showDotFiles = true;
@@ -60,8 +62,8 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
 //   callback with a user object.
 passport.use(new GoogleStrategy({
-    returnURL: 'http://localhost:' + port + '/auth/google/return',
-    realm: 'http://localhost:' + port + '/'
+    returnURL: config.google.returnUrl+ port + '/auth/google/return',
+    realm: config.google.returnUrl + port + '/'
 },
 function(identifier, profile, done) {
     // asynchronous verification, for effect...
@@ -214,12 +216,12 @@ app.use(function(req, res, next) {
     next();
 });
 var server = app.listen(port, '0.0.0.0');
-
-var EDITABLE_APPS_DIR = "/var/www/";
+console.log("Listen on port:".port);
+var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
 
 var thisAppDirName = __dirname.substring(__dirname.lastIndexOf("/") + 1);
-var teamID = "dna2bpm";
+var teamID = config.defaultTeamId;
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 // TODO: check credentials before doing any of these GET/POST...
@@ -336,9 +338,7 @@ app.get("/getFileTree", function(req, res) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
         //---set globals 4 show/hide dot files/folders
-        if (req.query.showDotFolders) {
-            showDotFolders = true;
-        }
+        showDotFolders=(req.query.showDotFolders) ? true:config.tree.showDotFolders;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
             filesAndInfo = dirTree(projectRoot, projectRoot + '/');
@@ -1009,7 +1009,7 @@ function addUserToFileGroup(userObj, fname) {
     //console.log("ADD TO GROUP: " + groupname);
     //console.log("        team: " + userObj.teamID);
     //console.log("       fname: " + fname);
-    adduserToFileGroup(userObj, fname);
+    addUserToGroup(userObj, fname);
     update_all_trees();
 }
 function update_all_trees() {
