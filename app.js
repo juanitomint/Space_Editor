@@ -62,8 +62,8 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
 //   callback with a user object.
 passport.use(new GoogleStrategy({
-    returnURL: config.google.returnUrl+ port + '/auth/google/return',
-    realm: config.google.returnUrl + port + '/'
+    returnURL: config.google.returnUrl+':'+port + '/auth/google/return',
+    realm: config.google.returnUrl +':'+ port + '/'
 },
 function(identifier, profile, done) {
     // asynchronous verification, for effect...
@@ -604,7 +604,7 @@ nowjs.on('connect', function() {
     this.now.userID = this.user.about._id;
     // -----
     this.user.grouplist = []; // file groups starts out empty.
-    addUserToGroup(this.user, ""); // the blank file group is the the team group.
+    addUserToGroup(this.user, this.user.teamID); // the blank file group is the the team group.
     this.now.c_confirmProject(this.user.teamID);
     update_all_trees();
 });
