@@ -973,7 +973,6 @@ function localRepoFetchGitLog(userObj, gitRepoPath, fname, fetcherCallback) {
 //
 var usersInGroup = {};
 function addUserToGroup(userObj, groupname) {
-    var groupname = userObj.teamID;
     var g = nowjs.getGroup(groupname);
     if (!g.users[userObj.clientId]) {
         // user not in group yet.
@@ -1009,7 +1008,7 @@ function addUserToFileGroup(userObj, fname) {
     //console.log("ADD TO GROUP: " + groupname);
     //console.log("        team: " + userObj.teamID);
     //console.log("       fname: " + fname);
-    addUserToGroup(userObj, fname);
+    addUserToGroup(userObj, groupname);
     update_all_trees();
 }
 function update_all_trees() {
