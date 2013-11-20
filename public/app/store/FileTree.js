@@ -5,7 +5,7 @@ Ext.define('Codespace.store.FileTree', {
         type: 'ajax',
         method: 'GET',
         noCache: false, //---get rid of the ?dc=.... in urls
-        url: 'data/sample-tree.json',
+        url: '/getFileTree?project='+PROJECT,
         reader: {
             type: 'json'
         }
