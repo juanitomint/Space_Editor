@@ -306,7 +306,7 @@ function dirTree(filename, projectRoot) {
         path: filename.replace(projectRoot, ''),
         id: filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_"),
         name: path.basename(filename),
-        label: path.basename(filename)
+        text: path.basename(filename)
     };
     //console.log(filename,stats);
     //console.log(filename,stats.isDirectory(), path.basename(filename)[0] !== '.', stats.isDirectory() && path.basename(filename)[0] !== '.');
@@ -327,6 +327,7 @@ function dirTree(filename, projectRoot) {
             // Assuming it's a file. In real life it could be a symlink or
             // something else!
             info.type = "file";
+            info.leaf=true;
             info.filesize = stats.size;
         }
         return info;
