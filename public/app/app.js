@@ -4,10 +4,10 @@ Ext.application({
     autoCreateViewport: true,
     
 //    models: ['Station', 'Song'],    
-    stores: ['FileTree', 'RecentSongs', 'SearchResults'],
+    stores: ['FileTree'],
     //,controllers: ['Station', 'Song']
     launch:function(){
         //load files
-        Ext.getCmp('FileTree').store.load();
+        //Ext.getCmp('FileTree').store.load();
     }
 });

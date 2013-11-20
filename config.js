@@ -3,7 +3,7 @@ module.exports ={
     appsDir:"/var/www/",
     defaultTeamId:"dna2bpm",
     google:{
-        returnUrl:'http://localhost:',
+        returnUrl:'http://localhost',
     },
     tree:{
       showDotFolders : false,

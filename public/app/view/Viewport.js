@@ -3,7 +3,9 @@ Ext.define('Codespace.view.Viewport', {
     title: 'Border Layout',
     layout: 'border',
     requires: [
+        //'app.view.WithToolbar',
         'Codespace.view.FileTree',
+        'Codespace.view.FileCode',
     ],
     initComponent: function() {
         this.items = [
@@ -65,21 +67,21 @@ Ext.define('Codespace.view.Viewport', {
                         id: 'filetabs',
                         region: 'center', // center region is required, no width/height specified
                         xtype: 'tabpanel',
-                        items: [
-                            //----file-tabs
+                        items: [{
+                                xtype: 'AceEditor.WithToolbar',
+                                title: 'Javascript',
+                                theme: 'twilight',
+                                parser: 'javascript',
+                                showInvisible: true,
+                                printMargin: true
+                            },
                             {
-                                title: 'Foo.js',
-                                closable: true
-                            }, {
-                                title: 'Bar.php',
-                                tabConfig: {
-                                    title: 'Custom Title',
-                                    tooltip: 'A button tooltip',
-                                    closable: true
-                                }
+                                xtype: 'AceEditor',
+                                title: 'PHP',
+                                sourceCode: '<?php phpinfo(); ?>',
+                                parser: 'php'
                             }
-                            //----file-tabs
-                        ]
+                            ]
                     },
                     //----toolbar
                     {
