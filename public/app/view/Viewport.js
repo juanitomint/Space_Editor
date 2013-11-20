@@ -20,6 +20,13 @@ Ext.define('Codespace.view.Viewport', {
                 split: true, // enable resizing
                 collapsible: true, // make collapsible
                 html: 'EAST',
+                bbar: [
+                    {
+                        xtype: 'textfield',
+                        name: 'say',
+                        emptyText: 'type your message here'
+                    }
+                ]
             }, {
                 // xtype: 'panel' implied by default
                 region: 'west',
@@ -55,6 +62,7 @@ Ext.define('Codespace.view.Viewport', {
                 items: [
                     //----editor
                     {
+                        id: 'filetabs',
                         region: 'center', // center region is required, no width/height specified
                         xtype: 'tabpanel',
                         items: [
@@ -80,7 +88,6 @@ Ext.define('Codespace.view.Viewport', {
                             //------Toolbar items
                             Ext.create('Ext.toolbar.Toolbar', {
                                 renderTo: document.body,
-                                width: 500,
                                 items: [
                                     {
                                         // xtype: 'button', // default for Toolbars

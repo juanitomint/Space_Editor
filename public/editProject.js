@@ -1052,35 +1052,35 @@ $(window).ready(function() {
     }
     document.title = PROJECT;
     //-----enable bootstrap tabs
-    $('.myTab a').click(function(e) {
-        e.preventDefault()
-        $(this).tab('show');
-    });
-    $('#myTab a:first').tab('show'); // Select first tab
-    $('#myTabWest a:first').tab('show'); // Select first tab
-    //-----load FileTree
-    url = '/getFileTree';
-    $.ajax({
-        dataType: "json",
-        url: url,
-        data: {project: PROJECT},
-        success: function(data) {
-            $('#fileTree').tree({
-                data: data[0].children,
-                autoOpen: true,
-                saveState: true
-            });
-            $('#fileTree').bind(
-                    'tree.dblclick',
-                    function(e) {
-                        // e.node is the clicked node
-                        if (e.node.type == 'file') {
-                            createEditPane(e.node.path);
-                        }
-                    }
-            );
-        }
-    });
+//    $('.myTab a').click(function(e) {
+//        e.preventDefault()
+//        $(this).tab('show');
+//    });
+//    $('#myTab a:first').tab('show'); // Select first tab
+//    $('#myTabWest a:first').tab('show'); // Select first tab
+//    //-----load FileTree
+//    url = '/getFileTree';
+//    $.ajax({
+//        dataType: "json",
+//        url: url,
+//        data: {project: PROJECT},
+//        success: function(data) {
+//            $('#fileTree').tree({
+//                data: data[0].children,
+//                autoOpen: true,
+//                saveState: true
+//            });
+//            $('#fileTree').bind(
+//                    'tree.dblclick',
+//                    function(e) {
+//                        // e.node is the clicked node
+//                        if (e.node.type == 'file') {
+//                            createEditPane(e.node.path);
+//                        }
+//                    }
+//            );
+//        }
+//    });
 
 //createEditPane('dev-3.php');
 //populateEditPane($("#pane_0"), "application/modules/bpm/controllers/kpi.php");
