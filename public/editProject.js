@@ -1524,69 +1524,7 @@ $(window).ready(function() {
         PROJECT = getProject;
     }
     document.title = PROJECT;
-    //-----enable bootstrap tabs
-//    $('.myTab a').click(function(e) {
-//        e.preventDefault()
-//        $(this).tab('show');
-//    });
-//    $('#myTab a:first').tab('show'); // Select first tab
-//    $('#myTabWest a:first').tab('show'); // Select first tab
-//    //-----load FileTree
-//    url = '/getFileTree';
-//    $.ajax({
-//        dataType: "json",
-//        url: url,
-//        data: {project: PROJECT},
-//        success: function(data) {
-//            $('#fileTree').tree({
-//                data: data[0].children,
-//                autoOpen: true,
-//                saveState: true
-//            });
-//            $('#fileTree').bind(
-//                    'tree.dblclick',
-//                    function(e) {
-//                        // e.node is the clicked node
-//                        if (e.node.type == 'file') {
-//                            createEditPane(e.node.path);
-//                        }
-//                    }
-//            );
-//        }
-//    });
-
-//createEditPane('dev-3.php');
-//populateEditPane($("#pane_0"), "application/modules/bpm/controllers/kpi.php");
-//createEditPane("dev-1.php");
-//createEditPane("dev-2.php");
     registerCloseEvent();
-    $(".join").each(function(index, el) {
-        setupJoin(el);
-    });
-
-
-
-    //loadAllProjectFiles(true);
-    //---groupChat listener
-    $('#groupChatText').keydown(BroadcastKeydown);
-    var lastShiftTime = 0;
-    /**/
-    var SHIFT_SHIFT_THRESH = 300;
-    $(document).keydown(function(event) {
-        if (event.shiftKey && event.keyCode == 16) {
-            var t = (new Date()).getTime();
-            if ((t - lastShiftTime) < SHIFT_SHIFT_THRESH) {
-                t = 0;
-                // SHIFT+SHIFT!
-                toggleShiftShift();
-            }
-            lastShiftTime = t;
-        } else {
-            lastShiftTime = 0;
-        }
-    });
-    /**/
-//setTimeout(function(){alert("\nWelcome to Space!\n\nSpace is a real-time, collaborative code editor created by the Chaos Collective.\n\nWhen other users are online, you'll see their cursors directly in the code. Click the button at the bottom left to open the file browser and see where users are.\n\nGo forth, explore Space, and write some code with your friends!")}, 5000);
 });
 
 

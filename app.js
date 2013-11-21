@@ -343,6 +343,7 @@ app.get("/getFileTree", function(req, res) {
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
             filesAndInfo = dirTree(projectRoot, projectRoot + '/');
+            res.setHeader('Content-type: application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");
@@ -585,14 +586,14 @@ var everyone = nowjs.initialize(server);
 //nowcollab.initialize(nowjs, everyone, true);
 //-------------------------------------------
 nowjs.on('connect', function() {
-    //console.log("CONNECT    > " + this.user.clientId);
+    console.log("CONNECT    > " + this.user.clientId);
     this.user.teamID = teamID;
     if (this.now.teamID != undefined) {
         this.user.teamID = this.now.teamID;
     }
     //console.log(this.user);
     //console.log(everyone.users);
-    //console.log(" >> PROJECT="+this.user.teamID);
+     console.log(" >> PROJECT="+this.user.teamID);
     // hack to get out best guess at the user (since now.js doesn't give us the request object or session!);
     var u = {}; //(Auth || {}).getUserFromCache(decodeURIComponent(this.user.cookie['_chaos.auth'])) || {};
     // now populate it..

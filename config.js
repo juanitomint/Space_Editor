@@ -1,7 +1,7 @@
 module.exports ={
     port:process.env.WEB_PORT || 3000,
     appsDir:"/var/www/",
-    defaultTeamId:"dna2bpm",
+    defaultTeamId:"dna2",
     google:{
         returnUrl:'http://localhost',
     },
