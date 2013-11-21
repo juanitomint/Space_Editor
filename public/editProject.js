@@ -835,25 +835,25 @@ now.c_updateTree = function(param) {
 now.c_setUsersInFile = setUsersInFile;
 function setUsersInFile(fname, usersInFile) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-    if (usersInFile) {
-        $('#f' + fname_stripped).html('(' + usersInFile + ')');
-    } else {
-        $('#f' + fname_stripped).html('');
-    }
-    node = $("#fileTree").tree('getNodeById', fname_stripped);
+
+    tree = Ext.getCmp('FileTree')
+    node = tree.store.getNodeById(fname_stripped);
+    //node = $("#fileTree").tree('getNodeById', fname_stripped);
     if (node) {
-        node.setData({'users': usersInFile});
-        if (node.parent != null) {
-            node = node.parent;
+
+        node.set('users', usersInFile);
+
+        if (node.parentNode != null) {
+            node = node.parentNode;
             users = 0;
             //---walk children to sum
-            for (j in node.children) {
-                child = node.children[j];
-                users += (child.users) ? child.users : 0;
+            for (j in node.childNodes) {
+                child = node.childNodes[j];
+                users += (child.data.users) ? child.data.users : 0;
             }
             //---check if node path exists
-            if (node.path)
-                setUsersInFile(node.path, users);
+            if (node.data.path)
+                setUsersInFile(node.data.path, users);
         }
     }
     return
@@ -1400,7 +1400,7 @@ now.ready(function() {
         //setFileStatusIndicator("default");
     });
 });
-function openFileFromServer(fname, forceOpen) {
+function openFileFromServer(fname, forceOpen, editor) {
 //    if (infile == fname && (!forceOpen)) {
 //        console.log("file is already open.");
 //        return;
@@ -1409,14 +1409,12 @@ function openFileFromServer(fname, forceOpen) {
         console.log("Invalid filename.");
         return;
     }
-    if (openIsPending) {
-        console.log("open is pending... aborting open request for: " + fname);
-        return;
-    }
-    openIsPending = true;
+//    if (openIsPending) {
+//        console.log("open is pending... aborting open request for: " + fname);
+//        return;
+//    }
+//    openIsPending = true;
     //---get tab editor
-    tab_id = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-    editor = Ext.getCmp(tab_id).getEditor();
     if (editor) {
         editor.setReadOnly(true);
         ignoreAceChange = true;
@@ -1464,9 +1462,7 @@ function openFileFromServer(fname, forceOpen) {
             ignoreAceChange = false;
             editor.setReadOnly(false);
             // auto fold things that are code (html is an expection...)
-            if (!fileHasExtention(infile, ".html")) {
-                setTimeout(autoFoldCodeProgressive, 25);
-            }
+
             //autoFoldCodeProgressive();
             previousText = editor.getSession().getValue();
             if (isSaved) {
@@ -1475,35 +1471,38 @@ function openFileFromServer(fname, forceOpen) {
                 setFileStatusIndicator("changed");
             }
             removeAllCollaborators();
-            var f = infile;
-            if (fileHasExtention(f, ".js") || fileHasExtention(f, ".json")) {
-                console.log("setting mode to: JavaScript");
-                editor.getSession().setMode(new JavaScriptMode());
-            } else {
-                if (fileHasExtention(f, ".css") || fileHasExtention(f, ".less") || fileHasExtention(f, ".styl")) {
-                    if (fileHasExtention(f, ".less")) {
-                        console.log("setting mode to: Less");
-                        editor.getSession().setMode(new LessMode());
-                    } else {
-                        console.log("setting mode to: CSS");
-                        editor.getSession().setMode(new CSSMode());
-                    }
-                } else {
-                    if (fileHasExtention(f, ".html")) {
-                        console.log("setting mode to: HTML");
-                        editor.getSession().setMode(new HTMLMode());
-                    } else {
-                        console.log("setting mode to: ???");
-                        editor.getSession().setMode(new PHPMode());
-                    }
-                }
-            }
             ifOnlineLetCollaboratorsKnowImHere();
             setURLHashVariable("fname", infile);
             openIsPending = false;
         });
         initialFileloadTimeout = null;
         setFileStatusIndicator("unknown");
+    }
+}
+function setFileStatusIndicator(status) {
+    switch (status) {
+        case "saved":
+            {
+                $("#fileStatusBlock").css({background: "#58C554", "border-radius": "1px", border: "none", margin: 0});
+                fileIsUnsaved = false;
+                break;
+            }
+        case "changed":
+            {
+                $("#fileStatusBlock").css({background: "none", "border-radius": "0px", border: "1px solid #CCC", "margin-left": "-1px", "margin-top": "-1px"});
+                fileIsUnsaved = true;
+                break;
+            }
+        case "error":
+        case "offline":
+            {
+                $("#fileStatusBlock").css({background: "#F00", "border-radius": "1px", border: "none", margin: 0});
+                break;
+            }
+        default:
+            {
+                $("#filStatusBlock").css({background: "#333", "border-radius": "1px", border: "none", margin: 0});
+            }
     }
 }
 //////////////////////////////////////////////////////////////////////////////// 

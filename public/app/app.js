@@ -1,3 +1,4 @@
+Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
 Ext.application({
     name: 'Codespace',
     

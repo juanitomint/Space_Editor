@@ -1,11 +1,12 @@
 Ext.define('Codespace.store.FileTree', {
     extend: 'Ext.data.TreeStore',
     autoLoad: true,
+    model: 'Codespace.model.file',
     proxy: {
         type: 'ajax',
         method: 'GET',
         noCache: false, //---get rid of the ?dc=.... in urls
-        url: '/getFileTree?project='+PROJECT,
+        url: '/getFileTree?project=' + PROJECT,
         reader: {
             type: 'json'
         }
