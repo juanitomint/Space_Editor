@@ -164,7 +164,6 @@ function registerCloseEvent() {
 }
 function createEditPane(fname) {
     if (fname) {
-        fname_stripped = fname.replace('.', '_');
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
         if (!$('#myTab a[href="#' + fname_stripped + '"]').length) {
             $('#myTab').append('<li><a href="#' + fname_stripped + '" data-toggle="tab"><button class="close closeTab" type="button" >×</button>' + fname + '</a>');
@@ -1051,6 +1050,7 @@ function setupJoin(j) {
 // ---------------------------------------------------------
 // Main functions...
 // ---------------------------------------------------------
+var Range = require("ace/range").Range;
 var infile = "";
 var cursorChangeTimeout = null;
 var textChangeTimeout = null;
@@ -1075,17 +1075,40 @@ var alreadyRequestedRemoteFile = false;
 var TIME_UNTIL_GONE = 7000;
 var NOTIFICATION_TIMEOUT = 10000;
 var autoCheckStep = 0;
-
+function sendTextChange() {
+    if (infile === "") {
+        return;
+    }
+    textChangeTimeout = null;
+    //console.log("send text change.");
+    var currentText = editor.getSession().getValue();
+    if (currentText === previousText) {
+        //console.log("text is the same. sidestepping update.");
+        return false;
+    }
+    setFileStatusIndicator("changed");
+    var md5 = Crypto.MD5(currentText);
+    var patch_list = dmp.patch_make(previousText, currentText);
+    var patch_text = dmp.patch_toText(patch_list);
+    var patches = dmp.patch_fromText(patch_text);
+    previousText = currentText;
+    timeOfLastLocalChange = (new Date()).getTime();
+    now.s_sendDiffPatchesToCollaborators(infile, patches, md5);
+    return true;
+}
 function ifOnlineLetCollaboratorsKnowImHere() {
     if (!nowIsOnline) {
         return;
     }
 
-    /*
-     var range = editor.getSelectionRange();
-     
-     now.s_sendCursorUpdate(infile, range, true);
-     */
+    thisTab = Ext.getCmp('filetabs').getActiveTab();
+    if (thisTab) {
+        editor = thisTab.getEditor();
+        infile = thisTab.path;
+        var range = editor.getSelectionRange();
+        now.s_sendCursorUpdate(infile, range, true);
+    }
+
 }
 function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
     if (!nowIsOnline) {
@@ -1314,7 +1337,7 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
 // -----------------------------------------
 // Now.JS Client-side functions.
 // -----------------------------------------
-now.c_updateCollabCursor = function(id, name, range, changedByUser) {
+now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
     if (id == now.core.clientId) {
         return;
     }
@@ -1328,6 +1351,8 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser) {
         ifOnlineLetCollaboratorsKnowImHere();
     }
     cInfo['timeLastSeen'] = (new Date()).getTime();
+    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
     var ses = editor.getSession();
     var rSel = Range.fromPoints(range.start, range.end);
     var rCur = Range.fromPoints(range.start, {row: range.start.row, column: range.start.column + 1});
@@ -1385,6 +1410,7 @@ now.ready(function() {
     nowIsOnline = true;
     alreadyConnected = true;
     console.log("Using NowJS -- this clientId: " + now.core.clientId);
+    now.s_setTeamID(PROJECT);
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
@@ -1425,7 +1451,7 @@ function openFileFromServer(fname, forceOpen, editor) {
         editor.setFadeFoldWidgets(false);
         if (infile != "") {
             // we're leaving the file we're in. let collaborators know.
-            now.s_leaveFile(infile);
+            //now.s_leaveFile(infile);
         }
         now.s_getLatestFileContentsAndJoinFileGroup(fname, function(fname, fdata, err, isSaved) {
             if (err) {

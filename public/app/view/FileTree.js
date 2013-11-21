@@ -98,6 +98,34 @@ Ext.define('Codespace.view.FileTree', {
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);
                                     now.s_sendUserEvent("join"); // let everyone know who I am!
+                                    editor=this.getEditor()
+                                    //---bind change Event
+                                    editor.getSession().on('change', function(a, b, c) {
+                                        if (!ignoreAceChange) {
+                                            if (textChangeTimeout != null) {
+                                                clearTimeout(textChangeTimeout);
+                                                textChangeTimeout = null;
+                                            } else {
+                                                setFileStatusIndicator("changed");
+                                            }
+                                            timeOfLastLocalKepress = (new Date()).getTime();
+                                            textChangeTimeout = setTimeout(function() {
+                                                if (!nowIsOnline) {
+                                                    return;
+                                                }
+                                                sendTextChange();
+                                            }, 350);
+                                        }
+                                    });
+                                    //---bind
+                                    editor.getSession().selection.on('changeCursor', function(a) {
+                                        var range = editor.getSelectionRange();
+                                        if (cursorChangeTimeout != null) {
+                                            clearTimeout(cursorChangeTimeout);
+                                            cursorChangeTimeout = null;
+                                        }
+                                        cursorChangeTimeout = setTimeout(ifOnlineLetCollaboratorsKnowImHere, 350);
+                                    });
                                     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
                                     var specifiedFileToOpen = this.path;
                                     if (specifiedFileToOpen) {

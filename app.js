@@ -343,7 +343,7 @@ app.get("/getFileTree", function(req, res) {
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
             filesAndInfo = dirTree(projectRoot, projectRoot + '/');
-            res.setHeader('Content-type: application/json;charset=UTF-8');
+            res.setHeader('Content-type','application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");
@@ -635,11 +635,14 @@ nowjs.on('disconnect', function() {
 });
 //---------
 // NOW: Remote collab messages.
+everyone.now.s_setTeamID=function (val){
+    this.user.teamID=val;
+}
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     //console.log(filegroup);
-    filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser);
+    filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser,fname);
 };
 everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) {
     var userObj = this.user;
