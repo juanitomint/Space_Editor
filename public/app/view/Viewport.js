@@ -67,21 +67,7 @@ Ext.define('Codespace.view.Viewport', {
                         id: 'filetabs',
                         region: 'center', // center region is required, no width/height specified
                         xtype: 'tabpanel',
-                        items: [{
-                                xtype: 'AceEditor.WithToolbar',
-                                title: 'Javascript',
-                                theme: 'twilight',
-                                parser: 'javascript',
-                                showInvisible: true,
-                                printMargin: true
-                            },
-                            {
-                                xtype: 'AceEditor',
-                                title: 'PHP',
-                                sourceCode: '<?php phpinfo(); ?>',
-                                parser: 'php'
-                            }
-                            ]
+                        items: []
                     },
                     //----toolbar
                     {

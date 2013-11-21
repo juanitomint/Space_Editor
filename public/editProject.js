@@ -900,7 +900,7 @@ function BroadcastKeydown(event) {
                 now.s_teamMessageBroadcast("personal", txt);
             }
         }
-        this.value='';
+        this.value = '';
         return false;
     }
     if (event.keyCode == 27) {
@@ -910,8 +910,8 @@ function BroadcastKeydown(event) {
     }
     return true;
 }
-function followMe(){
-    
+function followMe() {
+
     now.s_followMe(fname);
 }
 function groupChatMsg(fromUserName, msg, me) {
@@ -1041,6 +1041,480 @@ function setupJoin(j) {
         });
     }
 }
+//////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////// 
+// 
+//              IMPORTED FROM EDIT FILE                 
+// 
+//////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////// 
+// ---------------------------------------------------------
+// Main functions...
+// ---------------------------------------------------------
+var infile = "";
+var cursorChangeTimeout = null;
+var textChangeTimeout = null;
+var initialFileloadTimeout = null;
+var nowIsOnline = false;
+var ignoreAceChange = false;
+var openIsPending = false;
+var timeOfLastLocalChange = (new Date()).getTime();
+var timeOfLastLocalKepress = (new Date()).getTime();
+var timeOfLastPatch = (new Date()).getTime();
+var fileIsUnsaved = false;
+var saveIsPending = false;
+// -----------------------------------------
+// Editor
+// -----------------------------------------
+var pageLoadID = Math.floor(Math.random() * 100000);
+var editor = null;
+var nowClientID = 0;
+var allCollabInfo = [];
+var initialStateIsWelcome = true;
+var alreadyRequestedRemoteFile = false;
+var TIME_UNTIL_GONE = 7000;
+var NOTIFICATION_TIMEOUT = 10000;
+var autoCheckStep = 0;
+
+function ifOnlineLetCollaboratorsKnowImHere() {
+    if (!nowIsOnline) {
+        return;
+    }
+
+    /*
+     var range = editor.getSelectionRange();
+     
+     now.s_sendCursorUpdate(infile, range, true);
+     */
+}
+function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
+    if (!nowIsOnline) {
+        return;
+    }
+    autoCheckStep++;
+    var t = (new Date()).getTime();
+    var activeCollabs = 0;
+    for (var prop in allCollabInfo) {
+        if (allCollabInfo.hasOwnProperty(prop)) {
+            var cInfo = allCollabInfo[prop];
+            if (cInfo['isShown']) {
+                var tDiff = t - cInfo['timeLastSeen'];
+                if (tDiff > TIME_UNTIL_GONE) {
+                    console.log("Looks like " + cInfo['name'] + " is no longer around.");
+                    var lastCursorID = cInfo['lastCursorMarkerID'];
+                    var ses = editor.getSession();
+                    if (lastCursorID !== undefined) {
+                        ses.removeMarker(lastCursorID); // remove collaborator's cursor.
+                    }
+                    var lastSelID = cInfo['lastSelectionMarkerID'];
+                    if (lastSelID !== undefined) {
+                        ses.removeMarker(lastSelID); // remove collaborator's selection.
+                    }
+                    cInfo['isShown'] = false;
+                } else {
+                    activeCollabs++;
+                }
+            }
+        }
+    }
+    if (activeCollabs > 0) {
+        $("#whoAreThey").html("+" + activeCollabs);
+        if (activeCollabs == 1) {
+            $("#whoAreThey").attr("title", activeCollabs + " other person collaborating");
+        } else {
+            $("#whoAreThey").attr("title", activeCollabs + " other people collaborating");
+        }
+    } else {
+        $("#whoAreThey").html("0");
+        $("#whoAreThey").attr("title", "No one else is collaborating");
+    }
+    $(".notificationItem").each(function(index, el) {
+        var pt = $(el).attr('postTime');
+        if ((t - pt) > NOTIFICATION_TIMEOUT) {
+            $(el).fadeOut(500, function() {
+                $(el).remove();
+            });
+        }
+    });
+    // auto-save if neccessary...
+    var saveRequestedForRemoteUser = ((t - timeOfLastPatch) > 10000 && Math.random() > 0.7);
+    var saveRequestedForMe = (timeOfLastPatch < timeOfLastLocalChange && (t - timeOfLastLocalChange) > 2000);
+    var typingInProgress = (timeOfLastLocalKepress > timeOfLastLocalChange);
+    //console.log("typing in progress: " + typingInProgress);
+    //console.log("saveRequestedForMe: " + saveRequestedForMe + ", " + timeOfLastPatch + " <? " +timeOfLastLocalChange);
+    if (fileIsUnsaved && !saveIsPending && !typingInProgress && (saveRequestedForRemoteUser || saveRequestedForMe)) {
+        // save it!
+        console.log("AUTO SAVE! ");
+        saveFileToServer();
+    }
+}
+function removeAllCollaborators() {
+    console.log("Removing all previous collaborators...");
+    for (var prop in allCollabInfo) {
+        if (allCollabInfo.hasOwnProperty(prop)) {
+            var cInfo = allCollabInfo[prop];
+            console.log("trying to remove: " + cInfo['name']);
+            cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+        }
+    }
+    ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave();
+}
+// -----------------------------------------
+// Diff-Match-Patch.
+// -----------------------------------------
+var patchQueue = [];
+var patchingInProcess = false;
+var previousText = "";
+var dmp = new diff_match_patch();
+dmp.Diff_Timeout = 1;
+dmp.Diff_EditCost = 4;
+var updateWithDiffPatchesLocal = function(id, patches, md5) {
+    if (patchingInProcess) {
+        console.log("patching in process.. queued action.");
+        patchQueue.push({id: id, patches: patches, md5: md5});
+        return;
+    }
+    patchingInProcess = true;
+    var t = (new Date()).getTime();
+    if (id != now.core.clientId) {
+        console.log("patching from user: " + id + ", md5=" + md5);
+        //console.log("PATCHES");
+        //console.log(patches);
+
+        var currentText = editor.getSession().getValue();
+        var localChangeJustSent = sendTextChange(); // make sure we send any outstanding changes before we apply remote patches.
+
+        var results = dmp.patch_apply(patches, currentText);
+        var newText = results[0];
+
+        // TODO: get text around cursor and then use it later for a fuzzy-match to keep it in the same spot.
+        //console.log("DIFF TO DELTAS");
+        var diff = dmp.diff_main(currentText, newText);
+        var deltas = dmp.diff_toDelta(diff).split("\t");
+        //console.log(deltas);
+
+        var doc = editor.getSession().doc;
+
+        //
+        // COMPUTE THE DIFF FROM THE PATCH AND ACTUALLY INSERT/DELETE TEXT VIA THE EDITOR (AUTO TRACKS CURSOR, AND DOESN'T RESET THE ENTIRE TEXT FIELD).
+        //
+        var offset = 0;
+        var row = 1;
+        var col = 1;
+        var aceDeltas = [];
+        for (var i = 0; i < deltas.length; i++) {
+            var type = deltas[i].charAt(0);
+            var data = decodeURI(deltas[i].substring(1));
+            //console.log(type + " >> " + data);
+            switch (type) {
+                case "=":
+                    { // equals for number of characters.
+                        var sameLen = parseInt(data);
+                        for (var j = 0; j < sameLen; j++) {
+                            if (currentText.charAt(offset + j) == "\n") {
+                                row++;
+                                col = 1;
+                            } else {
+                                col++;
+                            }
+                        }
+                        offset += sameLen;
+                        break;
+                    }
+                case "+":
+                    { // add string.
+                        var newLen = data.length;
+                        //console.log("at row="+row+" col="+col+" >> " + data);
+                        var aceDelta = {
+                            action: "insertText",
+                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (row - 1), column: (col - 1)}}, //Range.fromPoints(position, end),
+                            text: data
+                        };
+                        aceDeltas.push(aceDelta);
+                        var innerRows = data.split("\n");
+                        var innerRowsCount = innerRows.length - 1;
+                        row += innerRowsCount;
+                        if (innerRowsCount <= 0) {
+                            col += data.length;
+                        } else {
+                            col = innerRows[innerRowsCount].length + 1;
+                        }
+                        //console.log("ended at row="+row+" col="+col);
+                        break;
+                    }
+                case "-":
+                    { // subtract number of characters.
+                        var delLen = parseInt(data);
+                        //console.log("at row="+row+" col="+col+" >> " + data);
+                        var removedData = currentText.substring(offset, offset + delLen);
+                        //console.log("REMOVING: " + removedData);
+                        var removedRows = removedData.split("\n");
+                        //console.log(removedRows);
+                        var removedRowsCount = removedRows.length - 1;
+                        //console.log("removed rows count: " + removedRowsCount);
+                        var endRow = row + removedRowsCount;
+                        var endCol = col;
+                        if (removedRowsCount <= 0) {
+                            endCol = col + delLen;
+                        } else {
+                            endCol = removedRows[removedRowsCount].length + 1;
+                        }
+                        //console.log("end delete selection at row="+endRow+" col="+endCol);
+                        var aceDelta = {
+                            action: "removeText",
+                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (endRow - 1), column: (endCol - 1)}}, //Range.fromPoints(position, end),
+                            text: data
+                        };
+                        aceDeltas.push(aceDelta);
+                        //console.log("ended at row="+row+" col="+col);      
+                        offset += delLen;
+                        break;
+                    }
+            }
+        }
+
+        ignoreAceChange = true;
+        doc.applyDeltas(aceDeltas);
+        previousText = newText;
+        ignoreAceChange = false;
+
+        if (!localChangeJustSent && (t - timeOfLastLocalChange) > 2000) {
+            //console.log("no local changes have been made in a couple seconds >> md5 should match..");
+            var newMD5 = Crypto.MD5(newText);
+            if (md5 == newMD5) {
+                setFileStatusIndicator("changed");
+            } else {
+                setFileStatusIndicator("error");
+                console.log("** OH NO: MD5 mismatch. this=" + newMD5 + ", wanted=" + md5);
+                now.s_requestFullFileFromUserID(infile, id, function(fname, fdata, err, isSaved) {
+                    if (fname != infile) {
+                        console.log("Oh No! They sent me a file that I don't want: " + fname);
+                        return;
+                    }
+                    console.log("### FULL FILE UPDATE (from remote user)...");
+                    var patch_list = dmp.patch_make(previousText, fdata);
+                    var patch_text = dmp.patch_toText(patch_list);
+                    var patches = dmp.patch_fromText(patch_text);
+                    var md5 = Crypto.MD5(fdata);
+                    updateWithDiffPatchesLocal(id, patches, md5);
+                });
+            }
+        }
+        timeOfLastPatch = t;
+    } else {
+        console.log("saw edit from self. not using it.");
+    }
+    patchingInProcess = false;
+    if (patchQueue.length > 0) {
+        console.log("Patching from Queue! DOUBLE CHECK THIS.");
+        var nextPatch = patchQueue.shift(); // get the first patch off the queue.
+        updateWithDiffPatchesLocal(nextPatch.id, nextPatch.patches, nextPatch.md5);
+    }
+}
+// -----------------------------------------
+// Now.JS Client-side functions.
+// -----------------------------------------
+now.c_updateCollabCursor = function(id, name, range, changedByUser) {
+    if (id == now.core.clientId) {
+        return;
+    }
+    var cInfo = allCollabInfo[id];
+    if (cInfo == undefined) {
+        // first time seeing this user!
+        allCollabInfo[id] = [];
+        cInfo = allCollabInfo[id];
+        cInfo['name'] = name;
+        // let collaborator know I'm here.
+        ifOnlineLetCollaboratorsKnowImHere();
+    }
+    cInfo['timeLastSeen'] = (new Date()).getTime();
+    var ses = editor.getSession();
+    var rSel = Range.fromPoints(range.start, range.end);
+    var rCur = Range.fromPoints(range.start, {row: range.start.row, column: range.start.column + 1});
+    var lastSelID = cInfo['lastSelectionMarkerID'];
+    if (lastSelID !== undefined) {
+        ses.removeMarker(lastSelID);
+    }
+    var lastCursorID = cInfo['lastCursorMarkerID'];
+    if (lastCursorID !== undefined) {
+        ses.removeMarker(lastCursorID);
+    }
+    var uid = id;
+    if (name.indexOf("_") > 0) {
+        uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
+    }
+    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+    cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
+    cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
+        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+    }, false); // range, clazz, type, inFront
+    cInfo['isShown'] = true;
+}
+now.c_updateWithDiffPatches = function(id, patches, md5) {
+    //console.log(patches);
+    updateWithDiffPatchesLocal(id, patches, md5);
+}
+
+now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
+    //if(!initialStateIsWelcome){
+    console.log("user requesting full file: " + fname + " >> " + collabID);
+    if (infile == fname) {
+        fileRequesterCallback(infile, previousText, null, false); // (fname, filedata, err, isSaved)
+    } else {
+        console.log("Oh No! They think I'm editing a file I'm not. I'm in: " + infile);
+    }
+    //}else{
+    //  console.log("received request for initial state, but I just got here. ignoring.");
+    //}
+}
+now.c_fileStatusChanged = function(fname, status) {
+    if (fname == infile) {
+        setFileStatusIndicator(status);
+    } else {
+        console.log("saw file status change for wrong file: " + fname);
+    }
+}
+
+var alreadyConnected = false;
+now.ready(function() {
+    if (alreadyConnected) {
+        // seeing ready after already being connected.. assume server was reset!
+        //alert("editor server was reset... \nreloading page...");
+        //window.location.reload();
+    }
+    nowIsOnline = true;
+    alreadyConnected = true;
+    console.log("Using NowJS -- this clientId: " + now.core.clientId);
+    now.s_sendUserEvent("join"); // let everyone know who I am!
+    setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
+    var specifiedFileToOpen = getURLHashVariable("fname");
+
+    now.core.on('disconnect', function() {
+        console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
+        nowIsOnline = false;
+        //setFileStatusIndicator("offline");
+    });
+    now.core.on('connect', function() {
+        console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
+        nowIsOnline = true;
+        //setFileStatusIndicator("default");
+    });
+});
+function openFileFromServer(fname, forceOpen) {
+//    if (infile == fname && (!forceOpen)) {
+//        console.log("file is already open.");
+//        return;
+//    }
+    if (!fname || fname == "") {
+        console.log("Invalid filename.");
+        return;
+    }
+    if (openIsPending) {
+        console.log("open is pending... aborting open request for: " + fname);
+        return;
+    }
+    openIsPending = true;
+    //---get tab editor
+    tab_id = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    editor = Ext.getCmp(tab_id).getEditor();
+    if (editor) {
+        editor.setReadOnly(true);
+        ignoreAceChange = true;
+        editor.getSession().setValue(""); // clear the editor.
+        initialFileloadTimeout = setTimeout(function() {
+            initialStateIsWelcome = false;
+        }, 3000);
+        editor.setFadeFoldWidgets(false);
+        if (infile != "") {
+            // we're leaving the file we're in. let collaborators know.
+            now.s_leaveFile(infile);
+        }
+        now.s_getLatestFileContentsAndJoinFileGroup(fname, function(fname, fdata, err, isSaved) {
+            if (err) {
+                console.log("ERROR: couldn't load file.");
+                console.log(err);
+                //alert("Oh No! We couldn't load that file: "+fname);
+                editor.setReadOnly(true);
+                ignoreAceChange = false;
+                openIsPending = false;
+                $("#topFileName").html("<span style='color: #F00;'>" + fname + " ???</span>");
+                return;
+            }
+            infile = fname;
+            // ----
+            $("#topFileName").html(infile);
+            // ----
+            if ($("#recentFile_2").html() == infile) {
+                $("#recentFile_2").html($("#recentFile_1").html()).attr("fname", $("#recentFile_1").attr('fname'));
+                $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
+            } else {
+                if ($("#recentFile_1").html() == infile) {
+                    $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
+                } else {
+                    $("#recentFile_3").html($("#recentFile_2").html()).attr("fname", $("#recentFile_2").attr('fname'));
+                    $("#recentFile_2").html($("#recentFile_1").html()).attr("fname", $("#recentFile_1").attr('fname'));
+                    $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
+                }
+            }
+            $("#recentFile_0").html(infile).attr("fname", infile);
+            ignoreAceChange = true;
+            editor.getSession().setValue(fdata.replace(/\t/g, "  "));
+            // TODO: Auto-fold here...
+            // addFold("...", new Range(8, 44, 13, 4));
+            ignoreAceChange = false;
+            editor.setReadOnly(false);
+            // auto fold things that are code (html is an expection...)
+            if (!fileHasExtention(infile, ".html")) {
+                setTimeout(autoFoldCodeProgressive, 25);
+            }
+            //autoFoldCodeProgressive();
+            previousText = editor.getSession().getValue();
+            if (isSaved) {
+                setFileStatusIndicator("saved");
+            } else {
+                setFileStatusIndicator("changed");
+            }
+            removeAllCollaborators();
+            var f = infile;
+            if (fileHasExtention(f, ".js") || fileHasExtention(f, ".json")) {
+                console.log("setting mode to: JavaScript");
+                editor.getSession().setMode(new JavaScriptMode());
+            } else {
+                if (fileHasExtention(f, ".css") || fileHasExtention(f, ".less") || fileHasExtention(f, ".styl")) {
+                    if (fileHasExtention(f, ".less")) {
+                        console.log("setting mode to: Less");
+                        editor.getSession().setMode(new LessMode());
+                    } else {
+                        console.log("setting mode to: CSS");
+                        editor.getSession().setMode(new CSSMode());
+                    }
+                } else {
+                    if (fileHasExtention(f, ".html")) {
+                        console.log("setting mode to: HTML");
+                        editor.getSession().setMode(new HTMLMode());
+                    } else {
+                        console.log("setting mode to: ???");
+                        editor.getSession().setMode(new PHPMode());
+                    }
+                }
+            }
+            ifOnlineLetCollaboratorsKnowImHere();
+            setURLHashVariable("fname", infile);
+            openIsPending = false;
+        });
+        initialFileloadTimeout = null;
+        setFileStatusIndicator("unknown");
+    }
+}
+//////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////// 
+// 
+//              IMPORTED FROM EDIT FILE                 
+// 
+//////////////////////////////////////////////////////////////////////////////// 
+//////////////////////////////////////////////////////////////////////////////// 
+
+
 // ---------------------------------------------------------
 // READY! :)
 // ---------------------------------------------------------
