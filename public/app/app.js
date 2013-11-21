@@ -3,7 +3,7 @@ Ext.application({
     
     autoCreateViewport: true,
     
-//    models: ['Station', 'Song'],    
+    models: ['file'],    
     stores: ['FileTree'],
     //,controllers: ['Station', 'Song']
     launch:function(){
