@@ -754,7 +754,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     }
 }
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
-
+    
     if (fromUserId == now.core.clientId) {
         return;
     }
@@ -776,11 +776,25 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
     if (event == "leaveFile") {
         setUsersInFile(fname, usersInFile);
-        //if (fname == infile) {
+        fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+//if (fname == infile) {
         // remove the user's marker, they just left!
         var cInfo = allCollabInfo[fromUserId];
         if (cInfo != undefined) {
-            cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+            cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
+            editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
+            if (editor) {
+                var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
+                var ses = editor.getSession();
+                if (lastCursorID !== undefined) {
+                    ses.removeMarker(lastCursorID); // remove collaborator's cursor.
+                }
+                var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
+                if (lastSelID !== undefined) {
+                    ses.removeMarker(lastSelID); // remove collaborator's selection.
+                }
+            }
+            cInfo[fname]['isShown'] = false;
         }
         //}
     }
@@ -1332,25 +1346,30 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
         return;
     }
     var cInfo = allCollabInfo[id];
+
     if (cInfo == undefined) {
         // first time seeing this user!
         allCollabInfo[id] = [];
         cInfo = allCollabInfo[id];
-        cInfo['name'] = name;
         // let collaborator know I'm here.
         ifOnlineLetCollaboratorsKnowImHere();
     }
-    cInfo['timeLastSeen'] = (new Date()).getTime();
+    if (cInfo[fname] == undefined) {
+        cInfo[fname] = [];
+    }
+    cInfo[fname]['name'] = name;
+
+    cInfo[fname]['timeLastSeen'] = (new Date()).getTime();
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
     var ses = editor.getSession();
     var rSel = Range.fromPoints(range.start, range.end);
     var rCur = Range.fromPoints(range.start, {row: range.start.row, column: range.start.column + 1});
-    var lastSelID = cInfo['lastSelectionMarkerID'];
+    var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
     if (lastSelID !== undefined) {
         ses.removeMarker(lastSelID);
     }
-    var lastCursorID = cInfo['lastCursorMarkerID'];
+    var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
     if (lastCursorID !== undefined) {
         ses.removeMarker(lastCursorID);
     }
@@ -1359,11 +1378,11 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
         uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
     }
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
-    cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
-        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+    cInfo[fname]['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
+    cInfo[fname]['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
+        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo[fname]['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
     }, false); // range, clazz, type, inFront
-    cInfo['isShown'] = true;
+    cInfo[fname]['isShown'] = true;
 }
 now.c_updateWithDiffPatches = function(id, patches, md5) {
     //console.log(patches);
@@ -1439,10 +1458,6 @@ function openFileFromServer(fname, forceOpen, editor) {
             initialStateIsWelcome = false;
         }, 3000);
         editor.setFadeFoldWidgets(false);
-        if (infile != "") {
-            // we're leaving the file we're in. let collaborators know.
-            //now.s_leaveFile(infile);
-        }
         now.s_getLatestFileContentsAndJoinFileGroup(fname, function(fname, fdata, err, isSaved) {
             if (err) {
                 console.log("ERROR: couldn't load file.");
@@ -1455,22 +1470,6 @@ function openFileFromServer(fname, forceOpen, editor) {
                 return;
             }
             infile = fname;
-            // ----
-            $("#topFileName").html(infile);
-            // ----
-            if ($("#recentFile_2").html() == infile) {
-                $("#recentFile_2").html($("#recentFile_1").html()).attr("fname", $("#recentFile_1").attr('fname'));
-                $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
-            } else {
-                if ($("#recentFile_1").html() == infile) {
-                    $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
-                } else {
-                    $("#recentFile_3").html($("#recentFile_2").html()).attr("fname", $("#recentFile_2").attr('fname'));
-                    $("#recentFile_2").html($("#recentFile_1").html()).attr("fname", $("#recentFile_1").attr('fname'));
-                    $("#recentFile_1").html($("#recentFile_0").html()).attr("fname", $("#recentFile_0").attr('fname'));
-                }
-            }
-            $("#recentFile_0").html(infile).attr("fname", infile);
             ignoreAceChange = true;
             editor.getSession().setValue(fdata.replace(/\t/g, "  "));
             // TODO: Auto-fold here...

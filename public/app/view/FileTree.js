@@ -7,6 +7,7 @@ Ext.define('Codespace.view.FileTree', {
     animate: false,
     rootVisible: false,
     useArrows: true,
+    margin: 0,
     initComponent: function() {
         Ext.apply(this, {
             columns: [
@@ -93,6 +94,10 @@ Ext.define('Codespace.view.FileTree', {
                             showInvisible: false,
                             printMargin: false,
                             listeners: {
+                                activate: function() {
+                                    if (this.getEditor())
+                                        this.getEditor().resize();
+                                },
                                 editorcreated: function() {
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);

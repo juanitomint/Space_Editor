@@ -1,3 +1,12 @@
+var resizeTabs= function() {
+                    tabs = Ext.getCmp('filetabs');
+                    tabs.items.each(function(tab) {
+                        if (tab.getEditor()) {
+                            tab.getEditor().resize();
+                        }
+                    });
+
+                }
 Ext.define('Codespace.view.Viewport', {
     extend: 'Ext.container.Viewport',
     title: 'Border Layout',
@@ -21,8 +30,14 @@ Ext.define('Codespace.view.Viewport', {
                 width: 300,
                 split: true, // enable resizing
                 collapsible: true, // make collapsible
-                collapsed: true, 
+                collapsed: true,
                 html: 'EAST',
+                
+                listeners: {
+                    resize: resizeTabs,
+                    collapse: resizeTabs,
+                    expand: resizeTabs
+                },
                 bbar: [
                     {
                         xtype: 'textfield',
@@ -40,12 +55,22 @@ Ext.define('Codespace.view.Viewport', {
                 collapsible: true, // make collapsible
                 id: 'west-region-container',
                 title: 'FileTree',
+                listeners: {
+                    resize: resizeTabs,
+                    collapse: resizeTabs,
+                    expand: resizeTabs
+                },
                 items: [
                     //----left-side
                     {
                         region: 'center',
                         xtype: 'filetree',
-                        id: 'FileTree'
+                        border: 0,
+                        id: 'FileTree',
+                        viewConfig: {
+                            stateful: true,
+                            stateId: 'FileTree'
+                        }
                     },
                     {
                         title: 'Projects',
@@ -63,9 +88,9 @@ Ext.define('Codespace.view.Viewport', {
                 region: 'center', // center region is required, no width/height specified
                 xtype: 'panel',
                 layout: 'border',
-                listeners:{
-                    resize:function(){
-                        
+                listeners: {
+                    resize: function() {
+
                     }
                 },
                 items: [
