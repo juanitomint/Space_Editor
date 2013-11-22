@@ -148,19 +148,6 @@ function safelyOpenFileFromEntry(el) {
     }
 }
 function registerCloseEvent() {
-
-    $(".closeTab").click(function() {
-
-        //there are multiple elements which has .closeTab icon so close the tab whose close icon is clicked
-        var tabContentId = $(this).parent().attr("href");
-        var fname = $(tabContentId).attr('fname');
-        $(this).parent().parent().remove(); //remove li of tab
-        $('#myTab a:last').tab('show'); // Select first tab
-        //remove respective tab content
-        $(tabContentId).remove();
-        //remove user from filelist
-        //now.s_leaveFile(fname);
-    });
 }
 function createEditPane(fname) {
     if (fname) {
@@ -789,13 +776,13 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
     if (event == "leaveFile") {
         setUsersInFile(fname, usersInFile);
-//        if (fname == infile) {
-//            // remove the user's marker, they just left!
-//            var cInfo = allCollabInfo[fromUserId];
-//            if (cInfo != undefined) {
-//                cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
-//            }
-//        }
+        //if (fname == infile) {
+        // remove the user's marker, they just left!
+        var cInfo = allCollabInfo[fromUserId];
+        if (cInfo != undefined) {
+            cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+        }
+        //}
     }
     if (event == "deleteFile") {
         removeFileFromList(fname);
@@ -1103,11 +1090,12 @@ function ifOnlineLetCollaboratorsKnowImHere() {
 
     thisTab = Ext.getCmp('filetabs').getActiveTab();
     if (thisTab) {
-        editor = thisTab.getEditor();
-        infile = thisTab.path;
-        var range = editor.getSelectionRange();
-        console.log('sending cursor update for:'+infile);
-        now.s_sendCursorUpdate(infile, range, true);
+        if (thisTab.getEditor != null) {
+            editor = thisTab.getEditor();
+            infile = thisTab.path;
+            var range = editor.getSelectionRange();
+            now.s_sendCursorUpdate(infile, range, true);
+        }
     }
 
 }
@@ -1339,11 +1327,10 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
 // Now.JS Client-side functions.
 // -----------------------------------------
 now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
-    
+
     if (id == now.core.clientId) {
         return;
     }
-    console.log('recive cursor update from:'+name+' for file:'+fname);
     var cInfo = allCollabInfo[id];
     if (cInfo == undefined) {
         // first time seeing this user!
@@ -1546,7 +1533,7 @@ function setFileStatusIndicator(status) {
 // ---------------------------------------------------------
 // READY! :)
 // ---------------------------------------------------------
-var PROJECT = "dna2bpm/application/modules";
+var PROJECT = "git.test";
 $(window).ready(function() {
     var getProject = getURLGetVariable("project");
     if (getProject) {

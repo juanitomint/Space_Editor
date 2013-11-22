@@ -71,18 +71,17 @@ Ext.define('Codespace.view.FileTree', {
                 php: 'php',
                 css: 'css',
                 less: 'less',
-                json: 'json',
                 html: 'html',
                 xml: 'xml',
-                json:'json',
-                        svg: 'svg',
+                json: 'json',
+                svg: 'svg',
                 py: 'python',
                 pl: 'perl'
             };
             //---only do something if its leaf
             if (n && n.isLeaf()) {
                 tabs = Ext.getCmp('filetabs');
-                tabs.add(
+                tab = Ext.create('widget.AceEditor.WithToolbar',
                         {
                             xtype: 'AceEditor.WithToolbar',
                             id: record.data.id + '-tab',
@@ -98,11 +97,11 @@ Ext.define('Codespace.view.FileTree', {
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);
                                     now.s_sendUserEvent("join"); // let everyone know who I am!
-                                    editor=this.getEditor()
+                                    editor = this.getEditor();
                                     //---bind change Event
                                     editor.getSession().on('change', function(a, b, c) {
                                         if (!ignoreAceChange) {
-                                            if (textChangeTimeout != null) {
+                                            if (textChangeTimeout !== null) {
                                                 clearTimeout(textChangeTimeout);
                                                 textChangeTimeout = null;
                                             } else {
@@ -120,7 +119,7 @@ Ext.define('Codespace.view.FileTree', {
                                     //---bind
                                     editor.getSession().selection.on('changeCursor', function(a) {
                                         var range = editor.getSelectionRange();
-                                        if (cursorChangeTimeout != null) {
+                                        if (cursorChangeTimeout !== null) {
                                             clearTimeout(cursorChangeTimeout);
                                             cursorChangeTimeout = null;
                                         }
@@ -140,7 +139,10 @@ Ext.define('Codespace.view.FileTree', {
                                 }
                             }
                         }
-                ).show();
+                );///-----end create tab
+                tabs.add(tab);
+                tabs.setActiveTab(tab);
+
             }
         }
     }
