@@ -21,6 +21,7 @@ Ext.define('Codespace.view.Viewport', {
                 width: 300,
                 split: true, // enable resizing
                 collapsible: true, // make collapsible
+                collapsed: true, 
                 html: 'EAST',
                 bbar: [
                     {
@@ -50,6 +51,7 @@ Ext.define('Codespace.view.Viewport', {
                         title: 'Projects',
                         region: 'south',
                         collapsible: true,
+                        collapsed: true,
                         height: '35%',
                         html: "PROJECTS"
 
@@ -61,6 +63,11 @@ Ext.define('Codespace.view.Viewport', {
                 region: 'center', // center region is required, no width/height specified
                 xtype: 'panel',
                 layout: 'border',
+                listeners:{
+                    resize:function(){
+                        
+                    }
+                },
                 items: [
                     //----editor
                     {
