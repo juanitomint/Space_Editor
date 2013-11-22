@@ -637,6 +637,7 @@ nowjs.on('disconnect', function() {
 // NOW: Remote collab messages.
 everyone.now.s_setTeamID=function (val){
     this.user.teamID=val;
+    addUserToGroup(this.user, this.user.teamID);
 }
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;
@@ -990,6 +991,7 @@ function addUserToGroup(userObj, groupname) {
         //if (fname.length > 0) {
         var teamgroup = nowjs.getGroup(userObj.teamID);
         //} 
+        
         console.log("Added user " + userObj.clientId + " to group: " + groupname);
     } else {
         console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
@@ -1013,6 +1015,8 @@ function addUserToFileGroup(userObj, fname) {
     //console.log("ADD TO GROUP: " + groupname);
     //console.log("        team: " + userObj.teamID);
     //console.log("       fname: " + fname);
+    var teamgroup = nowjs.getGroup(userObj.teamID);
+    teamgroup.now.c_processUserFileEvent(fname,'joinFile',userObj.clientId);
     addUserToGroup(userObj, groupname);
     update_all_trees();
 }
@@ -1055,8 +1059,8 @@ function removeUserFromFileGroup(userObj, fname) {
         // keep track locally of users in group.
         usersInGroupMinusMinus(groupname);
         if (fname.length > 0) {
-            var teamgroup = nowjs.getGroup(userObj.teamID);
-            teamgroup.now.c_processUserFileEvent(fname, "leaveFile", userObj.clientId, usersInGroup[groupname]);
+            //var teamgroup = nowjs.getGroup(userObj.teamID);
+            g.now.c_processUserFileEvent(fname, "leaveFile", userObj.clientId, usersInGroup[groupname]);
         }
         //console.log("Removed user " + userObj.clientId + " from: " + groupname);
     } else {
