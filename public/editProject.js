@@ -1106,6 +1106,7 @@ function ifOnlineLetCollaboratorsKnowImHere() {
         editor = thisTab.getEditor();
         infile = thisTab.path;
         var range = editor.getSelectionRange();
+        console.log('sending cursor update for:'+infile);
         now.s_sendCursorUpdate(infile, range, true);
     }
 
@@ -1338,9 +1339,11 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
 // Now.JS Client-side functions.
 // -----------------------------------------
 now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
+    
     if (id == now.core.clientId) {
         return;
     }
+    console.log('recive cursor update from:'+name+' for file:'+fname);
     var cInfo = allCollabInfo[id];
     if (cInfo == undefined) {
         // first time seeing this user!
