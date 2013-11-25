@@ -1,12 +1,3 @@
-var resizeTabs= function() {
-                    tabs = Ext.getCmp('filetabs');
-                    tabs.items.each(function(tab) {
-                        if (tab.getEditor()) {
-                            tab.getEditor().resize();
-                        }
-                    });
-
-                }
 Ext.define('Codespace.view.Viewport', {
     extend: 'Ext.container.Viewport',
     title: 'Border Layout',
@@ -21,7 +12,8 @@ Ext.define('Codespace.view.Viewport', {
         this.items = [
             {
                 region: 'north',
-                xtype: 'maintoolbar'
+                xtype: 'maintoolbar',
+                id: 'MainToolbar'
 
             },
             {
@@ -33,11 +25,10 @@ Ext.define('Codespace.view.Viewport', {
                 collapsible: true, // make collapsible
                 collapsed: true,
                 html: 'EAST',
-                
                 listeners: {
-                    resize: resizeTabs,
-                    collapse: resizeTabs,
-                    expand: resizeTabs
+                    resize: Codespace.app.resizeTabs,
+                    collapse: Codespace.app.resizeTabs,
+                    expand: Codespace.app.resizeTabs
                 },
                 bbar: [
                     {
@@ -57,9 +48,9 @@ Ext.define('Codespace.view.Viewport', {
                 id: 'west-region-container',
                 title: PROJECT,
                 listeners: {
-                    resize: resizeTabs,
-                    collapse: resizeTabs,
-                    expand: resizeTabs
+                    resize: Codespace.app.resizeTabs,
+                    collapse: Codespace.app.resizeTabs,
+                    expand: Codespace.app.resizeTabs
                 },
                 items: [
                     //----left-side

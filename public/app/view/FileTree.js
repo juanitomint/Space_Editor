@@ -82,9 +82,9 @@ Ext.define('Codespace.view.FileTree', {
             //---only do something if its leaf
             if (n && n.isLeaf()) {
                 tabs = Ext.getCmp('filetabs');
-                f=record.data.path.split('.');
-                exten=f[f.length-1];
-                parser=extension_map[exten]
+                f = record.data.path.split('.');
+                exten = f[f.length - 1];
+                parser = extension_map[exten]
                 tab = Ext.create('widget.AceEditor.WithToolbar',
                         {
                             xtype: 'AceEditor.WithToolbar',
@@ -94,17 +94,21 @@ Ext.define('Codespace.view.FileTree', {
                             path: record.data.path,
                             theme: 'chrome',
                             parser: parser,
-                            fontSize:'15px',
+                            fontSize: '15px',
+                            useWrapMode:false,
                             showInvisible: false,
+                            codeFolding:true,
+                            highlightActiveLine:true,
                             printMargin: false,
                             listeners: {
                                 activate: function() {
-                                    if (this.getEditor()){
+                                    if (this.getEditor()) {
                                         this.getEditor().resize();
                                         Codespace.app.setToolbarSettings(this);
                                     }
                                 },
                                 editorcreated: function() {
+                                    console.log("editor Created!");
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);
                                     now.s_sendUserEvent("join"); // let everyone know who I am!
@@ -140,12 +144,15 @@ Ext.define('Codespace.view.FileTree', {
                                     var specifiedFileToOpen = this.path;
                                     if (specifiedFileToOpen) {
                                         openFileFromServer(specifiedFileToOpen, true, this.getEditor());
+                                        Ext.getCmp('filetabs').setActiveTab(this);
+                                        Codespace.app.setToolbarSettings(tab);
                                     } else {
                                         // error openFileFromServer("app.js", true);
                                     }
                                 },
                                 close: function() {
                                     ///----unsuscribe
+                                    Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                     now.s_leaveFile(this.path);
                                 }
                             }
@@ -153,7 +160,7 @@ Ext.define('Codespace.view.FileTree', {
                 );///-----end create tab
                 tabs.add(tab);
                 tabs.setActiveTab(tab);
-
+                
             }
         }
     }

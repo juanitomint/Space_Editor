@@ -167,60 +167,67 @@ Ext.define('Codespace.view.ToolBar', {
                     listeners: {
                         change: function(field, value)
                         {
-                            me=Ext.getCmp('filetabs').getActiveTab();
+                            me = Ext.getCmp('filetabs').getActiveTab();
                             me.theme = value;
                             me.setTheme(me.theme);
                         }
                     }
                 },
                 //-----END Editor Theme----
+                //-----Checkboxes
+
                 {
-                    text: 'Show Invisibles',
-                    id: 'ShowInvisibles',
+                    id:'ShowInvisibles',
+                    checked: false,
+                    xtype: 'checkbox',
                     handler: function()
                     {
-                        me=Ext.getCmp('filetabs').getActiveTab();
+                        me = Ext.getCmp('filetabs').getActiveTab();
                         me.showInvisible = (me.showInvisible) ? false : true;
                         me.editor.setShowInvisibles(me.showInvisible);
                     },
-                    
                 },
+                'Show Invisibles',
                 {
                     text: 'Wrap Lines',
                     id: 'WrapLines',
+                    checked: false,
+                    xtype: 'checkbox',
                     handler: function()
                     {
-                        me=Ext.getCmp('filetabs').getActiveTab();
+                        me = Ext.getCmp('filetabs').getActiveTab();
                         me.useWrapMode = (me.useWrapMode) ? false : true;
                         me.editor.getSession().setUseWrapMode(me.useWrapMode);
                     },
-                   
-                    
-                },
+                },'Wrap Lines',
                 {
                     text: 'Code Folding',
                     id: 'CodeFolding',
+                    checked: false,
+                    xtype: 'checkbox',
                     handler: function()
                     {
-                        me=Ext.getCmp('filetabs').getActiveTab();
+                        me = Ext.getCmp('filetabs').getActiveTab();
                         me.codeFolding = (me.codeFolding) ? false : true;
                         me.editor.setShowFoldWidgets(me.codeFolding);
                     },
-                   
-                    
-                },
+                }, 'Code Folding',
                 {
                     text: 'Highlight Active Line',
                     id: 'HighlightActiveLine',
+                    xtype: 'checkbox',
+                    checked: false,
                     handler: function()
                     {
-                        me=Ext.getCmp('filetabs').getActiveTab();
+                        me = Ext.getCmp('filetabs').getActiveTab();
                         me.highlightActiveLine = (me.highlightActiveLine) ? false : true;
                         me.editor.setHighlightActiveLine(me.highlightActiveLine);
                     },
-                   
-                    
+                    //-----END Checkboxes
+
+
                 },
+                'Active Line'
             ]
         },
         //----END Editor Toolbar
