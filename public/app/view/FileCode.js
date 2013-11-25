@@ -7,7 +7,7 @@ Ext.define('Codespace.view.FileCode', {
                 text: 'Save',
                 handler: function()
                 {
-                    alert(me.editor.getSession().getValue());
+                    saveFileToServer(me.path,me.editor.getSession().getValue());
                 },
                 scope: me
             },

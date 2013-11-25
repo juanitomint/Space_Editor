@@ -74,7 +74,7 @@ Ext.define('Codespace.view.FileTree', {
                 less: 'less',
                 html: 'html',
                 xml: 'xml',
-                json: 'json',
+                json: 'jscript',
                 svg: 'svg',
                 py: 'python',
                 pl: 'perl'
@@ -82,21 +82,27 @@ Ext.define('Codespace.view.FileTree', {
             //---only do something if its leaf
             if (n && n.isLeaf()) {
                 tabs = Ext.getCmp('filetabs');
+                f=record.data.path.split('.');
+                exten=f[f.length-1];
+                parser=extension_map[exten]
                 tab = Ext.create('widget.AceEditor.WithToolbar',
                         {
                             xtype: 'AceEditor.WithToolbar',
                             id: record.data.id + '-tab',
                             closable: true,
                             title: record.data.name,
-                            path: record.raw.path,
-                            theme: 'twilight',
-                            parser: 'javascript',
+                            path: record.data.path,
+                            theme: 'chrome',
+                            parser: parser,
+                            fontSize:'15px',
                             showInvisible: false,
                             printMargin: false,
                             listeners: {
                                 activate: function() {
-                                    if (this.getEditor())
+                                    if (this.getEditor()){
                                         this.getEditor().resize();
+                                        Codespace.app.setToolbarSettings(this);
+                                    }
                                 },
                                 editorcreated: function() {
                                     console.log("Getting data for:" + this.path);

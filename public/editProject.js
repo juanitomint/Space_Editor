@@ -754,7 +754,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     }
 }
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
-    
+
     if (fromUserId == now.core.clientId) {
         return;
     }
@@ -1077,7 +1077,7 @@ var TIME_UNTIL_GONE = 7000;
 var NOTIFICATION_TIMEOUT = 10000;
 var autoCheckStep = 0;
 function sendTextChange(fname) {
-    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");    
+    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     textChangeTimeout = null;
     //console.log("send text change.");
     editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
@@ -1189,7 +1189,6 @@ function removeAllCollaborators() {
 // -----------------------------------------
 var patchQueue = [];
 var patchingInProcess = false;
-var previousText = "";
 var dmp = new diff_match_patch();
 dmp.Diff_Timeout = 1;
 dmp.Diff_EditCost = 4;
@@ -1351,14 +1350,16 @@ function openFileFromServer(fname, forceOpen, editor) {
         setFileStatusIndicator("unknown");
     }
 }
-function saveFileToServer(fname) {
-    saveIsPending = true;
-    console.log("SAVING FILE:" + infile);
-    sendTextChange(fname);
-    if (previousText == "") {
-        console.log("THE FILE IS BLANK -- WHY ARE WE SAVING?!")
+function saveFileToServer(fname, previousText) {
+    if (preciousText == null) {
+        fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+        editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
+        previousText = editor.getSession().getValue();
     }
-    now.s_saveUserFileContentsToServer(infile, previousText, function(err) {
+    saveIsPending = true;
+    console.log("SAVING FILE:" + fname);
+    sendTextChange(fname);
+    now.s_saveUserFileContentsToServer(fname, previousText, function(err) {
         if (err) {
             console.log("File save error!");
             setFileStatusIndicator("error");

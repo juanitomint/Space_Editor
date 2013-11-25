@@ -15,14 +15,15 @@ Ext.define('Codespace.view.Viewport', {
         //'app.view.WithToolbar',
         'Codespace.view.FileTree',
         'Codespace.view.FileCode',
+        'Codespace.view.ToolBar',
     ],
     initComponent: function() {
         this.items = [
-//            {
-//                region: 'north',
-//                html: '<h1>CodeSpace</h1>'
-//
-//            },
+            {
+                region: 'north',
+                xtype: 'maintoolbar'
+
+            },
             {
                 title: 'East Region is resizable',
                 region: 'east', // position for region
@@ -54,7 +55,7 @@ Ext.define('Codespace.view.Viewport', {
                 width: 300,
                 collapsible: true, // make collapsible
                 id: 'west-region-container',
-                title: 'FileTree',
+                title: PROJECT,
                 listeners: {
                     resize: resizeTabs,
                     collapse: resizeTabs,

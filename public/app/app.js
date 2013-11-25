@@ -12,5 +12,13 @@ Ext.application({
     launch:function(){
         //load files
         //Ext.getCmp('FileTree').store.load();
+    },
+    setToolbarSettings: function(me){
+      
+     Ext.getCmp('Code Folding').setChecked(me.codeFolding);
+     (me.highlightActiveLine);
+     (me.useWrapMode);
+     (me.showInvisible)
     }
+    
 });
