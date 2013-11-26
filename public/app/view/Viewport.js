@@ -94,51 +94,15 @@ Ext.define('Codespace.view.Viewport', {
                         items: []
                     },
                     //----toolbar
+                    /*
                     {
                         region: 'south',
                         items: [
-                            //------Toolbar items
-                            Ext.create('Ext.toolbar.Toolbar', {
-                                renderTo: document.body,
-                                items: [
-                                    {
-                                        // xtype: 'button', // default for Toolbars
-                                        text: 'commit'
-                                    },
-                                    {
-                                        xtype: 'splitbutton',
-                                        text: 'git',
-                                        menu: new Ext.menu.Menu({
-                                            items: [
-                                                // these will render as dropdown menu items when the arrow is clicked:
-                                                {text: 'Commit', handler: function() {
-                                                        alert("Item 1 clicked");
-                                                    }},
-                                                {text: 'revert', handler: function() {
-                                                        alert("Item 2 clicked");
-                                                    }}
-                                            ]})
-                                    },
-                                    // begin using the right-justified button container
-                                    '->', // same as { xtype: 'tbfill' }
-                                    {
-                                        xtype: 'textfield',
-                                        name: 'field1',
-                                        emptyText: 'enter search term'
-                                    },
-                                    // add a vertical separator bar between toolbar items
-                                    '-', // same as {xtype: 'tbseparator'} to create Ext.toolbar.Separator
-                                    'text 1', // same as {xtype: 'tbtext', text: 'text1'} to create Ext.toolbar.TextItem
-                                    {xtype: 'tbspacer'}, // same as ' ' to create Ext.toolbar.Spacer
-                                    'text 2',
-                                    {xtype: 'tbspacer', width: 50}, // add a 50px space
-                                    'text 3'
-                                ]
-                            })
-                                    //------Toolbar items
+                            
                         ]
 
                     }
+                     */
                 ]
                         //----end items
             }];

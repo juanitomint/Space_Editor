@@ -48,7 +48,9 @@ Ext.define('Codespace.view.FileCode', {
              },
              scope: me
              }*/,
-            '->',
+            '->'
+            /*
+            ,
             {
                 text: 'Settings',
                 // iconCls: 'user',
@@ -330,7 +332,8 @@ Ext.define('Codespace.view.FileCode', {
                                 }]
                         }]
                 }
-            }];
+            }*/
+        ];
 
         var wordCount = Ext.create('Ext.toolbar.TextItem', {text: 'Position: 0'}),
         lineCount = Ext.create('Ext.toolbar.TextItem', {text: 'Line: 0'});

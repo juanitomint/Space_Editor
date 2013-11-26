@@ -20,16 +20,19 @@ Ext.application({
              Ext.getCmp('WrapLines').setValue(false);
              Ext.getCmp('HighlightActiveLine').setValue(false);
              Ext.getCmp('ShowInvisibles').setValue(false); 
+            
+             console.log('-----------------------------------------------');
+             console.log('toolbar for file:', me.path);
+             console.log('-----------------------------------------------');
+             console.log('codeFolding', me.codeFolding);
+             console.log('WrapLines', me.useWrapMode);
+             console.log('HighlightActiveLine', me.highlightActiveLine);
+             console.log('ShowInvisibles', me.showInvisible);
+             console.log('FontSize', me.fontSize);
+             console.log('EditorTheme', me.theme);
+             console.log('Object', me);
+             console.log('-----------------------------------------------');
              */
-            console.log('toolbar for file:', me.path);
-            console.log('-----------------------------------------------');
-            console.log('codeFolding', me.codeFolding);
-            console.log('WrapLines', me.useWrapMode);
-            console.log('HighlightActiveLine', me.highlightActiveLine);
-            console.log('ShowInvisibles', me.showInvisible);
-            console.log('FontSize', me.fontSize);
-            console.log('EditorTheme', me.theme);
-            console.log('-----------------------------------------------');
 
             Ext.getCmp('CodeFolding').setValue(me.codeFolding);
             Ext.getCmp('WrapLines').setValue(me.useWrapMode);
@@ -37,8 +40,6 @@ Ext.application({
             Ext.getCmp('ShowInvisibles').setValue(me.showInvisible);
             Ext.getCmp('FontSize').setValue(me.fontSize);
             Ext.getCmp('EditorTheme').setValue(me.theme);
-
-
         } else {
             Ext.getCmp('EditorToolbar').setDisabled(true);
         }

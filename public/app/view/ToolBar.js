@@ -191,10 +191,11 @@ Ext.define('Codespace.view.ToolBar', {
                     id: 'ShowInvisibles',
                     checked: false,
                     xtype: 'checkbox',
-                    handler: function()
+                    handler: function(widget, newValue, oldValue, eOpts)
                     {
+
                         me = Ext.getCmp('filetabs').getActiveTab();
-                        me.showInvisible = (me.showInvisible) ? false : true;
+                        me.showInvisible = (widget.checked) ? true : false;
                         me.editor.setShowInvisibles(me.showInvisible);
                     },
                 },
@@ -204,10 +205,10 @@ Ext.define('Codespace.view.ToolBar', {
                     id: 'WrapLines',
                     checked: false,
                     xtype: 'checkbox',
-                    handler: function()
+                    handler: function(widget, newValue, oldValue, eOpts)
                     {
                         me = Ext.getCmp('filetabs').getActiveTab();
-                        me.useWrapMode = (me.useWrapMode) ? false : true;
+                        me.useWrapMode = (widget.checked) ? true : false;
                         me.editor.getSession().setUseWrapMode(me.useWrapMode);
                     },
                 }, 'Wrap Lines',
@@ -216,10 +217,10 @@ Ext.define('Codespace.view.ToolBar', {
                     id: 'CodeFolding',
                     checked: false,
                     xtype: 'checkbox',
-                    handler: function()
+                    handler: function(widget, newValue, oldValue, eOpts)
                     {
                         me = Ext.getCmp('filetabs').getActiveTab();
-                        me.codeFolding = (me.codeFolding) ? false : true;
+                        me.codeFolding = (widget.checked) ? true : false;
                         me.editor.setShowFoldWidgets(me.codeFolding);
                     },
                 }, 'Code Folding',
@@ -228,10 +229,10 @@ Ext.define('Codespace.view.ToolBar', {
                     id: 'HighlightActiveLine',
                     xtype: 'checkbox',
                     checked: false,
-                    handler: function()
+                    handler: function(widget, newValue, oldValue, eOpts)
                     {
                         me = Ext.getCmp('filetabs').getActiveTab();
-                        me.highlightActiveLine = (me.highlightActiveLine) ? false : true;
+                        me.highlightActiveLine = (widget.checked) ? true : false;
                         me.editor.setHighlightActiveLine(me.highlightActiveLine);
                     },
                     //-----END Checkboxes
@@ -253,6 +254,7 @@ Ext.define('Codespace.view.ToolBar', {
                     listeners: {
                         change: function(field, value)
                         {
+                            me = Ext.getCmp('filetabs').getActiveTab();
                             me.fontSize = value;
                             me.setFontSize(me.fontSize + "px");
                         }
