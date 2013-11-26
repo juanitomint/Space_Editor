@@ -71,104 +71,10 @@ Ext.define('Codespace.view.FileTree', {
                  Ext.getCmp('filetabs').setActiveTab(Ext.getCmp(record.data.id + '-tab'));
                 return;
             }
-            n = me.getSelectionModel().getSelection()[0];
-            extension_map = {
-                js: 'javascript',
-                php: 'php',
-                css: 'css',
-                less: 'less',
-                html: 'html',
-                xml: 'xml',
-                json: 'jscript',
-                svg: 'svg',
-                py: 'python',
-                pl: 'perl'
-            };
-            //---only do something if its leaf
+            node = me.getSelectionModel().getSelection()[0];
+            Codespace.app.createCodeTab(node);
             
-            if (n && n.isLeaf()) {
-                tabs = Ext.getCmp('filetabs');
-                f = record.data.path.split('.');
-                exten = f[f.length - 1];
-                parser = extension_map[exten]
-                tab = Ext.create('widget.AceEditor.WithToolbar',
-                        {
-                            xtype: 'AceEditor.WithToolbar',
-                            id: record.data.id + '-tab',
-                            closable: true,
-                            title: record.data.name,
-                            path: record.data.path,
-                            theme: 'chrome',
-                            parser: parser,
-                            fontSize: '15px',
-                            highlightActiveLine:true,
-                            codeFolding:true,
-                            useWrapMode:false,
-                            showInvisible: false,
-                            printMargin: false,
-                            listeners: {
-                                activate: function() {
-                                    if (this.getEditor()) {
-                                        Codespace.app.setToolbarSettings(this);
-                                        this.getEditor().resize();
-                                    }
-                                },
-                                editorcreated: function() {
-                                    console.log("editor Created!");
-                                    console.log("Getting data for:" + this.path);
-                                    console.log("Using NowJS -- this clientId: " + now.core.clientId);
-                                    now.s_sendUserEvent("join"); // let everyone know who I am!
-                                    editor = this.getEditor();
-                                    //---bind change Event
-                                    editor.getSession().on('change', function(a, b, c) {
-                                        if (!ignoreAceChange) {
-                                            if (textChangeTimeout !== null) {
-                                                clearTimeout(textChangeTimeout);
-                                                textChangeTimeout = null;
-                                            } else {
-                                                setFileStatusIndicator("changed");
-                                            }
-                                            timeOfLastLocalKepress = (new Date()).getTime();
-                                            textChangeTimeout = setTimeout(function() {
-                                                if (!nowIsOnline) {
-                                                    return;
-                                                }
-                                                
-                                                sendTextChange(Ext.getCmp('filetabs').getActiveTab().path);
-                                            }, 350);
-                                        }
-                                    });
-                                    //---bind
-                                    editor.getSession().selection.on('changeCursor', function(a) {
-                                        var range = editor.getSelectionRange();
-                                        if (cursorChangeTimeout !== null) {
-                                            clearTimeout(cursorChangeTimeout);
-                                            cursorChangeTimeout = null;
-                                        }
-                                        cursorChangeTimeout = setTimeout(ifOnlineLetCollaboratorsKnowImHere, 350);
-                                    });
-                                    setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
-                                    var specifiedFileToOpen = this.path;
-                                    if (specifiedFileToOpen) {
-                                        openFileFromServer(specifiedFileToOpen, true, this.getEditor());
-                                        Ext.getCmp('filetabs').setActiveTab(this);
-                                        Codespace.app.setToolbarSettings(this);
-                                    } else {
-                                        // error openFileFromServer("app.js", true);
-                                    }
-                                },
-                                close: function() {
-                                    ///----unsuscribe
-                                    Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
-                                    now.s_leaveFile(this.path);
-                                }
-                            }
-                        }
-                );///-----end create tab
-                tabs.add(tab);
-                tabs.setActiveTab(tab);
-                
-            }
+            
         }
     }
 });

@@ -22,6 +22,21 @@ body {
     bottom: 0;
     left: 0;
 }
+.status-tab{
+   // text-shadow: 2px 2px 2px #888;
+}
+.status-red{
+    color:#ff3333;
+}
+.status-blue{
+    color:#126daf;
+}
+.status-green{
+    color:#58C554;
+}
+.status-gray{
+    color:#888;
+}
 .tab-content {
     height: 100%;
 }

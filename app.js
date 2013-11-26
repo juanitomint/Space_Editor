@@ -62,8 +62,8 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
 //   callback with a user object.
 passport.use(new GoogleStrategy({
-    returnURL: config.google.returnUrl+':'+port + '/auth/google/return',
-    realm: config.google.returnUrl +':'+ port + '/'
+    returnURL: config.google.returnUrl + ':' + port + '/auth/google/return',
+    realm: config.google.returnUrl + ':' + port + '/'
 },
 function(identifier, profile, done) {
     // asynchronous verification, for effect...
@@ -134,7 +134,8 @@ function ensureAuthenticated(req, res, next) {
 app.configure(function() {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'ejs');
-    app.use(express.logger());
+    if (config.enableLog)
+        app.use(express.logger());
     app.use(express.cookieParser());
     app.use(express.bodyParser());
     app.use(express.methodOverride());
@@ -211,12 +212,13 @@ app.use(function(req, res, next) {
     if (req.user) {
         req.user = req.user || {};
         res.cookie("_username", req.user.emails[0].value);
-        console.log("say hello to new user: " + req.user.displayName + ' knwon as'.req.user.emails[0].value);
+        console.log("say hello to new user: " + req.user.displayName);
+        console.log(' knwon as:'+req.user.emails[0].value);
     }
     next();
 });
 var server = app.listen(port, '0.0.0.0');
-console.log("Listen on http://localhost:"+port );
+console.log("Listen on http://localhost:" + port);
 var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
 
@@ -327,7 +329,7 @@ function dirTree(filename, projectRoot) {
             // Assuming it's a file. In real life it could be a symlink or
             // something else!
             info.type = "file";
-            info.leaf=true;
+            info.leaf = true;
             info.filesize = stats.size;
         }
         return info;
@@ -339,11 +341,11 @@ app.get("/getFileTree", function(req, res) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
         //---set globals 4 show/hide dot files/folders
-        showDotFolders=(req.query.showDotFolders) ? true:config.tree.showDotFolders;
+        showDotFolders = (req.query.showDotFolders) ? true : config.tree.showDotFolders;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
             filesAndInfo = dirTree(projectRoot, projectRoot + '/');
-            res.setHeader('Content-type','application/json;charset=UTF-8');
+            res.setHeader('Content-type', 'application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");
@@ -593,7 +595,7 @@ nowjs.on('connect', function() {
     }
     //console.log(this.user);
     //console.log(everyone.users);
-     console.log(" >> PROJECT="+this.user.teamID);
+    console.log(" >> PROJECT:" + this.user.teamID);
     // hack to get out best guess at the user (since now.js doesn't give us the request object or session!);
     var u = {}; //(Auth || {}).getUserFromCache(decodeURIComponent(this.user.cookie['_chaos.auth'])) || {};
     // now populate it..
@@ -634,29 +636,29 @@ nowjs.on('disconnect', function() {
 });
 //---------
 // NOW: Remote collab messages.
-everyone.now.s_updateTree=function(){
-  for (var fname in groupFilesUsers) {
+everyone.now.s_updateTree = function() {
+    for (var fname in groupFilesUsers) {
         if (fname != '') {
             if (groupFilesUsers[fname])
                 this.now.c_setUsersInFile(fname, groupFilesUsers[fname].length);
         }
     }
 }
-everyone.now.s_setTeamID=function (val){
-    this.user.teamID=val;
+everyone.now.s_setTeamID = function(val) {
+    this.user.teamID = val;
     addUserToGroup(this.user, this.user.teamID);
 }
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     //console.log(filegroup);
-    filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser,fname);
+    filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser, fname);
 };
 everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) {
     var userObj = this.user;
     localFileIsMostRecent[userObj.teamID + "/" + fname] = false; // mark file as changed.
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
-    filegroup.now.c_updateWithDiffPatches(this.user.clientId, patches, crc32);
+    filegroup.now.c_updateWithDiffPatches(this.user.clientId, patches, crc32, fname);
 };
 // NOW: Remote file tools.
 everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileRequesterCallback) {
@@ -815,7 +817,11 @@ everyone.now.s_renameFile = function(fname, newFName, fileRenamerCallback) {
 everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback) {
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
-everyone.now.s_commitProject = function(txt, committerCallback) {
+//---GIT Related Functions
+everyone.now.s_git_status = function(path, committerCallback) {
+
+}
+everyone.now.s_git_commit = function(txt, path, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -828,7 +834,8 @@ everyone.now.s_commitProject = function(txt, committerCallback) {
         committerCallback(err);
     });
 };
-everyone.now.s_fetchProjectCommits = function(fetcherCallback) {
+
+everyone.now.s_git_fetchCommits = function(fetcherCallback) {
     var team = this.user.teamID;
     console.log("fetching project commits... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -992,6 +999,7 @@ function addUserToGroup(userObj, groupname) {
         // add to NOW group.
         g.addUser(userObj.clientId);
         // add to local group.
+        userObj.grouplist = (userObj.grouplist) ? userObj.grouplist : [];
         userObj.grouplist.push(groupname);
         // keep track locally of users in group.
         usersInGroupPlusPlus(groupname);
@@ -1024,7 +1032,7 @@ function addUserToFileGroup(userObj, fname) {
     //console.log("        team: " + userObj.teamID);
     //console.log("       fname: " + fname);
     var teamgroup = nowjs.getGroup(userObj.teamID);
-    teamgroup.now.c_processUserFileEvent(fname,'joinFile',userObj.clientId);
+    teamgroup.now.c_processUserFileEvent(fname, 'joinFile', userObj.clientId);
     addUserToGroup(userObj, groupname);
     update_all_trees();
 }

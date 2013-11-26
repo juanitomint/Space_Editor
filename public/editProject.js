@@ -162,13 +162,7 @@ function createEditPane(fname) {
         //now.s_enterFile(fname);
     }
 }
-function populateEditPane(editPane, fname) {
-    if (fname) {
-        $(editPane).html("<iframe style='height:100%;width:100%' src='/editFile.html?project=" + PROJECT + "#fname=" + fname + "'></iframe><div class='paneScreen' onmousedown='selectPaneScreen(this);'></div>");
-    } else {
-        $(editPane).html("<iframe src='/live?log=" + PROJECT + "'></iframe><div class='paneScreen' onmousedown='selectPaneScreen(this);'></div>");
-    }
-}
+
 function setUsersInFile(fname, usersInFile) {
     for (var i = 0; i < mostRecentFilesAndInfo.length; i++) {
         var f = mostRecentFilesAndInfo[i];
@@ -737,7 +731,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
         return;
     }
     //---set the collabinfo
-    if (allCollabInfo[fromUserId]== undefined) {
+    if (allCollabInfo[fromUserId] == undefined) {
         allCollabInfo[fromUserId] = [];
         allCollabInfo[fromUserId]['name'] = fromUserName;
         allCollabInfo[fromUserId]['timeLastSeen'] = 0;
@@ -1085,7 +1079,7 @@ function sendTextChange(fname) {
         //console.log("text is the same. sidestepping update.");
         return false;
     }
-    setFileStatusIndicator("changed");
+    setFileStatusIndicator(fname, "changed");
     var md5 = Crypto.MD5(currentText);
     var patch_list = dmp.patch_make(previousText, currentText);
     var patch_text = dmp.patch_toText(patch_list);
@@ -1191,8 +1185,9 @@ var patchingInProcess = false;
 var dmp = new diff_match_patch();
 dmp.Diff_Timeout = 1;
 dmp.Diff_EditCost = 4;
-var updateWithDiffPatchesLocal = function(id, patches, md5) {
-    editor=Ext.getCmp('filetabs').getActiveTab().getEditor();
+var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
+    tab = Ext.getCmp('filetabs').child('[path=' + fname + ']');
+    editor = tab.getEditor();
     if (patchingInProcess) {
         console.log("patching in process.. queued action.");
         patchQueue.push({id: id, patches: patches, md5: md5});
@@ -1306,9 +1301,9 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
             //console.log("no local changes have been made in a couple seconds >> md5 should match..");
             var newMD5 = Crypto.MD5(newText);
             if (md5 == newMD5) {
-                setFileStatusIndicator("changed");
+                setFileStatusIndicator(fname, "changed");
             } else {
-                setFileStatusIndicator("error");
+                setFileStatusIndicator(fname, "error");
                 console.log("** OH NO: MD5 mismatch. this=" + newMD5 + ", wanted=" + md5);
                 now.s_requestFullFileFromUserID(infile, id, function(fname, fdata, err, isSaved) {
                     if (fname != infile) {
@@ -1320,7 +1315,7 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
                     var patch_text = dmp.patch_toText(patch_list);
                     var patches = dmp.patch_fromText(patch_text);
                     var md5 = Crypto.MD5(fdata);
-                    updateWithDiffPatchesLocal(id, patches, md5);
+                    updateWithDiffPatchesLocal(id, patches, md5, fname);
                 });
             }
         }
@@ -1332,7 +1327,7 @@ var updateWithDiffPatchesLocal = function(id, patches, md5) {
     if (patchQueue.length > 0) {
         console.log("Patching from Queue! DOUBLE CHECK THIS.");
         var nextPatch = patchQueue.shift(); // get the first patch off the queue.
-        updateWithDiffPatchesLocal(nextPatch.id, nextPatch.patches, nextPatch.md5);
+        updateWithDiffPatchesLocal(nextPatch.id, nextPatch.patches, nextPatch.md5, fname);
     }
 }
 // -----------------------------------------
@@ -1382,9 +1377,9 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
     }, false); // range, clazz, type, inFront
     cInfo[fname]['isShown'] = true;
 }
-now.c_updateWithDiffPatches = function(id, patches, md5) {
+now.c_updateWithDiffPatches = function(id, patches, md5, fname) {
     //console.log(patches);
-    updateWithDiffPatchesLocal(id, patches, md5);
+    updateWithDiffPatchesLocal(id, patches, md5, fname);
 }
 
 now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
@@ -1425,12 +1420,16 @@ now.ready(function() {
     now.core.on('disconnect', function() {
         console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
         nowIsOnline = false;
-        //setFileStatusIndicator("offline");
+        tabs = Ext.getCmp('filetabs');
+        tabs.items.each(function(tab) {
+            if (tab.path) {
+                setFileStatusIndicator(tab.path, "offline");
+            }
+        });
     });
     now.core.on('connect', function() {
         console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
         nowIsOnline = true;
-        //setFileStatusIndicator("default");
     });
 });
 function openFileFromServer(fname, forceOpen, editor) {
@@ -1479,17 +1478,16 @@ function openFileFromServer(fname, forceOpen, editor) {
             //autoFoldCodeProgressive();
             previousText = editor.getSession().getValue();
             if (isSaved) {
-                setFileStatusIndicator("saved");
+                setFileStatusIndicator(fname, "saved");
             } else {
-                setFileStatusIndicator("changed");
+                setFileStatusIndicator(fname, "changed");
             }
             removeAllCollaborators();
             ifOnlineLetCollaboratorsKnowImHere();
-            setURLHashVariable("fname", infile);
             openIsPending = false;
         });
         initialFileloadTimeout = null;
-        setFileStatusIndicator("unknown");
+        setFileStatusIndicator(fname, "unknown");
     }
 }
 function saveFileToServer(fname, previousText) {
@@ -1504,42 +1502,52 @@ function saveFileToServer(fname, previousText) {
     now.s_saveUserFileContentsToServer(fname, previousText, function(err) {
         if (err) {
             console.log("File save error!");
-            setFileStatusIndicator("error");
+            setFileStatusIndicator(fname, "error");
         } else {
             console.log("file save successfully");
-            setFileStatusIndicator("saved");
+            setFileStatusIndicator(fname, "saved");
         }
         saveIsPending = false;
     });
 }
-function setFileStatusIndicator(status) {
-    iconCls='fa-square';
+function setFileStatusIndicator(fname, status) {
+    console.log(fname, status);
     switch (status) {
         case "saved":
             {
-                $("#fileStatusBlock").css({background: "#58C554", "border-radius": "1px", border: "none", margin: 0});
                 fileIsUnsaved = false;
+                iconCls = 'fa-check-square ';
+                colorCls = 'status-green';
                 break;
             }
         case "changed":
             {
-                $("#fileStatusBlock").css({background: "none", "border-radius": "0px", border: "1px solid #CCC", "margin-left": "-1px", "margin-top": "-1px"});
                 fileIsUnsaved = true;
-                iconCls='fa-pencil-square';
+                iconCls = 'fa-pencil';
+                colorCls = 'status-blue';
                 break;
             }
         case "error":
+            iconCls = 'fa-exclamation-triangle';
+            colorCls = 'status-red';
+            break;
         case "offline":
             {
-                $("#fileStatusBlock").css({background: "#F00", "border-radius": "1px", border: "none", margin: 0});
+                iconCls = 'fa-ban';
+                colorCls = 'status-red';
                 break;
             }
         default:
             {
-                $("#filStatusBlock").css({background: "#333", "border-radius": "1px", border: "none", margin: 0});
+                iconCls = 'fa-square';
+                colorCls = 'status-gray';
             }
     }
-    Ext.getCmp('filetabs').getActiveTab().setIconCls('fa '+iconCls)
+    tab = Ext.getCmp('filetabs').child('[path=' + fname + ']');
+    if (tab) {
+        tab.setIconCls('status-tab fa ' + iconCls + ' ' + colorCls);
+        tab.status = status;
+    }
 }
 //////////////////////////////////////////////////////////////////////////////// 
 //////////////////////////////////////////////////////////////////////////////// 
