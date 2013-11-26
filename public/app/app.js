@@ -82,7 +82,7 @@ Ext.application({
                                 if (this.getEditor()) {
                                     Codespace.app.setToolbarSettings(this);
                                     this.getEditor().resize();
-                                    setFileStatusIndicator(this.status);
+                                    setFileStatusIndicator(this.path,this.status);
                                     
 
                                 }
@@ -95,12 +95,13 @@ Ext.application({
                                 editor = this.getEditor();
                                 //---bind change Event
                                 editor.getSession().on('change', function(a, b, c) {
+                                    fname=Ext.getCmp('filetabs').getActiveTab().path;
                                     if (!ignoreAceChange) {
                                         if (textChangeTimeout !== null) {
                                             clearTimeout(textChangeTimeout);
                                             textChangeTimeout = null;
                                         } else {
-                                            setFileStatusIndicator("changed");
+                                            setFileStatusIndicator(fname,"changed");
                                         }
                                         timeOfLastLocalKepress = (new Date()).getTime();
                                         textChangeTimeout = setTimeout(function() {
@@ -108,7 +109,7 @@ Ext.application({
                                                 return;
                                             }
 
-                                            sendTextChange(Ext.getCmp('filetabs').getActiveTab().path);
+                                            sendTextChange(fname);
                                         }, 350);
                                     }
                                 });
@@ -135,7 +136,7 @@ Ext.application({
                                 ///----unsuscribe
                                 Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                 now.s_leaveFile(this.path);
-                                Codespace.app.updateHash;
+                                Codespace.app.updateHash();
                             }
                         }
                     }

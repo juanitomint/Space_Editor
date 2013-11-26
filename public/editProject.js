@@ -1395,11 +1395,7 @@ now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
     //}
 }
 now.c_fileStatusChanged = function(fname, status) {
-    if (fname == infile) {
-        setFileStatusIndicator(status);
-    } else {
-        console.log("saw file status change for wrong file: " + fname);
-    }
+    setFileStatusIndicator(fname, status);
 }
 
 var alreadyConnected = false;
@@ -1511,7 +1507,7 @@ function saveFileToServer(fname, previousText) {
     });
 }
 function setFileStatusIndicator(fname, status) {
-    console.log(fname, status);
+    //console.log(fname, status);
     switch (status) {
         case "saved":
             {
