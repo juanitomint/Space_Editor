@@ -14,14 +14,35 @@ Ext.application({
     setToolbarSettings: function(me) {
         if (me) {
             Ext.getCmp('EditorToolbar').setDisabled(false);
+            /*
+             //----clear all
+             Ext.getCmp('CodeFolding').setValue(false);
+             Ext.getCmp('WrapLines').setValue(false);
+             Ext.getCmp('HighlightActiveLine').setValue(false);
+             Ext.getCmp('ShowInvisibles').setValue(false); 
+             */
+            console.log('toolbar for file:', me.path);
+            console.log('-----------------------------------------------');
+            console.log('codeFolding', me.codeFolding);
+            console.log('WrapLines', me.useWrapMode);
+            console.log('HighlightActiveLine', me.highlightActiveLine);
+            console.log('ShowInvisibles', me.showInvisible);
+            console.log('FontSize', me.fontSize);
+            console.log('EditorTheme', me.theme);
+            console.log('-----------------------------------------------');
+
             Ext.getCmp('CodeFolding').setValue(me.codeFolding);
             Ext.getCmp('WrapLines').setValue(me.useWrapMode);
             Ext.getCmp('HighlightActiveLine').setValue(me.highlightActiveLine);
             Ext.getCmp('ShowInvisibles').setValue(me.showInvisible);
+            Ext.getCmp('FontSize').setValue(me.fontSize);
+            Ext.getCmp('EditorTheme').setValue(me.theme);
+
+
         } else {
             Ext.getCmp('EditorToolbar').setDisabled(true);
         }
-        console.log(Ext.getCmp('filetabs').getActiveTab());
+
     },
     resizeTabs: function() {
         tabs = Ext.getCmp('filetabs');

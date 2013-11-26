@@ -95,16 +95,16 @@ Ext.define('Codespace.view.FileTree', {
                             theme: 'chrome',
                             parser: parser,
                             fontSize: '15px',
+                            highlightActiveLine:true,
+                            codeFolding:true,
                             useWrapMode:false,
                             showInvisible: false,
-                            codeFolding:true,
-                            highlightActiveLine:true,
                             printMargin: false,
                             listeners: {
                                 activate: function() {
                                     if (this.getEditor()) {
-                                        this.getEditor().resize();
                                         Codespace.app.setToolbarSettings(this);
+                                        this.getEditor().resize();
                                     }
                                 },
                                 editorcreated: function() {
@@ -145,7 +145,7 @@ Ext.define('Codespace.view.FileTree', {
                                     if (specifiedFileToOpen) {
                                         openFileFromServer(specifiedFileToOpen, true, this.getEditor());
                                         Ext.getCmp('filetabs').setActiveTab(this);
-                                        Codespace.app.setToolbarSettings(tab);
+                                        Codespace.app.setToolbarSettings(this);
                                     } else {
                                         // error openFileFromServer("app.js", true);
                                     }

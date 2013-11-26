@@ -10,8 +10,19 @@ Ext.define('Codespace.view.ToolBar', {
             menu: new Ext.menu.Menu({
                 items: [
                     {text: 'New'},
-                    {text: 'Save'},
-                    {text: 'Close'}
+                    {
+                        text: 'Save',
+                        cmdTxt: 'Ctrl+s',
+                        handler: function() {
+                            me = Ext.getCmp('filetabs').getActiveTab();
+                            saveFileToServer(me.path, me.editor.getSession().getValue());
+                        }
+                    },
+                    {text: 'Close',
+                        handler: function() {
+                            Ext.getCmp('filetabs').getActiveTab().close();
+                        }
+                    }
                 ]
             })
         },
@@ -47,9 +58,9 @@ Ext.define('Codespace.view.ToolBar', {
                 //-----Editor Theme----
                 'Editor Theme',
                 {
+                    id: 'EditorTheme',
                     xtype: 'combo',
                     mode: 'local',
-                    id: 'ThemeeCombo',
                     triggerAction: 'all',
                     editable: false,
                     name: 'Theme',
@@ -177,7 +188,7 @@ Ext.define('Codespace.view.ToolBar', {
                 //-----Checkboxes
 
                 {
-                    id:'ShowInvisibles',
+                    id: 'ShowInvisibles',
                     checked: false,
                     xtype: 'checkbox',
                     handler: function()
@@ -199,7 +210,7 @@ Ext.define('Codespace.view.ToolBar', {
                         me.useWrapMode = (me.useWrapMode) ? false : true;
                         me.editor.getSession().setUseWrapMode(me.useWrapMode);
                     },
-                },'Wrap Lines',
+                }, 'Wrap Lines',
                 {
                     text: 'Code Folding',
                     id: 'CodeFolding',
@@ -227,7 +238,28 @@ Ext.define('Codespace.view.ToolBar', {
 
 
                 },
-                'Active Line'
+                'Active Line',
+                'Font Size:',
+                {
+                    id: 'FontSize',
+                    fieldStyle: 'text-align: right',
+                    hideLabel: true,
+                    xtype: 'numberfield',
+                    //value: me.fontSize,
+                    minValue: 6,
+                    maxValue: 72,
+                    flex: 0,
+                    plain: true,
+                    listeners: {
+                        change: function(field, value)
+                        {
+                            me.fontSize = value;
+                            me.setFontSize(me.fontSize + "px");
+                        }
+                    }
+                }
+
+
             ]
         },
         //----END Editor Toolbar
