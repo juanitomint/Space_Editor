@@ -1513,6 +1513,7 @@ function saveFileToServer(fname, previousText) {
     });
 }
 function setFileStatusIndicator(status) {
+    iconCls='fa-square';
     switch (status) {
         case "saved":
             {
@@ -1524,6 +1525,7 @@ function setFileStatusIndicator(status) {
             {
                 $("#fileStatusBlock").css({background: "none", "border-radius": "0px", border: "1px solid #CCC", "margin-left": "-1px", "margin-top": "-1px"});
                 fileIsUnsaved = true;
+                iconCls='fa-pencil-square';
                 break;
             }
         case "error":
@@ -1537,6 +1539,7 @@ function setFileStatusIndicator(status) {
                 $("#filStatusBlock").css({background: "#333", "border-radius": "1px", border: "none", margin: 0});
             }
     }
+    Ext.getCmp('filetabs').getActiveTab().setIconCls('fa '+iconCls)
 }
 //////////////////////////////////////////////////////////////////////////////// 
 //////////////////////////////////////////////////////////////////////////////// 
