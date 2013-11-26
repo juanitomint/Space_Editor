@@ -736,12 +736,11 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
     }
-    var cInfo = allCollabInfo[fromUserId];
-    if (cInfo == undefined) {
+    //---set the collabinfo
+    if (allCollabInfo[fromUserId]== undefined) {
         allCollabInfo[fromUserId] = [];
-        cInfo = allCollabInfo[fromUserId];
-        cInfo['name'] = fromUserName;
-        cInfo['timeLastSeen'] = 0;
+        allCollabInfo[fromUserId]['name'] = fromUserName;
+        allCollabInfo[fromUserId]['timeLastSeen'] = 0;
     }
     console.log("UserEvent: " + event + " >> " + fromUserName);
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
@@ -1192,7 +1191,150 @@ var patchingInProcess = false;
 var dmp = new diff_match_patch();
 dmp.Diff_Timeout = 1;
 dmp.Diff_EditCost = 4;
+var updateWithDiffPatchesLocal = function(id, patches, md5) {
+    editor=Ext.getCmp('filetabs').getActiveTab().getEditor();
+    if (patchingInProcess) {
+        console.log("patching in process.. queued action.");
+        patchQueue.push({id: id, patches: patches, md5: md5});
+        return;
+    }
+    patchingInProcess = true;
+    var t = (new Date()).getTime();
+    if (id != now.core.clientId) {
+        console.log("patching from user: " + id + ", md5=" + md5);
+        //console.log("PATCHES");
+        //console.log(patches);
 
+        var currentText = editor.getSession().getValue();
+        var localChangeJustSent = sendTextChange(Ext.getCmp('filetabs').getActiveTab().path); // make sure we send any outstanding changes before we apply remote patches.
+
+        var results = dmp.patch_apply(patches, currentText);
+        var newText = results[0];
+
+        // TODO: get text around cursor and then use it later for a fuzzy-match to keep it in the same spot.
+        //console.log("DIFF TO DELTAS");
+        var diff = dmp.diff_main(currentText, newText);
+        var deltas = dmp.diff_toDelta(diff).split("\t");
+        //console.log(deltas);
+
+        var doc = editor.getSession().doc;
+
+        //
+        // COMPUTE THE DIFF FROM THE PATCH AND ACTUALLY INSERT/DELETE TEXT VIA THE EDITOR (AUTO TRACKS CURSOR, AND DOESN'T RESET THE ENTIRE TEXT FIELD).
+        //
+        var offset = 0;
+        var row = 1;
+        var col = 1;
+        var aceDeltas = [];
+        for (var i = 0; i < deltas.length; i++) {
+            var type = deltas[i].charAt(0);
+            var data = decodeURI(deltas[i].substring(1));
+            //console.log(type + " >> " + data);
+            switch (type) {
+                case "=":
+                    { // equals for number of characters.
+                        var sameLen = parseInt(data);
+                        for (var j = 0; j < sameLen; j++) {
+                            if (currentText.charAt(offset + j) == "\n") {
+                                row++;
+                                col = 1;
+                            } else {
+                                col++;
+                            }
+                        }
+                        offset += sameLen;
+                        break;
+                    }
+                case "+":
+                    { // add string.
+                        var newLen = data.length;
+                        //console.log("at row="+row+" col="+col+" >> " + data);
+                        var aceDelta = {
+                            action: "insertText",
+                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (row - 1), column: (col - 1)}}, //Range.fromPoints(position, end),
+                            text: data
+                        };
+                        aceDeltas.push(aceDelta);
+                        var innerRows = data.split("\n");
+                        var innerRowsCount = innerRows.length - 1;
+                        row += innerRowsCount;
+                        if (innerRowsCount <= 0) {
+                            col += data.length;
+                        } else {
+                            col = innerRows[innerRowsCount].length + 1;
+                        }
+                        //console.log("ended at row="+row+" col="+col);
+                        break;
+                    }
+                case "-":
+                    { // subtract number of characters.
+                        var delLen = parseInt(data);
+                        //console.log("at row="+row+" col="+col+" >> " + data);
+                        var removedData = currentText.substring(offset, offset + delLen);
+                        //console.log("REMOVING: " + removedData);
+                        var removedRows = removedData.split("\n");
+                        //console.log(removedRows);
+                        var removedRowsCount = removedRows.length - 1;
+                        //console.log("removed rows count: " + removedRowsCount);
+                        var endRow = row + removedRowsCount;
+                        var endCol = col;
+                        if (removedRowsCount <= 0) {
+                            endCol = col + delLen;
+                        } else {
+                            endCol = removedRows[removedRowsCount].length + 1;
+                        }
+                        //console.log("end delete selection at row="+endRow+" col="+endCol);
+                        var aceDelta = {
+                            action: "removeText",
+                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (endRow - 1), column: (endCol - 1)}}, //Range.fromPoints(position, end),
+                            text: data
+                        };
+                        aceDeltas.push(aceDelta);
+                        //console.log("ended at row="+row+" col="+col);      
+                        offset += delLen;
+                        break;
+                    }
+            }
+        }
+
+        ignoreAceChange = true;
+        doc.applyDeltas(aceDeltas);
+        previousText = newText;
+        ignoreAceChange = false;
+
+        if (!localChangeJustSent && (t - timeOfLastLocalChange) > 2000) {
+            //console.log("no local changes have been made in a couple seconds >> md5 should match..");
+            var newMD5 = Crypto.MD5(newText);
+            if (md5 == newMD5) {
+                setFileStatusIndicator("changed");
+            } else {
+                setFileStatusIndicator("error");
+                console.log("** OH NO: MD5 mismatch. this=" + newMD5 + ", wanted=" + md5);
+                now.s_requestFullFileFromUserID(infile, id, function(fname, fdata, err, isSaved) {
+                    if (fname != infile) {
+                        console.log("Oh No! They sent me a file that I don't want: " + fname);
+                        return;
+                    }
+                    console.log("### FULL FILE UPDATE (from remote user)...");
+                    var patch_list = dmp.patch_make(previousText, fdata);
+                    var patch_text = dmp.patch_toText(patch_list);
+                    var patches = dmp.patch_fromText(patch_text);
+                    var md5 = Crypto.MD5(fdata);
+                    updateWithDiffPatchesLocal(id, patches, md5);
+                });
+            }
+        }
+        timeOfLastPatch = t;
+    } else {
+        console.log("saw edit from self. not using it.");
+    }
+    patchingInProcess = false;
+    if (patchQueue.length > 0) {
+        console.log("Patching from Queue! DOUBLE CHECK THIS.");
+        var nextPatch = patchQueue.shift(); // get the first patch off the queue.
+        updateWithDiffPatchesLocal(nextPatch.id, nextPatch.patches, nextPatch.md5);
+    }
+}
 // -----------------------------------------
 // Now.JS Client-side functions.
 // -----------------------------------------
@@ -1351,7 +1493,7 @@ function openFileFromServer(fname, forceOpen, editor) {
     }
 }
 function saveFileToServer(fname, previousText) {
-    if (preciousText == null) {
+    if (previousText == null) {
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
         editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
         previousText = editor.getSession().getValue();

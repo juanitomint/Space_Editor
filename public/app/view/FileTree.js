@@ -66,6 +66,11 @@ Ext.define('Codespace.view.FileTree', {
     }, //----end initComponent
     listeners: {
         itemdblclick: function(me, record, item, index, e, eOpts) {
+            //---if tab exists make it the active one
+            if(Ext.getCmp(record.data.id + '-tab')){
+                 Ext.getCmp('filetabs').setActiveTab(Ext.getCmp(record.data.id + '-tab'));
+                return;
+            }
             n = me.getSelectionModel().getSelection()[0];
             extension_map = {
                 js: 'javascript',
@@ -80,6 +85,7 @@ Ext.define('Codespace.view.FileTree', {
                 pl: 'perl'
             };
             //---only do something if its leaf
+            
             if (n && n.isLeaf()) {
                 tabs = Ext.getCmp('filetabs');
                 f = record.data.path.split('.');
@@ -127,7 +133,8 @@ Ext.define('Codespace.view.FileTree', {
                                                 if (!nowIsOnline) {
                                                     return;
                                                 }
-                                                sendTextChange();
+                                                
+                                                sendTextChange(Ext.getCmp('filetabs').getActiveTab().path);
                                             }, 350);
                                         }
                                     });

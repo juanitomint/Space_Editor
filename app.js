@@ -998,7 +998,8 @@ function addUserToGroup(userObj, groupname) {
         //if (fname.length > 0) {
         var teamgroup = nowjs.getGroup(userObj.teamID);
         //} 
-        
+        //----tell others user has joined
+        g.now.c_processUserEvent("join", userObj.clientId, userObj.name);
         console.log("Added user " + userObj.clientId + " to group: " + groupname);
     } else {
         console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
