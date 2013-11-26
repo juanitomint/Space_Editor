@@ -19,6 +19,9 @@ Ext.define('Codespace.store.FileTree', {
             direction: 'ASC'
         }],
     listeners: {
+        load: function() {
+            now.s_updateTree();
+        },
         init: function() {
             // this.store.load()
         }

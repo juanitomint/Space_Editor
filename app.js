@@ -608,7 +608,6 @@ nowjs.on('connect', function() {
     this.user.grouplist = []; // file groups starts out empty.
     addUserToGroup(this.user, this.user.teamID); // the blank file group is the the team group.
     this.now.c_confirmProject(this.user.teamID);
-    update_all_trees();
 });
 nowjs.on('disconnect', function() {
     //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
@@ -635,6 +634,14 @@ nowjs.on('disconnect', function() {
 });
 //---------
 // NOW: Remote collab messages.
+everyone.now.s_updateTree=function(){
+  for (var fname in groupFilesUsers) {
+        if (fname != '') {
+            if (groupFilesUsers[fname])
+                this.now.c_setUsersInFile(fname, groupFilesUsers[fname].length);
+        }
+    }
+}
 everyone.now.s_setTeamID=function (val){
     this.user.teamID=val;
     addUserToGroup(this.user, this.user.teamID);
@@ -1021,7 +1028,6 @@ function addUserToFileGroup(userObj, fname) {
     update_all_trees();
 }
 function update_all_trees() {
-    console.log('groupFilesUsers', groupFilesUsers);
     for (var fname in groupFilesUsers) {
         if (fname != '') {
             if (groupFilesUsers[fname])

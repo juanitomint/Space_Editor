@@ -9,7 +9,7 @@ Ext.application({
     //,controllers: ['Station', 'Song']
     launch: function() {
         //load files
-        //Ext.getCmp('FileTree').store.load();
+        
     },
     setToolbarSettings: function(me) {
         if (me) {
