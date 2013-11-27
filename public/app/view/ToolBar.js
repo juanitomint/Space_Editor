@@ -3,22 +3,28 @@ Ext.define('Codespace.view.ToolBar', {
     xtype: 'toolbar',
     alias: 'widget.maintoolbar',
     items: [
-        '<span class="codespace">CodeSpace</span>',
+        '<span class="codespace"><i class="fa fa-code"></i> CodeSpace</span>',
         {
             text: 'File',
             xtype: 'splitbutton',
             menu: new Ext.menu.Menu({
                 items: [
-                    {text: 'New'},
+                    {
+                        text: 'New',
+                        iconCls: 'fa fa-file-o'
+                    },
                     {
                         text: 'Save',
+                        iconCls: 'fa fa-save',
                         cmdTxt: 'Ctrl+s',
                         handler: function() {
                             me = Ext.getCmp('filetabs').getActiveTab();
                             saveFileToServer(me.path, me.editor.getSession().getValue());
                         }
                     },
-                    {text: 'Close',
+                    {
+                        text: 'Close',
+                        iconCls: 'fa fa-times',
                         handler: function() {
                             Ext.getCmp('filetabs').getActiveTab().close();
                         }

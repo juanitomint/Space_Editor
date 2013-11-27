@@ -1470,14 +1470,10 @@ function openFileFromServer(fname, forceOpen, editor) {
             ignoreAceChange = false;
             editor.setReadOnly(false);
             // auto fold things that are code (html is an expection...)
-
-            //autoFoldCodeProgressive();
             previousText = editor.getSession().getValue();
-            if (isSaved) {
-                setFileStatusIndicator(fname, "saved");
-            } else {
-                setFileStatusIndicator(fname, "changed");
-            }
+            //autoFoldCodeProgressive();
+            setFileStatusIndicator(fname, "ok");
+            
             removeAllCollaborators();
             ifOnlineLetCollaboratorsKnowImHere();
             openIsPending = false;
@@ -1507,12 +1503,19 @@ function saveFileToServer(fname, previousText) {
     });
 }
 function setFileStatusIndicator(fname, status) {
-    //console.log(fname, status);
+    console.log(fname, status);
     switch (status) {
+        case "ok":
+            {
+                fileIsUnsaved = false;
+                iconCls = 'fa-check-square';
+                colorCls = 'status-green';
+                break;
+            }
         case "saved":
             {
                 fileIsUnsaved = false;
-                iconCls = 'fa-check-square ';
+                iconCls = 'fa-cloud-upload';
                 colorCls = 'status-green';
                 break;
             }
@@ -1529,7 +1532,7 @@ function setFileStatusIndicator(fname, status) {
             break;
         case "offline":
             {
-                iconCls = 'fa-ban';
+                iconCls = 'fa-unlink';
                 colorCls = 'status-red';
                 break;
             }

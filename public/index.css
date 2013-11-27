@@ -25,6 +25,9 @@ body {
 .status-tab{
    // text-shadow: 2px 2px 2px #888;
 }
+.status-black{
+    color:#0000;
+}
 .status-red{
     color:#ff3333;
 }

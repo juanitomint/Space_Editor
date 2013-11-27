@@ -132,7 +132,7 @@ Ext.application({
                                     // error openFileFromServer("app.js", true);
                                 }
                             },
-                            close: function() {
+                            destroy: function() {
                                 ///----unsuscribe
                                 Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                 now.s_leaveFile(this.path);
