@@ -1166,7 +1166,7 @@ function removeAllCollaborators(fname) {
     for (var prop in allCollabInfo) {
         if (allCollabInfo.hasOwnProperty(prop)) {
             var cInfo = allCollabInfo[prop];
-            console.log("trying to remove: " + cInfo[fname]['name']+" from "+fname);
+            //console.log("trying to remove: " + cInfo[fname]['name']+" from "+fname);
             cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
         }
     }
