@@ -17,6 +17,7 @@ Ext.define('Codespace.view.Viewport', {
 
             },
             {
+                title:'<i class="fa fa-comment"></i> (2)',
                 region: 'east', // position for region
                 xtype: 'panel',
                 width: 300,
@@ -33,11 +34,9 @@ Ext.define('Codespace.view.Viewport', {
                                 title: 'chat',
                                 id: 'chat-tab',
                                 iconCls: 'fa fa-comments',
-                                items: [
-                                    {
-                                        autoScroll: true,
-                                        height:800,
-                                        html: '<ol class="discussion">\n\
+                                scroll: 'vertical',
+                                overflowY:'scroll',
+                                html: '<ol class="discussion">\n\
     <li class="other">\n\
       <div class="avatar">\n\
         <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
@@ -126,10 +125,6 @@ Ext.define('Codespace.view.Viewport', {
       </div>\n\
     </li>\n\
   </ol>'
-
-                                    }
-
-                                ]
                             }
                             //----chat tab
                         ]
