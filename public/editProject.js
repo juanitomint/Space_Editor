@@ -774,17 +774,22 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
         // remove the user's marker, they just left!
         var cInfo = allCollabInfo[fromUserId];
         if (cInfo != undefined) {
+            console.log('cInfo', cInfo)
+            cInfo[fname] = cInfo[fname] || [];
             cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
-            editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
-            if (editor) {
-                var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
-                var ses = editor.getSession();
-                if (lastCursorID !== undefined) {
-                    ses.removeMarker(lastCursorID); // remove collaborator's cursor.
-                }
-                var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
-                if (lastSelID !== undefined) {
-                    ses.removeMarker(lastSelID); // remove collaborator's selection.
+            tab = Ext.getCmp(fname_stripped + '-tab');
+            if (tab) {
+                editor = tab.getEditor();
+                if (editor) {
+                    var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
+                    var ses = editor.getSession();
+                    if (lastCursorID !== undefined) {
+                        ses.removeMarker(lastCursorID); // remove collaborator's cursor.
+                    }
+                    var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
+                    if (lastSelID !== undefined) {
+                        ses.removeMarker(lastSelID); // remove collaborator's selection.
+                    }
                 }
             }
             cInfo[fname]['isShown'] = false;
@@ -1115,45 +1120,34 @@ function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
     for (var prop in allCollabInfo) {
         if (allCollabInfo.hasOwnProperty(prop)) {
             var cInfo = allCollabInfo[prop];
-            if (cInfo['isShown']) {
-                var tDiff = t - cInfo['timeLastSeen'];
+            if (cInfo[fname]['isShown']) {
+                var tDiff = t - cInfo[fname]['timeLastSeen'];
                 if (tDiff > TIME_UNTIL_GONE) {
-                    console.log("Looks like " + cInfo['name'] + " is no longer around.");
-                    var lastCursorID = cInfo['lastCursorMarkerID'];
+                    console.log("Looks like " + cInfo['name'] + " is no longer around in: "+fname);
+                    var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
                     var ses = editor.getSession();
                     if (lastCursorID !== undefined) {
                         ses.removeMarker(lastCursorID); // remove collaborator's cursor.
                     }
-                    var lastSelID = cInfo['lastSelectionMarkerID'];
+                    var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
                     if (lastSelID !== undefined) {
                         ses.removeMarker(lastSelID); // remove collaborator's selection.
                     }
-                    cInfo['isShown'] = false;
+                    cInfo[fname]['isShown'] = false;
                 } else {
                     activeCollabs++;
                 }
             }
         }
     }
+    
+    /*
     if (activeCollabs > 0) {
-        $("#whoAreThey").html("+" + activeCollabs);
-        if (activeCollabs == 1) {
-            $("#whoAreThey").attr("title", activeCollabs + " other person collaborating");
-        } else {
-            $("#whoAreThey").attr("title", activeCollabs + " other people collaborating");
-        }
+        
     } else {
-        $("#whoAreThey").html("0");
-        $("#whoAreThey").attr("title", "No one else is collaborating");
+        
     }
-    $(".notificationItem").each(function(index, el) {
-        var pt = $(el).attr('postTime');
-        if ((t - pt) > NOTIFICATION_TIMEOUT) {
-            $(el).fadeOut(500, function() {
-                $(el).remove();
-            });
-        }
-    });
+    
     // auto-save if neccessary...
     var saveRequestedForRemoteUser = ((t - timeOfLastPatch) > 10000 && Math.random() > 0.7);
     var saveRequestedForMe = (timeOfLastPatch < timeOfLastLocalChange && (t - timeOfLastLocalChange) > 2000);
@@ -1165,17 +1159,18 @@ function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
         console.log("AUTO SAVE! ");
         saveFileToServer();
     }
+    */
 }
-function removeAllCollaborators() {
+function removeAllCollaborators(fname) {
     console.log("Removing all previous collaborators...");
     for (var prop in allCollabInfo) {
         if (allCollabInfo.hasOwnProperty(prop)) {
             var cInfo = allCollabInfo[prop];
-            console.log("trying to remove: " + cInfo['name']);
-            cInfo['timeLastSeen'] -= TIME_UNTIL_GONE;
+            console.log("trying to remove: " + cInfo[fname]['name']+" from "+fname);
+            cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
         }
     }
-    ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave();
+    ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave(fname);
 }
 // -----------------------------------------
 // Diff-Match-Patch.
@@ -1473,8 +1468,8 @@ function openFileFromServer(fname, forceOpen, editor) {
             previousText = editor.getSession().getValue();
             //autoFoldCodeProgressive();
             setFileStatusIndicator(fname, "ok");
-            
-            removeAllCollaborators();
+
+            removeAllCollaborators(fname);
             ifOnlineLetCollaboratorsKnowImHere();
             openIsPending = false;
         });

@@ -270,6 +270,13 @@ Ext.define('Codespace.view.ToolBar', {
 
             ]
         },
+        //-----logout
+        {
+            text:'<i class="fa fa-power-off"></i>',
+            handler:function(){
+                window.location='/logout'
+            }
+        }
         //----END Editor Toolbar
     ]
 });

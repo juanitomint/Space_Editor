@@ -49,6 +49,7 @@ Ext.application({
             css: 'css',
             less: 'less',
             html: 'html',
+            htm: 'html',
             xml: 'xml',
             json: 'jscript',
             svg: 'svg',

@@ -1054,7 +1054,8 @@ function removeUserFromFileGroup(userObj, fname) {
             groupFilesUsers[fname].splice(i, 1);
         }
     }
-    console.log('removed', groupFilesUsers);
+    console.log('removed');
+    console.log(groupFilesUsers);
     console.log('-----------------------------------------------');
 
     if (fname && fname !== "") {

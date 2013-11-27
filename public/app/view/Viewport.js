@@ -17,7 +17,6 @@ Ext.define('Codespace.view.Viewport', {
 
             },
             {
-                title: 'East Region is resizable',
                 region: 'east', // position for region
                 xtype: 'panel',
                 width: 300,
