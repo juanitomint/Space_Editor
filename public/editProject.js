@@ -914,7 +914,11 @@ function followMe() {
 }
 function groupChatMsg(fromUserName, msg, me) {
     add = (me) ? 'self' : 'other';
-    Ext.get('chat-ol').createChild('<li class="'+add+'"><div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div><div class="messages">'+msg+'<time datetime="2009-11-13T20:00">Timothy • 51 min</time></div></li>');
+    avatar='<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
+    avatar='<div class="avatar"></div>';
+    
+    timeStamp='<time datetime="2009-11-13T20:00">'+fromUserName+'</time>';
+    Ext.get('chat-ol').createChild('<li class="'+add+'">'+avatar+' <div class="messages">'+msg+timeStamp+'</div></li>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
