@@ -609,8 +609,8 @@ function openShiftShiftAsCommit() {
 var userColorMap = ["#9DDC23", "#00FFFF", "#FF308F", "#FFD400", "#FF0038", "#7C279B", "#FF4E00", "#6C8B1B", "#0A869B"];
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     var t = (new Date()).getTime();
-    $("#notifications").append("<div class='notificationItem' style='border-top-color: " + userColor + ";' postTime='" + t + "'><span>" + fromUserName + ":</span> " + msg + "</div>");
-    $("#logWindowContent").append("<div class='logItem'><div class='logItemTop' style='border-top-color: " + userColor + ";'></div><span>" + fromUserName + ":</span> " + msg + "</div>").stop().animate({scrollTop: ($("#logWindowContent")[0].scrollHeight - $("#logWindowContent").height())}, 250);
+    
+    
 }
 function toggleLog() {
     if ($("#logWindow").is(":visible")) {
@@ -913,8 +913,17 @@ function followMe() {
     now.s_followMe(fname);
 }
 function groupChatMsg(fromUserName, msg, me) {
-    add = (me) ? 'Me' : 'Other';
-    $('#groupMsg').append('<div class="groupChatMsg groupChat' + add + '">' + fromUserName + ':<br/>' + msg + '</div>');
+    add = (me) ? 'self' : 'other';
+    Ext.get('chat-ol').appendChild('\n\
+<li class="'+add+'">\n\
+      <div class="avatar">\n\
+        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg" />\n\
+      </div>\n\
+      <div class="messages">\n\
+'+msg+'<time datetime="2009-11-13T20:00">Timothy • 51 min</time>\n\
+      </div>\n\
+    </li>\n\
+');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");

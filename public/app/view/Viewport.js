@@ -17,14 +17,15 @@ Ext.define('Codespace.view.Viewport', {
 
             },
             {
-                title:'<i class="fa fa-comment"></i> (2)',
+                title: '<i class="fa fa-comment"></i> (2)',
                 region: 'east', // position for region
+                id:'util-panel',
                 xtype: 'panel',
                 width: 300,
                 split: true, // enable resizing
                 collapsible: true, // make collapsible
                 collapsed: false,
-                layout:'fit',
+                layout: 'fit',
                 items: [
                     {
                         id: 'utiltabs',
@@ -34,8 +35,8 @@ Ext.define('Codespace.view.Viewport', {
                             {
                                 title: 'chat',
                                 id: 'chat-tab',
-                                autoScroll:true,
-                                overflowY:'scroll',
+                                autoScroll: true,
+                                overflowY: 'scroll',
                                 html: '<ol id="chat-ol" class="discussion"></ol>'
                             }
                             //----chat tab
@@ -50,9 +51,28 @@ Ext.define('Codespace.view.Viewport', {
                 },
                 bbar: [
                     {
-                        xtype: 'textfield',
-                        name: 'say',
-                        emptyText: 'type your message here'
+                        id: 'chat-input',
+                        xtype: 'textareafield',
+                        name: 'message',
+                        height: 40,
+                        enableKeyEvents: true,
+                        width: '100%',
+                        listeners: {
+                            keypress: function(field, e) {
+                                if (e.getKey() == e.ENTER) {
+                                    now.s_teamMessageBroadcast("personal", this.value);
+                                    this.setValue('');
+                                }
+                            },
+                            specialkey: function(field, e) {
+                                // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
+                                // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
+                                if (e.getKey() == e.ESC) {
+                                    //----collapse chat tab
+                                    Ext.getCmp('util-panel').collapse();
+                                }
+                            }
+                        }
                     }
                 ]
             }, {

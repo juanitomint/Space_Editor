@@ -1,6 +1,6 @@
 Ext.define('Codespace.view.ToolBar', {
     extend: 'Ext.toolbar.Toolbar',
-    xtype: 'toolbar',
+    xtype: 'codespace.toolbar',
     alias: 'widget.maintoolbar',
     items: [
         '<span class="codespace"><i class="fa fa-code"></i> CodeSpace</span>',
