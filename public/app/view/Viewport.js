@@ -61,7 +61,7 @@ Ext.define('Codespace.view.Viewport', {
                             keypress: function(field, e) {
                                 if (e.getKey() == e.ENTER) {
                                     now.s_teamMessageBroadcast("personal", this.value);
-                                    this.setValue('');
+                                    this.setValue();
                                 }
                             },
                             specialkey: function(field, e) {
