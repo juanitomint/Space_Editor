@@ -24,6 +24,7 @@ Ext.define('Codespace.view.Viewport', {
                 split: true, // enable resizing
                 collapsible: true, // make collapsible
                 collapsed: false,
+                layout:'fit',
                 items: [
                     {
                         id: 'utiltabs',
@@ -33,98 +34,9 @@ Ext.define('Codespace.view.Viewport', {
                             {
                                 title: 'chat',
                                 id: 'chat-tab',
-                                iconCls: 'fa fa-comments',
-                                scroll: 'vertical',
+                                autoScroll:true,
                                 overflowY:'scroll',
-                                html: '<ol class="discussion">\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>yeah, they do early flights cause they connect with big airports.  they wanna get u to your connection</p>\n\
-        <time datetime="2009-11-13T20:00">Timothy • 51 min</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="self">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>That makes sense.</p>\n\
-        <p>It\'\s a pretty small airport.</p>\n\
-        <time datetime="2009-11-13T20:14">37 mins</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>that mongodb thing looks good, huh?</p>\n\
-        <p>\n\
-          tiny master db, and huge document store</p>\n\
-      </div>\n\
-    </li>\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>yeah, they do early flights cause they connect with big airports.  they wanna get u to your connection</p>\n\
-        <time datetime="2009-11-13T20:00">Timothy • 51 min</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="self">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>That makes sense.</p>\n\
-        <p>It\'\s a pretty small airport.</p>\n\
-        <time datetime="2009-11-13T20:14">37 mins</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>that mongodb thing looks good, huh?</p>\n\
-        <p>\n\
-          tiny master db, and huge document store</p>\n\
-      </div>\n\
-    </li>\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>yeah, they do early flights cause they connect with big airports.  they wanna get u to your connection</p>\n\
-        <time datetime="2009-11-13T20:00">Timothy • 51 min</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="self">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>That makes sense.</p>\n\
-        <p>It\'\s a pretty small airport.</p>\n\
-        <time datetime="2009-11-13T20:14">37 mins</time>\n\
-      </div>\n\
-    </li>\n\
-    <li class="other">\n\
-      <div class="avatar">\n\
-        <img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/5/profile/profile-80_9.jpg" />\n\
-      </div>\n\
-      <div class="messages">\n\
-        <p>that mongodb thing looks good, huh?</p>\n\
-        <p>\n\
-          tiny master db, and huge document store</p>\n\
-      </div>\n\
-    </li>\n\
-  </ol>'
+                                html: '<ol id="chat-ol" class="discussion"></ol>'
                             }
                             //----chat tab
                         ]
