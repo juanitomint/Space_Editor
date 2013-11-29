@@ -609,8 +609,8 @@ function openShiftShiftAsCommit() {
 var userColorMap = ["#9DDC23", "#00FFFF", "#FF308F", "#FFD400", "#FF0038", "#7C279B", "#FF4E00", "#6C8B1B", "#0A869B"];
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     var t = (new Date()).getTime();
-    
-    
+
+
 }
 function toggleLog() {
     if ($("#logWindow").is(":visible")) {
@@ -719,13 +719,14 @@ function shoutDuplicatedFile(fname, newfname) {
 // ---------------------------------------------------------
 now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
     console.log("msg from " + fromUserId + ": " + message);
-    name = fromUserId;
+    name = fromUserName;
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     notifyAndAddMessageToLog(userColor, fromUserName, msg);
     me = (fromUserId == now.core.clientId) ? true : false;
-    groupChatMsg(fromUserName, msg, me);
+    groupChatMsg(fromUserName, msg, me, userColor);
 }
+now.c_addCollaborator=addCollaborator;
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
@@ -741,9 +742,11 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (event == "join") {
         mostRecentTotalUserCount++;
         notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
+        addCollaborator(fromUserId, fromUserName, userColor)
     } else {
         mostRecentTotalUserCount--;
         notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
+        removeCollaborator(fromUserId)
     }
 }
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
@@ -912,13 +915,29 @@ function followMe() {
 
     now.s_followMe(fname);
 }
-function groupChatMsg(fromUserName, msg, me) {
+function addCollaborator(userId, fromUserName, color) {
+    if (userId && fromUserName && !Ext.get(userId)) {
+        
+        avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
+        avatar = '<div class="avatar"></div>';
+
+        timeStamp = '<time datetime="'+Date()+'"><i class="fa fa-square" style="color:' + color + '"></i>&nbsp;'+fromUserName+'</time>';
+        Ext.get('contact-ol').createChild('<li id="' + userId + '" class="other">' + avatar + ' <div class="messages">' + timeStamp + '</div></li>');
+    }
+}
+function removeCollaborator(userId) {
+    if (Ext.get(userId)) {
+        Ext.get(userId).remove();
+    }
+}
+function groupChatMsg(fromUserName, msg, me, color) {
     add = (me) ? 'self' : 'other';
-    avatar='<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
-    avatar='<div class="avatar"></div>';
-    
-    timeStamp='<time datetime="2009-11-13T20:00">'+fromUserName+'</time>';
-    Ext.get('chat-ol').createChild('<li class="'+add+'">'+avatar+' <div class="messages">'+msg+timeStamp+'</div></li>');
+    color = (me) ? '#444' : color;
+    avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
+    avatar = '<div class="avatar"></div>';
+
+    timeStamp = '<time datetime="'+Date()+'"><span style="color:' + color + ';">' + fromUserName + ':</span></time>';
+    Ext.get('chat-ol').createChild('<li class="' + add + '">' + avatar + ' <div class="messages">' + timeStamp + msg + '</div></li>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");
@@ -982,67 +1001,7 @@ function getURLHashVariable(variable) {
     return null;
 }
 // ---------------------------------------------------------
-function setupJoin(j) {
-    var join = j;
-    var isLR = true;
-    if (!$(join).hasClass("joinLR")) {
-        isLR = false;
-    }
-    var divScreen = $(join).children(".divScreen");
-    if (isLR) {
-        var divLeft = $(join).children(".joinLeft");
-        var divRight = $(join).children(".joinRight");
-        var divBar = $(join).children(".divLR");
-        function updateLR() {
-            var p = divBar.position();
-            divRight.css({left: (p.left + divBar.width()) + "px"});
-            divLeft.css({width: (p.left) + "px"});
-        }
-        updateLR();
-        $(divBar).draggable({
-            axis: "x",
-            containment: join,
-            iframeFix: true,
-            start: function(event, ui) {
-                divScreen.show();
-                updateLR();
-            },
-            drag: function(event, ui) {
-                updateLR();
-            },
-            stop: function(event, ui) {
-                updateLR();
-                divScreen.hide();
-            }
-        });
-    } else {
-        var divTop = $(join).children(".joinTop");
-        var divBottom = $(join).children(".joinBottom");
-        var divBar = $(join).children(".divTB");
-//        function updateTB() {
-//            var p = divBar.position();
-//            divBottom.css({top: (p.top + divBar.height()) + "px"});
-//            divTop.css({height: (p.top) + "px"});
-//        }
-//        updateTB();
-        $(divBar).draggable({
-            axis: "y",
-            containment: join,
-            iframeFix: true,
-            start: function(event, ui) {
-                divScreen.show();
-                updateTB();
-            },
-            drag: function(event, ui) {
-                updateTB();
-            },
-            stop: function(event, ui) {
-                updateTB();
-                divScreen.hide();
-            }
-        });
-    }
-}
+
 //////////////////////////////////////////////////////////////////////////////// 
 //////////////////////////////////////////////////////////////////////////////// 
 // 
@@ -1127,7 +1086,7 @@ function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
             if (cInfo[fname]['isShown']) {
                 var tDiff = t - cInfo[fname]['timeLastSeen'];
                 if (tDiff > TIME_UNTIL_GONE) {
-                    console.log("Looks like " + cInfo['name'] + " is no longer around in: "+fname);
+                    console.log("Looks like " + cInfo['name'] + " is no longer around in: " + fname);
                     var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
                     var ses = editor.getSession();
                     if (lastCursorID !== undefined) {
@@ -1144,26 +1103,26 @@ function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
             }
         }
     }
-    
+
     /*
-    if (activeCollabs > 0) {
-        
-    } else {
-        
-    }
-    
-    // auto-save if neccessary...
-    var saveRequestedForRemoteUser = ((t - timeOfLastPatch) > 10000 && Math.random() > 0.7);
-    var saveRequestedForMe = (timeOfLastPatch < timeOfLastLocalChange && (t - timeOfLastLocalChange) > 2000);
-    var typingInProgress = (timeOfLastLocalKepress > timeOfLastLocalChange);
-    //console.log("typing in progress: " + typingInProgress);
-    //console.log("saveRequestedForMe: " + saveRequestedForMe + ", " + timeOfLastPatch + " <? " +timeOfLastLocalChange);
-    if (fileIsUnsaved && !saveIsPending && !typingInProgress && (saveRequestedForRemoteUser || saveRequestedForMe)) {
-        // save it!
-        console.log("AUTO SAVE! ");
-        saveFileToServer();
-    }
-    */
+     if (activeCollabs > 0) {
+     
+     } else {
+     
+     }
+     
+     // auto-save if neccessary...
+     var saveRequestedForRemoteUser = ((t - timeOfLastPatch) > 10000 && Math.random() > 0.7);
+     var saveRequestedForMe = (timeOfLastPatch < timeOfLastLocalChange && (t - timeOfLastLocalChange) > 2000);
+     var typingInProgress = (timeOfLastLocalKepress > timeOfLastLocalChange);
+     //console.log("typing in progress: " + typingInProgress);
+     //console.log("saveRequestedForMe: " + saveRequestedForMe + ", " + timeOfLastPatch + " <? " +timeOfLastLocalChange);
+     if (fileIsUnsaved && !saveIsPending && !typingInProgress && (saveRequestedForRemoteUser || saveRequestedForMe)) {
+     // save it!
+     console.log("AUTO SAVE! ");
+     saveFileToServer();
+     }
+     */
 }
 function removeAllCollaborators(fname) {
     console.log("Removing all previous collaborators...");

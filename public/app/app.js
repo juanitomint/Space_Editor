@@ -8,7 +8,8 @@ Ext.application({
     stores: ['FileTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
-        //load files
+        Ext.getCmp('utiltabs').setActiveTab(1);
+        Ext.getCmp('utiltabs').setActiveTab(0);
 
     },
     setToolbarSettings: function(me) {
