@@ -647,6 +647,9 @@ everyone.now.s_updateTree = function() {
 everyone.now.s_setTeamID = function(val) {
     this.user.teamID = val;
     addUserToGroup(this.user, this.user.teamID);
+    teamgroup = nowjs.getGroup(this.user.teamID);
+    teamgroup.now.c_addCollaborator(this.user.clientId,this.now.name);
+    
 }
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;

@@ -726,7 +726,10 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     me = (fromUserId == now.core.clientId) ? true : false;
     groupChatMsg(fromUserName, msg, me, userColor);
 }
-now.c_addCollaborator=addCollaborator;
+now.c_addCollaborator=function (userId,name){
+    userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+    addCollaborator(userId,name,userColor);
+}
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
