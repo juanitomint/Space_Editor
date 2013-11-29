@@ -10,6 +10,10 @@ Ext.application({
     launch: function() {
         Ext.getCmp('utiltabs').setActiveTab(1);
         Ext.getCmp('utiltabs').setActiveTab(0);
+        //register into the project and join the group.
+        now.s_setTeamID(PROJECT);
+        now.s_sendUserEvent("join"); // let everyone know who I am!
+        setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
 
     },
     setToolbarSettings: function(me) {
@@ -84,8 +88,8 @@ Ext.application({
                                 if (this.getEditor()) {
                                     Codespace.app.setToolbarSettings(this);
                                     this.getEditor().resize();
-                                    setFileStatusIndicator(this.path,this.status);
-                                    
+                                    setFileStatusIndicator(this.path, this.status);
+
 
                                 }
                             },
@@ -97,13 +101,13 @@ Ext.application({
                                 editor = this.getEditor();
                                 //---bind change Event
                                 editor.getSession().on('change', function(a, b, c) {
-                                    fname=Ext.getCmp('filetabs').getActiveTab().path;
+                                    fname = Ext.getCmp('filetabs').getActiveTab().path;
                                     if (!ignoreAceChange) {
                                         if (textChangeTimeout !== null) {
                                             clearTimeout(textChangeTimeout);
                                             textChangeTimeout = null;
                                         } else {
-                                            setFileStatusIndicator(fname,"changed");
+                                            setFileStatusIndicator(fname, "changed");
                                         }
                                         timeOfLastLocalKepress = (new Date()).getTime();
                                         textChangeTimeout = setTimeout(function() {

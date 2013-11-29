@@ -647,9 +647,15 @@ everyone.now.s_updateTree = function() {
 everyone.now.s_setTeamID = function(val) {
     this.user.teamID = val;
     addUserToGroup(this.user, this.user.teamID);
-    teamgroup = nowjs.getGroup(this.user.teamID);
-    teamgroup.now.c_addCollaborator(this.user.clientId,this.now.name);
-    
+    var teamgroup = nowjs.getGroup(this.user.teamID);
+    for (var clt in teamgroup.users) {
+        if (teamgroup.users.hasOwnProperty(clt)) {
+        var user=teamgroup.users[clt].user
+        //---send userifo to clients
+        if(user.clientId!==this.user.clientId)
+            teamgroup.now.c_addCollaborator(user);
+        }
+    }
 }
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;

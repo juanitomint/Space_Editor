@@ -100,8 +100,17 @@
     /*box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);*/
 }
 
+.contact {
+  background: white;
+    padding: 10px;
+    border-radius: 2px;
+    width:100%;
+    /*  
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    */
+}
 .messages {
-    background: mintcream;
+  background: white;
     padding: 10px;
     border-radius: 2px;
     /*  

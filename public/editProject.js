@@ -726,9 +726,11 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     me = (fromUserId == now.core.clientId) ? true : false;
     groupChatMsg(fromUserName, msg, me, userColor);
 }
-now.c_addCollaborator=function (userId,name){
+now.c_addCollaborator=function (user){
+    name=user.about.name;
     userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    addCollaborator(userId,name,userColor);
+    collaborators[user.clientId]=user.about;
+    addCollaborator(user.clientId,name,userColor);
 }
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
@@ -922,10 +924,10 @@ function addCollaborator(userId, fromUserName, color) {
     if (userId && fromUserName && !Ext.get(userId)) {
         
         avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
-        avatar = '<div class="avatar"></div>';
+        avatar = '<div class="avatar" style="background-color:' + color + '"></div>';
 
-        timeStamp = '<time datetime="'+Date()+'"><i class="fa fa-square" style="color:' + color + '"></i>&nbsp;'+fromUserName+'</time>';
-        Ext.get('contact-ol').createChild('<li id="' + userId + '" class="other">' + avatar + ' <div class="messages">' + timeStamp + '</div></li>');
+        timeStamp = '<time datetime="'+Date()+'">'+fromUserName+'</time>';
+        Ext.get('contact-ol').createChild('<li id="' + userId + '" class="other">' + avatar + ' <div class="contact">' + timeStamp + '</div></li>');
     }
 }
 function removeCollaborator(userId) {
@@ -1040,6 +1042,7 @@ var alreadyRequestedRemoteFile = false;
 var TIME_UNTIL_GONE = 7000;
 var NOTIFICATION_TIMEOUT = 10000;
 var autoCheckStep = 0;
+var collaborators=[];
 function sendTextChange(fname) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     textChangeTimeout = null;
