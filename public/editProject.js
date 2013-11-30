@@ -747,7 +747,6 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (event == "join") {
         mostRecentTotalUserCount++;
         notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
-        addCollaborator(fromUserId, fromUserName, userColor)
     } else {
         mostRecentTotalUserCount--;
         notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
@@ -921,7 +920,7 @@ function followMe() {
     now.s_followMe(fname);
 }
 function addCollaborator(userId, fromUserName, color) {
-    if (userId && fromUserName && !Ext.get(userId)) {
+    if (userId && fromUserName && !Ext.get(userId) && userId !== now.core.clientId) {
         
         avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
         avatar = '<div class="avatar" style="background-color:' + color + '"></div>';
@@ -939,9 +938,9 @@ function groupChatMsg(fromUserName, msg, me, color) {
     add = (me) ? 'self' : 'other';
     color = (me) ? '#444' : color;
     avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
-    avatar = '<div class="avatar"></div>';
+    avatar = '<div class="avatar"  style="background-color:' + color + '"></div>';
 
-    timeStamp = '<time datetime="'+Date()+'"><span style="color:' + color + ';">' + fromUserName + ':</span></time>';
+    timeStamp = '<time datetime="'+Date()+'">' + fromUserName + ':</time>';
     Ext.get('chat-ol').createChild('<li class="' + add + '">' + avatar + ' <div class="messages">' + timeStamp + msg + '</div></li>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {

@@ -41,8 +41,9 @@ Ext.define('Codespace.view.Viewport', {
                                 html: '<ol id="chat-ol" class="discussion"></ol>'
                             },
                             {
-                                title: 'Contacts <span id="contacts-count"></span>',
+                                title: 'Team <span id="contacts-count"></span>',
                                 id: 'contacts-tab',
+                                bodyCls:'discussion',
                                 autoScroll: true,
                                 overflowY: 'scroll',
                                 html: '<ol id="contact-ol" class="discussion"></ol>'

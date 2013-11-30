@@ -213,7 +213,7 @@ app.use(function(req, res, next) {
         req.user = req.user || {};
         res.cookie("_username", req.user.emails[0].value);
         console.log("say hello to new user: " + req.user.displayName);
-        console.log(' knwon as:'+req.user.emails[0].value);
+        console.log(' knwon as:' + req.user.emails[0].value);
     }
     next();
 });
@@ -646,14 +646,16 @@ everyone.now.s_updateTree = function() {
 }
 everyone.now.s_setTeamID = function(val) {
     this.user.teamID = val;
+    clientId=this.now.clientId;
     addUserToGroup(this.user, this.user.teamID);
     var teamgroup = nowjs.getGroup(this.user.teamID);
     for (var clt in teamgroup.users) {
         if (teamgroup.users.hasOwnProperty(clt)) {
-        var user=teamgroup.users[clt].user
-        //---send userifo to clients
-        if(user.clientId!==this.user.clientId)
-            teamgroup.now.c_addCollaborator(user);
+            var user = teamgroup.users[clt].user
+            //---send userifo to clients
+            if (user.about) {
+                    teamgroup.now.c_addCollaborator(user);
+            }
         }
     }
 }
