@@ -50,6 +50,7 @@ body {
                         </i>Password
                     </span>
                     <input name="password" id="pwd inputIcon" class="password span2" type="password">
+                    <input name="fname" id="fname" class="username span2" type="hidden" value="<%= query.fname %>">
                 </div>
 
             </div>
@@ -70,5 +71,10 @@ body {
 <!-- /container -->
         <script src='../js/jquery.min.js'></script>
         <script src="../js/bootstrap/js/bootstrap.min.js"></script>
+        <script language='javascript'>
+        $(document).ready(function(){
+        $('#fname').val(window.location.hash);
+});
+</script>
     </body>
 </html>

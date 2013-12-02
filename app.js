@@ -153,7 +153,10 @@ app.get('/account', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-    res.render('login', {user: req.user});
+    res.render('login', {
+        user: req.user,
+        query: req.query
+    });
 });
 // GET /auth/google
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -188,7 +191,7 @@ function(req, res) {
     req.user = req.user || {};
     res.cookie("_username", req.user.emails[0].value);
     console.log("say hello to new user: " + req.user.displayName);
-    res.redirect('/');
+    res.redirect('/'+req.body.fname);
 });
 
 app.get('/logout', function(req, res) {
