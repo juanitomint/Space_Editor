@@ -11,48 +11,9 @@ Ext.define('Codespace.view.FileTree', {
     contextMenu: Ext.create('Ext.menu.Menu', {
         title: 'File Menu',
         scope: this,
-        items: [
-            //----------NEW FOLDER 
-            Ext.create('Ext.Action', {
-                iconCls: 'fa fa-folder',
-                text: 'Add Folder',
-                handler: function(widget, event) {
-                    tree = Ext.getCmp('FileTree');
-                    var n = tree.getSelectionModel().getSelection()[0];
-                    if (!n.isLeaf()) {
-                        Ext.MessageBox.prompt('New Folder', 'Provide a Folder name:', function(btn, text) {
-                            if (btn == 'ok' && text) {
-                                path=n.data.path + '/' + text
-                                now.s_createNewFolder(path, function(fname, errs) {
-                                    console.log("Created file.. any errors?");
-                                    if (errs) {
-                                        console.log(errs);
-                                        Ext.Msg.alert('Status', 'Error creating file: ' + fname + '<br/>' + errs.code+ '<br/>');
-                                    } else {
-                                        node = {
-                                            id: text,
-                                            name: text + ' <span class="text-new">[new]</span>',
-                                            leaf: false,
-                                            path: path,
-                                            loaded: true
-                                        };
-                                        n.appendChild(node);
-                                        n.set('leaf', false);
-                                        closeFileBrowser();
-                                    }
-                                });
-                            }
-                        }
-                        );
-                    } else {
-                        //---show message
-                        Ext.MessageBox.alert('Error!', "'Can't add a Folder here");
-                    }
-                }
-            }),
-            'Folder Add',
-            'Folder Delete',
-            'File Add'
+        items: ['Folder',
+            CreateFolder,
+            DeleteFolder
         ]
     }),
     columns: [
@@ -107,6 +68,15 @@ Ext.define('Codespace.view.FileTree', {
         }
     ]
     ,
+    bbar: [
+        {
+            iconCls: 'fa fa-refresh',
+            text: 'Reload',
+            handler: function() {
+                Ext.getCmp('FileTree').store.reload();
+            }
+        }
+    ],
     initComponent: function() {
         this.callParent();
     }, //----end initComponent

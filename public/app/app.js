@@ -1,6 +1,81 @@
 Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
     expires: new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)), //7 days from now
 }));
+//---ext actions
+var CreateFolder = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-folder',
+    text: 'Add Folder',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        if (!n.isLeaf()) {
+            Ext.MessageBox.prompt('New Folder', 'Provide a Folder name:', function(btn, text) {
+                if (btn == 'ok' && text) {
+                    path = n.data.path + '/' + text
+                    now.s_createNewFolder(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs) {
+                            console.log(errs);
+                            Ext.MessageBox.show({
+                                title: 'Error!',
+                                msg: 'Error creating folder: ' + fname + '<br/>' + errs[0] + '<br/>',
+                                buttons: Ext.MessageBox.OK,
+                                icon: Ext.MessageBox.ERROR
+                            });
+                        } else {
+                            node = {
+                                id: text,
+                                name: text + ' <span class="text-new">[new]</span>',
+                                leaf: false,
+                                path: path,
+                                loaded: true
+                            };
+                            n.appendChild(node);
+                            n.set('leaf', false);
+                        }
+                    });
+                }
+            }
+            );
+        } else {
+            //---show message
+            Ext.MessageBox.alert('Error!', "'Can't add a Folder here");
+        }
+    }
+});
+var DeleteFolder = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-ban',
+    text: 'Delete Folder',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        if (!n.isLeaf()) {
+            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                if (btn == 'yes') {
+                    path = n.data.path;
+                    now.s_deleteFolder(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs.length) {
+                            console.log(errs);
+                            Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
+                        } else {
+                            n.remove();
+                        }
+
+
+                    });
+                }
+            }
+            );
+        } else {
+            //---show message
+            Ext.MessageBox.alert('Error!', "'Can't add a Folder here");
+        }
+    }
+});
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////BEGIN APP////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
