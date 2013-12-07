@@ -347,7 +347,7 @@ app.get("/getFileTree", function(req, res) {
         showDotFolders = (req.query.showDotFolders) ? true : config.tree.showDotFolders;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
-            filesAndInfo = dirTree(projectRoot, projectRoot + '/');
+            filesAndInfo = dirTree(projectRoot, projectRoot);
             res.setHeader('Content-type', 'application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
         } catch (ex) {
@@ -807,6 +807,9 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
         callback(null, filesAndInfo);
     });
 };
+everyone.now.s_createNewFolder = function(newFoldername, fileCreatorCallback) {
+    localFolderCreate(this.user, newFoldername, fileCreatorCallback);
+};
 everyone.now.s_createNewFile = function(newFilename, fileCreatorCallback) {
     localFileCreate(this.user, newFilename, fileCreatorCallback);
 };
@@ -1150,7 +1153,34 @@ function localFileSave(userObj, fname, fcontents, fileSaverCallback) {
         fileSaverCallback(err);
     });
 }
-// ---------
+// ---------Folder Functions
+function localFolderCreate(userObj, fname, fileCreatorCallback) {
+    var team = userObj.teamID;
+    if (!fname) {
+        return;
+    }
+    var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '');
+    var path = EDITABLE_APPS_DIR + team + "/" + safeFName;
+    try {
+        fs.realpathSync(path);
+        console.log("file already exists.. no need to create it: " + path);
+        fileCreatorCallback(safeFName, ["File already exists. No need to create it."]);
+    } catch (ex) {
+        console.log("file doesn't exist yet. creating it: " + path);
+        fs.mkdir(path, "", function(err) {
+            if (err) {
+                console.log(err);
+            } else {
+                
+            }
+            var teamgroup = nowjs.getGroup(userObj.teamID);
+            var fromUserId = userObj.clientId;
+            teamgroup.now.c_processUserFileEvent(safeFName, "createFolder", fromUserId, 0);
+            fileCreatorCallback(safeFName, err);
+        });
+    }
+}
+// ---------File Functions
 function localFileCreate(userObj, fname, fileCreatorCallback) {
     var team = userObj.teamID;
     if (!fname) {
