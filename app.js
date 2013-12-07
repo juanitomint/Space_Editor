@@ -1171,7 +1171,7 @@ function localFolderCreate(userObj, fname, fileCreatorCallback) {
             if (err) {
                 console.log(err);
             } else {
-                
+           
             }
             var teamgroup = nowjs.getGroup(userObj.teamID);
             var fromUserId = userObj.clientId;
