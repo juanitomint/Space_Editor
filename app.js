@@ -191,7 +191,7 @@ function(req, res) {
     req.user = req.user || {};
     res.cookie("_username", req.user.emails[0].value);
     console.log("say hello to new user: " + req.user.displayName);
-    res.redirect('/'+req.body.fname);
+    res.redirect('/' + req.body.fname);
 });
 
 app.get('/logout', function(req, res) {
@@ -649,7 +649,7 @@ everyone.now.s_updateTree = function() {
 }
 everyone.now.s_setTeamID = function(val) {
     this.user.teamID = val;
-    clientId=this.now.clientId;
+    clientId = this.now.clientId;
     addUserToGroup(this.user, this.user.teamID);
     var teamgroup = nowjs.getGroup(this.user.teamID);
     for (var clt in teamgroup.users) {
@@ -657,7 +657,7 @@ everyone.now.s_setTeamID = function(val) {
             var user = teamgroup.users[clt].user
             //---send userifo to clients
             if (user.about) {
-                    teamgroup.now.c_addCollaborator(user);
+                teamgroup.now.c_addCollaborator(user);
             }
         }
     }
@@ -809,6 +809,9 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
 };
 everyone.now.s_createNewFolder = function(newFoldername, fileCreatorCallback) {
     localFolderCreate(this.user, newFoldername, fileCreatorCallback);
+};
+everyone.now.s_deleteFolder = function(newFoldername, fileCreatorCallback) {
+    localFolderDelete(this.user, newFoldername, fileCreatorCallback);
 };
 everyone.now.s_createNewFile = function(newFilename, fileCreatorCallback) {
     localFileCreate(this.user, newFilename, fileCreatorCallback);
@@ -1159,25 +1162,56 @@ function localFolderCreate(userObj, fname, fileCreatorCallback) {
     if (!fname) {
         return;
     }
-    var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '');
-    var path = EDITABLE_APPS_DIR + team + "/" + safeFName;
+    var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '').replace('//', '/');
+    var path = EDITABLE_APPS_DIR + team + safeFName;
+    path=path.replace('//', '/');
     try {
         fs.realpathSync(path);
         console.log("file already exists.. no need to create it: " + path);
         fileCreatorCallback(safeFName, ["File already exists. No need to create it."]);
     } catch (ex) {
         console.log("file doesn't exist yet. creating it: " + path);
-        fs.mkdir(path, "", function(err) {
-            if (err) {
-                console.log(err);
-            } else {
-           
-            }
+        try {
+            fs.mkdir(path,'644', function(err) {
+                if (err) {
+                    console.log(err);
+                } else {
+
+
+                }
+                var teamgroup = nowjs.getGroup(userObj.teamID);
+                var fromUserId = userObj.clientId;
+                teamgroup.now.c_processUserFileEvent(safeFName, "createFolder", fromUserId, 0);
+                fileCreatorCallback(safeFName, err);
+            });
+        } catch (err) {
+            fileCreatorCallback(safeFName, err);
+        }
+    }
+}
+function localFolderDelete(userObj, fname, folderDeleterCallback) {
+    var team = userObj.teamID;
+    if (!fname) {
+        return;
+    }
+    var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '').replace('//', '/');
+    var path = EDITABLE_APPS_DIR + team + "/" + safeFName;
+    path=path.replace('//', '/');
+    try {
+        fs.realpathSync(path);
+        console.log("all set to delete folder: " + path);
+        fs.rmdir(path, function(err) {
+            if (err)
+                throw err;
+            console.log("successfully deleted: " + path);
             var teamgroup = nowjs.getGroup(userObj.teamID);
             var fromUserId = userObj.clientId;
-            teamgroup.now.c_processUserFileEvent(safeFName, "createFolder", fromUserId, 0);
-            fileCreatorCallback(safeFName, err);
+            teamgroup.now.c_processUserFileEvent(safeFName, "deleteFolder", fromUserId, 0);
+            folderDeleterCallback(safeFName, []);
         });
+    } catch (ex) {
+        console.log("trying to delete file, but it doesn't exist: " + path);
+        folderDeleterCallback(safeFName, ["File doesn't exist. No need to delete it."]);
     }
 }
 // ---------File Functions
