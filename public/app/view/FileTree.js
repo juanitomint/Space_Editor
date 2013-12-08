@@ -93,7 +93,6 @@ Ext.define('Codespace.view.FileTree', {
         this.callParent();
     }, //----end initComponent
     getState: function() {
-        console.log('getState');
         var nodes = [], state = this.callParent();
 
         var getPath = function(node, field, separator) {
@@ -122,12 +121,10 @@ Ext.define('Codespace.view.FileTree', {
         Ext.apply(state, {
             expandedNodes: nodes
         });
-         console.log('getState',state);
         return state;
 
     },
     applyState: function(state) {
-        console.log('applyState',state.expandedNodes);
         var nodes = state.expandedNodes || [],
                 len = nodes.length;
 
@@ -147,6 +144,9 @@ Ext.define('Codespace.view.FileTree', {
 
     },
     listeners: {
+        keypress:function( e, t, eOpts ){
+            console.log('keypress');
+        },
         itemcontextmenu: function(view, rec, node, index, e) {
             e.stopEvent();
             this.contextMenu.showAt(e.getXY());
