@@ -78,8 +78,74 @@ Ext.define('Codespace.view.FileTree', {
         }
     ],
     initComponent: function() {
+        Ext.apply(this, {
+            stateful: true,
+            stateId: this.id + '-state',
+            stateEvents: ['itemcollapse', 'itemexpand']
+            ,
+            viewConfig: {
+                plugins: [{
+                        ptype: 'treeviewdragdrop',
+                        containerScroll: true
+                    }]
+            }
+        });
         this.callParent();
     }, //----end initComponent
+    getState: function() {
+        console.log('getState');
+        var nodes = [], state = this.callParent();
+
+        var getPath = function(node, field, separator) {
+            field = field || node.idProperty;
+            separator = separator || '/';
+            var path = [node.get(field)], parent = node.parentNode;
+            while (parent) {
+                path.unshift(parent.get(field));
+                parent = parent.parentNode;
+            }
+            return separator + path.join(separator);
+        };
+        this.getRootNode().eachChild(function(child) {
+            // function to store state of tree recursively 
+            var storeTreeState = function(node, expandedNodes) {
+                if (node.isExpanded() && node.childNodes.length > 0) {
+                    expandedNodes.push(getPath(node, 'id'));
+                    node.eachChild(function(child) {
+                        storeTreeState(child, expandedNodes);
+                    });
+                }
+            };
+            storeTreeState(child, nodes);
+        });
+
+        Ext.apply(state, {
+            expandedNodes: nodes
+        });
+         console.log('getState',state);
+        return state;
+
+    },
+    applyState: function(state) {
+        console.log('applyState',state.expandedNodes);
+        var nodes = state.expandedNodes || [],
+                len = nodes.length;
+
+        this.collapseAll();
+
+        for (var i = 0; i < len; i++) {
+
+            if (typeof nodes[i] != 'undefined') {
+
+                this.expandPath(nodes[i], 'id');
+
+            }
+
+        }
+
+        this.callParent(arguments);
+
+    },
     listeners: {
         itemcontextmenu: function(view, rec, node, index, e) {
             e.stopEvent();
