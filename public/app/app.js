@@ -73,6 +73,51 @@ var DeleteFolder = Ext.create('Ext.Action', {
         }
     }
 });
+var DeleteNode = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-ban',
+    text: 'Delete File',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        if (n.isLeaf()) {
+            Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                if (btn == 'yes') {
+                    path = n.data.path;
+                    now.s_deleteFile(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs.length) {
+                            console.log(errs);
+                            Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
+                        } else {
+                            n.remove();
+                        }
+
+
+                    });
+                }
+            }
+            );
+        } else {
+            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                if (btn == 'yes') {
+                    path = n.data.path;
+                    now.s_deleteFolder(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs.length) {
+                            console.log(errs);
+                            Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
+                        } else {
+                            n.remove();
+                        }
+
+
+                    });
+                }
+            }
+            );
+        }
+    }
+});
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////BEGIN APP////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
