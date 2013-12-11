@@ -8,12 +8,20 @@ Ext.define('Codespace.view.FileTree', {
     rootVisible: false,
     useArrows: true,
     margin: 0,
-    contextMenu: Ext.create('Ext.menu.Menu', {
-        title: 'File Menu',
+    contextFolderMenu: Ext.create('Ext.menu.Menu', {
+        title: 'Folder Menu',
         scope: this,
         items: ['Folder',
             CreateFolder,
-            DeleteFolder
+            DeleteFolder,
+            CreateFile
+        ]
+    }),
+    contextFileMenu: Ext.create('Ext.menu.Menu', {
+        title: 'File Menu',
+        scope: this,
+        items: [
+            DeleteFile
         ]
     }),
     columns: [
@@ -144,12 +152,16 @@ Ext.define('Codespace.view.FileTree', {
 
     },
     listeners: {
-        keypress:function( e, t, eOpts ){
+        keypress: function(e, t, eOpts) {
             console.log('keypress');
         },
         itemcontextmenu: function(view, rec, node, index, e) {
             e.stopEvent();
-            this.contextMenu.showAt(e.getXY());
+            if (rec.isLeaf()) {
+                this.contextFileMenu.showAt(e.getXY());
+            } else {
+                this.contextFolderMenu.showAt(e.getXY());
+            }
             return false;
         },
         itemdblclick: function(me, record, item, index, e, eOpts) {

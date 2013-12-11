@@ -23,8 +23,9 @@ var CreateFolder = Ext.create('Ext.Action', {
                                 icon: Ext.MessageBox.ERROR
                             });
                         } else {
+                            fname_stripped=path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
                             node = {
-                                id: text,
+                                id: fname_stripped,
                                 name: text + ' <span class="text-new">[new]</span>',
                                 leaf: false,
                                 path: path,
@@ -63,6 +64,77 @@ var DeleteFolder = Ext.create('Ext.Action', {
                         }
 
 
+                    });
+                }
+            }
+            );
+        } else {
+            //---show message
+            Ext.MessageBox.alert('Error!', "'Can't add a Folder here");
+        }
+    }
+});
+var DeleteFile = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-ban',
+    text: 'Delete File',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        if (n.isLeaf()) {
+            Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                if (btn == 'yes') {
+                    path = n.data.path;
+                    now.s_deleteFile(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs.length) {
+                            console.log(errs);
+                            Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
+                        } else {
+                            n.remove();
+                        }
+
+
+                    });
+                }
+            }
+            );
+        } else {
+            //---show message
+            Ext.MessageBox.alert('Error!', "'Can't delete File here");
+        }
+    }
+});
+var CreateFile= Ext.create('Ext.Action', {
+    iconCls: 'fa fa-file',
+    text: 'New File',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        if (!n.isLeaf()) {
+            Ext.MessageBox.prompt('New File', 'Provide a File name:', function(btn, text) {
+                if (btn == 'ok' && text) {
+                    path = n.data.path + '/' + text
+                    now.s_createNewFile(path, function(fname, errs) {
+                        console.log("Created file.. any errors?");
+                        if (errs) {
+                            console.log(errs);
+                            Ext.MessageBox.show({
+                                title: 'Error!',
+                                msg: 'Error creating file: ' + fname + '<br/>' + errs[0] + '<br/>',
+                                buttons: Ext.MessageBox.OK,
+                                icon: Ext.MessageBox.ERROR
+                            });
+                        } else {
+                            fname_stripped=path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                            node = {
+                                id: fname_stripped,
+                                name: text + ' <span class="text-new">[new]</span>',
+                                leaf: true,
+                                path: path,
+                                loaded: true
+                            };
+                            n.appendChild(node);
+                        }
                     });
                 }
             }
