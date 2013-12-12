@@ -3,6 +3,7 @@ Ext.define('Codespace.view.FileTree', {
     xtype: 'tree-grid',
     alias: 'widget.filetree',
     store: 'FileTree',
+    multiSelect:true,
 //    queryMode: 'local',
     animate: false,
     rootVisible: false,
