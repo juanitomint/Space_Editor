@@ -51,7 +51,7 @@ Ext.define('Codespace.view.ToolBar', {
                 items: [
                     GitStatus,
                     GitCommit,
-                    {text: 'Checkout'},
+                    GitCheckout,
                     {text: 'Pull'},
                     {text: 'Push'}
                 ]

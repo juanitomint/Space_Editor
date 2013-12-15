@@ -46,8 +46,45 @@ var GitStatus = Ext.create('Ext.Action', {
 
     }
 });
+var GitCheckout = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-hand-o-left',
+    text: 'Checkout',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        var paths = [];
+        sel = tree.selModel.getSelection();
+        sel.forEach(function(node) {
+            paths.push(node.data.path.replace(/^\//, ''));
+        });
+
+        Ext.MessageBox.confirm('Checkout from Head', 'Are you sure you want back:<br>' + paths.join('<br/>'), function(btn, text) {
+            if (btn == 'yes') {
+                console.log('About to checkout', paths);
+                now.s_git_checkout(paths, function(errs) {
+                    console.log("checkout finished.. any errors?");
+                    if (errs) {
+                        console.log(errs);
+                        Ext.MessageBox.show({
+                            title: 'Error!',
+                            msg: 'Error in checkout:<br/>' + errs[0] + '<br/>',
+                            buttons: Ext.MessageBox.OK,
+                            icon: Ext.MessageBox.ERROR
+                        });
+                    } else {
+                        console.log("Commit Ok!");
+                        GitStatus.execute();
+                        tree.getSelectionModel().deselectAll();
+                        //---commit ok
+                    }
+                });
+            }
+        }
+        );
+    }
+});
 var GitCommit = Ext.create('Ext.Action', {
-    iconCls: 'fa fa-check',
+    iconCls: 'fa fa-hand-o-right',
     text: 'Commit',
     handler: function(widget, event) {
         tree = Ext.getCmp('FileTree');
@@ -341,89 +378,90 @@ Ext.application({
             f = node.data.path.split('.');
             exten = f[f.length - 1];
             parser = (extension_map[exten]) ? extension_map[exten] : 'textile';
-            tab = Ext.create('widget.AceEditor.WithToolbar',
-                    {
-                        xtype: 'AceEditor.WithToolbar',
-                        id: node.data.id + '-tab',
-                        closable: true,
-                        title: node.data.name,
-                        path: node.data.path,
-                        theme: 'chrome',
-                        parser: parser,
-                        fontSize: '15px',
-                        highlightActiveLine: true,
-                        codeFolding: true,
-                        useWrapMode: false,
-                        showInvisible: false,
-                        printMargin: false,
-                        listeners: {
-                            activate: function() {
-                                if (this.getEditor()) {
-                                    Codespace.app.setToolbarSettings(this);
-                                    this.getEditor().resize();
-                                    setFileStatusIndicator(this.path, this.status);
+            if (!Ext.getCmp(node.data.id + '-tab')) {
+                tab = Ext.create('widget.AceEditor.WithToolbar',
+                        {
+                            xtype: 'AceEditor.WithToolbar',
+                            id: node.data.id + '-tab',
+                            closable: true,
+                            title: node.data.name,
+                            path: node.data.path,
+                            theme: 'chrome',
+                            parser: parser,
+                            fontSize: '15px',
+                            highlightActiveLine: true,
+                            codeFolding: true,
+                            useWrapMode: false,
+                            showInvisible: false,
+                            printMargin: false,
+                            listeners: {
+                                activate: function() {
+                                    if (this.getEditor()) {
+                                        Codespace.app.setToolbarSettings(this);
+                                        this.getEditor().resize();
+                                        setFileStatusIndicator(this.path, this.status);
 
 
-                                }
-                            },
-                            editorcreated: function() {
-                                console.log("editor Created!");
-                                console.log("Getting data for:" + this.path);
-                                console.log("Using NowJS -- this clientId: " + now.core.clientId);
-                                now.s_sendUserEvent("join"); // let everyone know who I am!
-                                editor = this.getEditor();
-                                //---bind change Event
-                                editor.getSession().on('change', function(a, b, c) {
-                                    fname = Ext.getCmp('filetabs').getActiveTab().path;
-                                    if (!ignoreAceChange) {
-                                        if (textChangeTimeout !== null) {
-                                            clearTimeout(textChangeTimeout);
-                                            textChangeTimeout = null;
-                                        } else {
-                                            setFileStatusIndicator(fname, "changed");
-                                        }
-                                        timeOfLastLocalKepress = (new Date()).getTime();
-                                        textChangeTimeout = setTimeout(function() {
-                                            if (!nowIsOnline) {
-                                                return;
+                                    }
+                                },
+                                editorcreated: function() {
+                                    console.log("editor Created!");
+                                    console.log("Getting data for:" + this.path);
+                                    console.log("Using NowJS -- this clientId: " + now.core.clientId);
+                                    now.s_sendUserEvent("join"); // let everyone know who I am!
+                                    editor = this.getEditor();
+                                    //---bind change Event
+                                    editor.getSession().on('change', function(a, b, c) {
+                                        fname = Ext.getCmp('filetabs').getActiveTab().path;
+                                        if (!ignoreAceChange) {
+                                            if (textChangeTimeout !== null) {
+                                                clearTimeout(textChangeTimeout);
+                                                textChangeTimeout = null;
+                                            } else {
+                                                setFileStatusIndicator(fname, "changed");
                                             }
+                                            timeOfLastLocalKepress = (new Date()).getTime();
+                                            textChangeTimeout = setTimeout(function() {
+                                                if (!nowIsOnline) {
+                                                    return;
+                                                }
 
-                                            sendTextChange(fname);
-                                        }, 350);
+                                                sendTextChange(fname);
+                                            }, 350);
+                                        }
+                                    });
+                                    //---bind
+                                    editor.getSession().selection.on('changeCursor', function(a) {
+                                        var range = editor.getSelectionRange();
+                                        if (cursorChangeTimeout !== null) {
+                                            clearTimeout(cursorChangeTimeout);
+                                            cursorChangeTimeout = null;
+                                        }
+                                        cursorChangeTimeout = setTimeout(ifOnlineLetCollaboratorsKnowImHere, 350);
+                                    });
+                                    setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
+                                    var specifiedFileToOpen = this.path;
+                                    if (specifiedFileToOpen) {
+                                        openFileFromServer(specifiedFileToOpen, true, this.getEditor());
+                                        Ext.getCmp('filetabs').setActiveTab(this);
+                                        Codespace.app.setToolbarSettings(this);
+                                    } else {
+                                        // error openFileFromServer("app.js", true);
                                     }
-                                });
-                                //---bind
-                                editor.getSession().selection.on('changeCursor', function(a) {
-                                    var range = editor.getSelectionRange();
-                                    if (cursorChangeTimeout !== null) {
-                                        clearTimeout(cursorChangeTimeout);
-                                        cursorChangeTimeout = null;
-                                    }
-                                    cursorChangeTimeout = setTimeout(ifOnlineLetCollaboratorsKnowImHere, 350);
-                                });
-                                setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
-                                var specifiedFileToOpen = this.path;
-                                if (specifiedFileToOpen) {
-                                    openFileFromServer(specifiedFileToOpen, true, this.getEditor());
-                                    Ext.getCmp('filetabs').setActiveTab(this);
-                                    Codespace.app.setToolbarSettings(this);
-                                } else {
-                                    // error openFileFromServer("app.js", true);
+                                },
+                                destroy: function() {
+                                    ///----unsuscribe
+                                    Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
+                                    now.s_leaveFile(this.path);
+                                    Codespace.app.updateHash();
                                 }
-                            },
-                            destroy: function() {
-                                ///----unsuscribe
-                                Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
-                                now.s_leaveFile(this.path);
-                                Codespace.app.updateHash();
                             }
                         }
-                    }
-            );///-----end create tab
-            tabs.add(tab);
-            tabs.setActiveTab(tab);
-            Codespace.app.updateHash();
-
+                );///-----end create tab
+                tabs.add(tab);
+                tabs.setActiveTab(tab);
+                Codespace.app.updateHash();
+            }
         }
     }
 

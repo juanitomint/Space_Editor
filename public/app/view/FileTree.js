@@ -29,7 +29,11 @@ Ext.define('Codespace.view.FileTree', {
                 xtype: 'menuseparator'
             },
             'Git',
-            GitCommit
+            GitCommit,
+            {
+                xtype: 'menuseparator'
+            },
+            GitCheckout
         ]
     }),
     columns: [
