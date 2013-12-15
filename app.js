@@ -845,21 +845,27 @@ everyone.now.s_git_status = function(committerCallback) {
     var team = this.user.teamID;
     console.log("git tatus project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
-    var repo=git(teamProjGitPath);
+    var repo = git(teamProjGitPath);
     repo.status(committerCallback);
 }
 everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
-    // this only needs done when a new repo is created...
-    //localRepoInitBare(teamProjGitPath, function(err){});
-    localRepoCommit(this.user, gitRepoPath, paths, txt, function(err) {
-        if (err) {
-            console.log(err);
-        }
+    var safeMsg = Utf8.encode(txt).replace(/\"/g, "\\\"");
+    var repo = git(teamProjGitPath);
+    repo.add(paths, function(err) {
+        if (err)
+            committerCallback(err);
+    });
+    repo.identify({name: this.user.about.name, email: this.user.about.email}, function(err) {
+        if (err)
+            committerCallback(err);
+    });
+    repo.commit(safeMsg, {}, function(err) {
         committerCallback(err);
     });
+    
 };
 
 everyone.now.s_git_fetchCommits = function(fetcherCallback) {

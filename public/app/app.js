@@ -53,16 +53,16 @@ var GitCommit = Ext.create('Ext.Action', {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
 
-        Ext.MessageBox.prompt('Git Commit', 'Provide a Folder name:', function(btn, text) {
+        Ext.MessageBox.prompt('Git Commit', 'Provide a commit description:', function(btn, text) {
             if (btn == 'ok' && text) {
                 var paths = [];
                 sel = tree.selModel.getSelection();
                 sel.forEach(function(node) {
-                    paths.push(node.data.path);
+                    paths.push(node.data.path.replace(/^\//, ''));
                 });
-
-                now.s_git_commit(text, paths, function(fname, errs) {
-                    console.log("Created file.. any errors?");
+                console.log('About to commit', paths);
+                now.s_git_commit(text, paths, function(errs) {
+                    console.log("Commit finished.. any errors?");
                     if (errs) {
                         console.log(errs);
                         Ext.MessageBox.show({
@@ -72,6 +72,9 @@ var GitCommit = Ext.create('Ext.Action', {
                             icon: Ext.MessageBox.ERROR
                         });
                     } else {
+                        console.log("Commit Ok!");
+                        GitStatus.execute();
+                        tree.getSelectionModel().deselectAll();
                         //---commit ok
                     }
                 });

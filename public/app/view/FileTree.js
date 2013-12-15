@@ -15,14 +15,21 @@ Ext.define('Codespace.view.FileTree', {
         items: ['Folder',
             CreateFolder,
             DeleteFolder,
-            CreateFile
+            CreateFile,
+            'Git',
+            GitCommit
         ]
     }),
     contextFileMenu: Ext.create('Ext.menu.Menu', {
         title: 'File Menu',
         scope: this,
         items: [
-            DeleteFile
+            DeleteFile,
+            {
+                xtype: 'menuseparator'
+            },
+            'Git',
+            GitCommit
         ]
     }),
     columns: [
@@ -91,8 +98,8 @@ Ext.define('Codespace.view.FileTree', {
             stateful: true,
             stateId: this.id + '-state',
             stateEvents: ['itemcollapse', 'itemexpand']
-         
-         
+
+
         });
         this.callParent();
     }, //----end initComponent

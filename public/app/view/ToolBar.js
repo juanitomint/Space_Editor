@@ -49,7 +49,8 @@ Ext.define('Codespace.view.ToolBar', {
             xtype: 'splitbutton',
             menu: new Ext.menu.Menu({
                 items: [
-                    {text: 'Commit'},
+                    GitStatus,
+                    GitCommit,
                     {text: 'Checkout'},
                     {text: 'Pull'},
                     {text: 'Push'}
