@@ -7,6 +7,7 @@ console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
 console.log("'LOADING CONFIG:'");
 var config = require('./config');
+var git = require("gift");
 var express = require("express");
 var util = require("util");
 var fs = require('fs');
@@ -309,6 +310,7 @@ function dirTree(filename, projectRoot) {
     var stats = fs.statSync(filename);
     var info = {
         path: filename.replace(projectRoot, ''),
+        //id: filename.replace(projectRoot, ''),
         id: filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_"),
         name: path.basename(filename),
         text: path.basename(filename)
@@ -318,6 +320,7 @@ function dirTree(filename, projectRoot) {
     if (stats.isDirectory()) {
         if (path.basename(filename)[0] !== '.' || showDotFolders) {
             info.type = "folder";
+            //info.id=info.id+'/';
             info.children = fs.readdirSync(filename).map(function(child) {
                 return dirTree(filename + '/' + child, projectRoot);
             });
@@ -838,16 +841,20 @@ everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback)
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
 //---GIT Related Functions
-everyone.now.s_git_status = function(path, committerCallback) {
-
+everyone.now.s_git_status = function(committerCallback) {
+    var team = this.user.teamID;
+    console.log("git tatus project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo=git(teamProjGitPath);
+    repo.status(committerCallback);
 }
-everyone.now.s_git_commit = function(txt, path, committerCallback) {
+everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     // this only needs done when a new repo is created...
     //localRepoInitBare(teamProjGitPath, function(err){});
-    localRepoCommit(this.user, teamProjGitPath, txt, function(err) {
+    localRepoCommit(this.user, gitRepoPath, paths, txt, function(err) {
         if (err) {
             console.log(err);
         }
@@ -884,7 +891,7 @@ everyone.now.s_deployProject = function(txt, deployerCallback) {
 //
 // Git Repository management stuff.
 //
-function localRepoInitBare(gitRepoPath, callback) {
+function localRepoInitBare(gitRepoPath, paths, callback) {
     var child = exec('git init', {
         encoding: 'utf8',
         timeout: 30000,
@@ -1164,7 +1171,7 @@ function localFolderCreate(userObj, fname, fileCreatorCallback) {
     }
     var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '').replace('//', '/');
     var path = EDITABLE_APPS_DIR + team + safeFName;
-    path=path.replace('//', '/');
+    path = path.replace('//', '/');
     try {
         fs.realpathSync(path);
         console.log("file already exists.. no need to create it: " + path);
@@ -1172,7 +1179,7 @@ function localFolderCreate(userObj, fname, fileCreatorCallback) {
     } catch (ex) {
         console.log("file doesn't exist yet. creating it: " + path);
         try {
-            fs.mkdir(path,'644', function(err) {
+            fs.mkdir(path, '644', function(err) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -1196,7 +1203,7 @@ function localFolderDelete(userObj, fname, folderDeleterCallback) {
     }
     var safeFName = fname.split("..").join("").replace(/[^a-zA-Z_\.\-0-9\/\(\)]+/g, '').replace('//', '/');
     var path = EDITABLE_APPS_DIR + team + "/" + safeFName;
-    path=path.replace('//', '/');
+    path = path.replace('//', '/');
     try {
         fs.realpathSync(path);
         console.log("all set to delete folder: " + path);

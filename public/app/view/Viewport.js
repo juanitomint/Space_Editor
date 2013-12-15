@@ -19,7 +19,7 @@ Ext.define('Codespace.view.Viewport', {
             {
                 title: '<i class="fa fa-comment"></i> (2)',
                 region: 'east', // position for region
-                id:'util-panel',
+                id: 'util-panel',
                 xtype: 'panel',
                 width: 300,
                 split: true, // enable resizing
@@ -37,13 +37,13 @@ Ext.define('Codespace.view.Viewport', {
                                 id: 'chat-tab',
                                 autoScroll: true,
                                 overflowY: 'scroll',
-                                bodyCls:'discussion',
+                                bodyCls: 'discussion',
                                 html: '<ol id="chat-ol" class="discussion"></ol>'
                             },
                             {
                                 title: 'Team <span id="contacts-count"></span>',
                                 id: 'contacts-tab',
-                                bodyCls:'discussion',
+                                bodyCls: 'discussion',
                                 autoScroll: true,
                                 overflowY: 'scroll',
                                 html: '<ol id="contact-ol" class="discussion"></ol>'
@@ -107,10 +107,43 @@ Ext.define('Codespace.view.Viewport', {
                         xtype: 'filetree',
                         border: 0,
                         id: 'FileTree',
+                        /*
+                        plugins: [
+                            {
+                                ptype: 'treefilter',
+                                allowParentFolders: true,
+                                collapseOnClear: false,
+                            }
+                        ],*/
                         viewConfig: {
                             stateful: true,
-                            stateId: 'FileTree'
+                            stateId: 'FileTree',
+                            plugins: [
+                                {
+                                    ptype: 'treeviewdragdrop',
+                                    containerScroll: true
+                                }
+                            ]
+                        },
+                        tbar: {
+                            layout: 'fit',
+                            items: [{
+                                    xtype: 'trigger',
+                                    triggerCls: 'x-form-clear-trigger',
+                                    onTriggerClick: function() {
+                                        this.reset();
+                                        this.focus();
+                                    }
+                                    , listeners: {
+                                        change: function(field, newVal) {
+                                            var tree = Ext.getCmp('FileTree');
+                                            tree.filter(newVal, 'name');
+                                        }
+                                        , buffer: 250
+                                    }
+                                }]
                         }
+                        //---end tbar
                     },
                     {
                         title: 'Projects',

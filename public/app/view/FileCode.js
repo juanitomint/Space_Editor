@@ -10,6 +10,7 @@ Ext.define('Codespace.view.FileCode', {
                 {
                     me = Ext.getCmp('filetabs').getActiveTab();
                     saveFileToServer(me.path, me.editor.getSession().getValue());
+                    GitStatus.execute();
                 }
             },
             {

@@ -21,6 +21,7 @@ Ext.define('Codespace.store.FileTree', {
     listeners: {
         load: function() {
             now.s_updateTree();
+            GitStatus.execute();
             if (location.hash) {
                 queryString = Ext.Object.fromQueryString(window.location.hash);
                 files = queryString['#fname'].split(',');

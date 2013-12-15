@@ -28,16 +28,20 @@ body {
 .status-black{
     color:#0000;
 }
-.status-red{
+.git-status-conflict{
     color:#ff3333;
 }
-.status-blue{
-    color:#126daf;
+.git-status-modified{
+    color:blue;
+    font-weight: bold;
 }
 .status-green{
     color:#58C554;
 }
-.status-gray{
+.git-status-untracked{
+    color:#58C554;
+}
+.git-status-ignored{
     color:#888;
 }
 .tab-content {

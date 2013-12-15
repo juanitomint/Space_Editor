@@ -2,6 +2,84 @@ Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
     expires: new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)), //7 days from now
 }));
 //---ext actions
+function clearCls(node) {
+    node.eachChild(function(n) {
+        n.set('cls', '');
+        if (n.childNodes.length) {
+            clearCls(n);
+        }
+    });
+}
+var GitStatus = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-refresh',
+    text: 'Status',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        now.s_git_status(function(errs, status) {
+            console.log("Git status recived");
+            if (errs) {
+                console.log(errs);
+                Ext.MessageBox.show({
+                    title: 'Error!',
+                    msg: 'Error commiting:<br/>' + errs[0] + '<br/>',
+                    buttons: Ext.MessageBox.OK,
+                    icon: Ext.MessageBox.ERROR
+                });
+            } else {
+                clearCls(tree.getRootNode());
+                var data = status.files;
+                for (var file in data) {
+                    if (data.hasOwnProperty(file)) {
+                        //---remove trailing /
+                        id = '/' + file.replace(/\/$/, '')
+                        id = id.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                        node = tree.store.getById(id);
+                        if (node) {
+                            cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
+                            node.data = Ext.Object.merge(node.data, data[file]);
+                            node.set('cls', cls);
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+});
+var GitCommit = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-check',
+    text: 'Commit',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+
+        Ext.MessageBox.prompt('Git Commit', 'Provide a Folder name:', function(btn, text) {
+            if (btn == 'ok' && text) {
+                var paths = [];
+                sel = tree.selModel.getSelection();
+                sel.forEach(function(node) {
+                    paths.push(node.data.path);
+                });
+
+                now.s_git_commit(text, paths, function(fname, errs) {
+                    console.log("Created file.. any errors?");
+                    if (errs) {
+                        console.log(errs);
+                        Ext.MessageBox.show({
+                            title: 'Error!',
+                            msg: 'Error commiting:<br/>' + errs[0] + '<br/>',
+                            buttons: Ext.MessageBox.OK,
+                            icon: Ext.MessageBox.ERROR
+                        });
+                    } else {
+                        //---commit ok
+                    }
+                });
+            }
+        }
+        );
+    }
+});
 var CreateFolder = Ext.create('Ext.Action', {
     iconCls: 'fa fa-folder',
     text: 'Add Folder',
@@ -23,7 +101,7 @@ var CreateFolder = Ext.create('Ext.Action', {
                                 icon: Ext.MessageBox.ERROR
                             });
                         } else {
-                            fname_stripped=path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                            fname_stripped = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
                             node = {
                                 id: fname_stripped,
                                 name: text + ' <span class="text-new">[new]</span>',
@@ -104,7 +182,7 @@ var DeleteFile = Ext.create('Ext.Action', {
         }
     }
 });
-var CreateFile= Ext.create('Ext.Action', {
+var CreateFile = Ext.create('Ext.Action', {
     iconCls: 'fa fa-file',
     text: 'New File',
     handler: function(widget, event) {
@@ -125,7 +203,7 @@ var CreateFile= Ext.create('Ext.Action', {
                                 icon: Ext.MessageBox.ERROR
                             });
                         } else {
-                            fname_stripped=path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                            fname_stripped = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
                             node = {
                                 id: fname_stripped,
                                 name: text + ' <span class="text-new">[new]</span>',
@@ -259,7 +337,7 @@ Ext.application({
             tabs = Ext.getCmp('filetabs');
             f = node.data.path.split('.');
             exten = f[f.length - 1];
-            parser = extension_map[exten]
+            parser = (extension_map[exten]) ? extension_map[exten] : 'textile';
             tab = Ext.create('widget.AceEditor.WithToolbar',
                     {
                         xtype: 'AceEditor.WithToolbar',

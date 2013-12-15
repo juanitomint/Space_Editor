@@ -784,7 +784,7 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
             console.log('cInfo', cInfo)
             cInfo[fname] = cInfo[fname] || [];
             cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
-            tab = Ext.getCmp(fname_stripped + '-tab');
+            tab = Ext.getCmp(fname + '-tab');
             if (tab) {
                 editor = tab.getEditor();
                 if (editor) {
@@ -1046,7 +1046,7 @@ function sendTextChange(fname) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     textChangeTimeout = null;
     //console.log("send text change.");
-    editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
+    editor = Ext.getCmp(fname + '-tab').getEditor();
     var currentText = editor.getSession().getValue();
     if (currentText === previousText) {
         //console.log("text is the same. sidestepping update.");

@@ -3,7 +3,7 @@ Ext.define('Codespace.view.FileTree', {
     xtype: 'tree-grid',
     alias: 'widget.filetree',
     store: 'FileTree',
-    multiSelect:true,
+    multiSelect: true,
 //    queryMode: 'local',
     animate: false,
     rootVisible: false,
@@ -91,13 +91,8 @@ Ext.define('Codespace.view.FileTree', {
             stateful: true,
             stateId: this.id + '-state',
             stateEvents: ['itemcollapse', 'itemexpand']
-            ,
-            viewConfig: {
-                plugins: [{
-                        ptype: 'treeviewdragdrop',
-                        containerScroll: true
-                    }]
-            }
+         
+         
         });
         this.callParent();
     }, //----end initComponent
