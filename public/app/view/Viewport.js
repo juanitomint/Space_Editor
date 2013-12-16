@@ -188,7 +188,8 @@ Ext.define('Codespace.view.Viewport', {
                                                     ptype: 'treeviewdragdrop',
                                                     containerScroll: true
                                                 }
-                                            ]
+                                            ],
+                                            copy: true
                                         },
                                     }
                                     //---end project tree

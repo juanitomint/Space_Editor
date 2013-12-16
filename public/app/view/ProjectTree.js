@@ -39,7 +39,7 @@ Ext.define('Codespace.view.ProjectTree', {
     columns: [
         {
             xtype: 'treecolumn', //this is so we know which column will show the tree
-            text: 'Files',
+            text: 'Projects',
             sortable: true,
             dataIndex: 'name'
         }
@@ -50,7 +50,8 @@ Ext.define('Codespace.view.ProjectTree', {
             iconCls: 'fa fa-refresh',
             text: 'Reload',
             handler: function() {
-                Ext.getCmp('ProjectTree').store.reload();
+                Ext.getCmp('ProjectsTree').store.load();
+                
             }
         }
     ],
