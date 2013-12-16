@@ -933,23 +933,6 @@ function readJSON(file, callback) {
     }
 }
 
-function readProjects() {
-    var err = null;
-    var data = fs.readFileSync('./projects.json'),
-            myObj;
-
-    try {
-        myObj = JSON.parse(data);
-        console.dir('Projects', myObj);
-        return myObj;
-    }
-    catch (err) {
-        console.log('There has been an error parsing your JSON.')
-        console.log(err);
-        return {}
-    }
-}
-
 
 ////
 // Git Repository management stuff.
