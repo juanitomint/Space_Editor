@@ -5,8 +5,7 @@
 console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
-console.log("'LOADING CONFIG:'");
-var config = require('./config');
+
 var git = require("gift");
 var express = require("express");
 var util = require("util");
@@ -20,11 +19,32 @@ var passport = require('passport'),
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
-var port = config.port;
 // for showing hide dot folders/files
 var showDotFolders = false;
 var showDotFiles = true;
 var groupFilesUsers = [];
+var baseDir = path.dirname(fs.realpathSync(__filename));
+console.log("'LOADING CONFIG:'");
+var config = {};
+readJSON(baseDir + '/config/config.json', function(data, err) {
+    if (err) {
+        console.log('There has been an error parsing');
+        console.log(err);
+    }
+    config = data;
+});
+var port = process.env.WEB_PORT || config.port;
+console.log("'LOADING PROJECTS:'", baseDir);
+var projects = {};
+readJSON(baseDir + '/config/projects.json', function(data, err) {
+    if (err) {
+        console.log('There has been an error parsing');
+        console.log(err);
+    }
+    projects = data;
+    console.log('Projects', projects);
+});
+
 //console.log(dirTree('/var/www/git.test'));
 //process.exit();
 // 
@@ -865,7 +885,7 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     repo.commit(safeMsg, {}, function(err) {
         committerCallback(err);
     });
-    
+
 };
 
 everyone.now.s_git_fetchCommits = function(fetcherCallback) {
@@ -895,6 +915,43 @@ everyone.now.s_deployProject = function(txt, deployerCallback) {
 };
 //--------
 //
+//   Project Functions
+//
+function readJSON(file, callback) {
+    try {
+        var data = fs.readFileSync(file),
+                myObj;
+        try {
+            myObj = JSON.parse(data);
+            callback(myObj, null);
+        }
+        catch (err) {
+            callback({}, err);
+        }
+    } catch (err) {
+        callback({}, err);
+    }
+}
+
+function readProjects() {
+    var err = null;
+    var data = fs.readFileSync('./projects.json'),
+            myObj;
+
+    try {
+        myObj = JSON.parse(data);
+        console.dir('Projects', myObj);
+        return myObj;
+    }
+    catch (err) {
+        console.log('There has been an error parsing your JSON.')
+        console.log(err);
+        return {}
+    }
+}
+
+
+////
 // Git Repository management stuff.
 //
 function localRepoInitBare(gitRepoPath, paths, callback) {
