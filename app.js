@@ -36,14 +36,7 @@ readJSON(baseDir + '/config/config.json', function(data, err) {
 var port = process.env.WEB_PORT || config.port;
 console.log("'LOADING PROJECTS:'", baseDir);
 var projects = {};
-readJSON(baseDir + '/config/projects.json', function(data, err) {
-    if (err) {
-        console.log('There has been an error parsing');
-        console.log(err);
-    }
-    projects = data;
-    console.log('Projects', projects);
-});
+readProjects();
 
 //console.log(dirTree('/var/www/git.test'));
 //process.exit();
@@ -379,6 +372,38 @@ app.get("/getFileTree", function(req, res) {
         }
     } else {
         res.send("FAIL: no project name.");
+    }
+});
+app.get("/getProjectsTree", function(req, res) {
+    if (req) {
+        readProjects();
+        var p = {
+            path: "",
+            id: "",
+            name: "Projects",
+            text: "git.test",
+            type: "folder",
+        };
+        var ps = [];
+        for (i in projects) {
+            ps[i] = projects[i];
+            ps[i].id = ps[i].path;
+            //---clear trivial passw
+            if (ps[i].users) {
+
+                for (j in ps[i].users) {
+                    ps[i].users[j].id = ps[i].users[j].mail;
+                    delete ps[i].users[j].passw;
+                }
+                //----4 tree
+                ps[i].children = ps[i].users;
+                delete ps[i].users;
+            }
+        }
+        p.children=ps;
+        res.setHeader('Content-type', 'application/json;charset=UTF-8');
+
+        res.send('[' + JSON.stringify(p) + ']');
     }
 });
 app.post("/launchProject", function(req, res) {
@@ -866,7 +891,17 @@ everyone.now.s_git_status = function(committerCallback) {
     console.log("git tatus project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
+    var status = {};
+    var err = null
     repo.status(committerCallback);
+}
+everyone.now.s_git_branch = function(committerCallback) {
+    var team = this.user.teamID;
+    console.log("git branch... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    var err = null
+    repo.branch(committerCallback);
 }
 everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
@@ -933,6 +968,16 @@ function readJSON(file, callback) {
     }
 }
 
+function readProjects() {
+    readJSON(baseDir + '/config/projects.json', function(data, err) {
+        if (err) {
+            console.log('There has been an error parsing');
+            console.log(err);
+        }
+        projects = data;
+        console.log('Projects', projects);
+    });
+}
 
 ////
 // Git Repository management stuff.
