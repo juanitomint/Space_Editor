@@ -108,7 +108,7 @@ Ext.define('Codespace.view.Viewport', {
                         id: 'LeftTabs',
                         xtype: 'tabpanel',
                         items: [
-                          //----tree panel
+                            //----tree panel
                             {
                                 xtype: 'panel',
                                 layout: 'border',
@@ -173,7 +173,7 @@ Ext.define('Codespace.view.Viewport', {
                                     }
                                     //----left-side
                                 ]},
-                                //----project panel
+                            //----project panel
                             {
                                 title: 'Projects',
                                 id: 'ProjectsTab',
@@ -182,6 +182,14 @@ Ext.define('Codespace.view.Viewport', {
                                         xtype: 'projecttree',
                                         border: 0,
                                         id: 'ProjectsTree',
+                                        viewConfig: {
+                                            plugins: [
+                                                {
+                                                    ptype: 'treeviewdragdrop',
+                                                    containerScroll: true
+                                                }
+                                            ]
+                                        },
                                     }
                                     //---end project tree
                                 ]
@@ -189,9 +197,8 @@ Ext.define('Codespace.view.Viewport', {
                             //---end Project Tab
                         ]
                     },
-                    
                 ]
-                    //----end tab items
+                        //----end tab items
             },
             {
 //                title: 'Center Region',

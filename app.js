@@ -381,7 +381,6 @@ app.get("/getProjectsTree", function(req, res) {
             path: "",
             id: "",
             name: "Projects",
-            text: "git.test",
             type: "folder",
         };
         var ps = [];
@@ -393,17 +392,21 @@ app.get("/getProjectsTree", function(req, res) {
 
                 for (j in ps[i].users) {
                     ps[i].users[j].id = ps[i].users[j].mail;
+                    ps[i].users[j].leaf= true;
+                    ps[i].users[j].iconCls='icon-user';
                     delete ps[i].users[j].passw;
                 }
                 //----4 tree
                 ps[i].children = ps[i].users;
                 delete ps[i].users;
+            } else {
+              ps[i].children=[];  
             }
         }
         p.children=ps;
         res.setHeader('Content-type', 'application/json;charset=UTF-8');
 
-        res.send('[' + JSON.stringify(p) + ']');
+        res.send('[' +JSON.stringify(p)+']');
     }
 });
 app.post("/launchProject", function(req, res) {
