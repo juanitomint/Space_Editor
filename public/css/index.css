@@ -35,6 +35,9 @@ body {
     color:blue;
     font-weight: bold;
 }
+.icon-user{
+    background-image: url("../png/user.png")
+}
 .status-green{
     color:#58C554;
 }

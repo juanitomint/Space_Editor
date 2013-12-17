@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Git Test",
+        "url": "http://localhost/git.test",
+        "path": "git.test",
+        "users": [
+            {
+                "name": "juanb",
+                "passw": "123123",
+                "mail": "juanignacioborda@gmail.com"
+            },
+            {
+                "name": "german",
+                "passw": "123123",
+                "mail": "german@123.com"
+            }
+        ]
+    },
+    {"name": "DNA²",
+        "url": "http://localhost/dna2",
+        "path": "dna2"
+    },
+    {"name": "DNA²BPM",
+        "url": "http://localhost/dna2bpm",
+        "path": "dna2bm"
+    }
+]

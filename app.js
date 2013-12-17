@@ -5,8 +5,7 @@
 console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
-console.log("'LOADING CONFIG:'");
-var config = require('./config');
+
 var git = require("gift");
 var express = require("express");
 var util = require("util");
@@ -20,11 +19,25 @@ var passport = require('passport'),
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var _ = require('underscore');
-var port = config.port;
 // for showing hide dot folders/files
 var showDotFolders = false;
 var showDotFiles = true;
 var groupFilesUsers = [];
+var baseDir = path.dirname(fs.realpathSync(__filename));
+console.log("'LOADING CONFIG:'");
+var config = {};
+readJSON(baseDir + '/config/config.json', function(data, err) {
+    if (err) {
+        console.log('There has been an error parsing');
+        console.log(err);
+    }
+    config = data;
+});
+var port = process.env.WEB_PORT || config.port;
+console.log("'LOADING PROJECTS:'", baseDir);
+var projects = {};
+readProjects();
+
 //console.log(dirTree('/var/www/git.test'));
 //process.exit();
 // 
@@ -359,6 +372,41 @@ app.get("/getFileTree", function(req, res) {
         }
     } else {
         res.send("FAIL: no project name.");
+    }
+});
+app.get("/getProjectsTree", function(req, res) {
+    if (req) {
+        readProjects();
+        var p = {
+            path: "",
+            id: "",
+            name: "Projects",
+            type: "folder",
+        };
+        var ps = [];
+        for (i in projects) {
+            ps[i] = projects[i];
+            ps[i].id = ps[i].path;
+            //---clear trivial passw
+            if (ps[i].users) {
+
+                for (j in ps[i].users) {
+                    ps[i].users[j].id = ps[i].users[j].mail;
+                    ps[i].users[j].leaf= true;
+                    ps[i].users[j].iconCls='icon-user';
+                    delete ps[i].users[j].passw;
+                }
+                //----4 tree
+                ps[i].children = ps[i].users;
+                delete ps[i].users;
+            } else {
+              ps[i].children=[];  
+            }
+        }
+        p.children=ps;
+        res.setHeader('Content-type', 'application/json;charset=UTF-8');
+
+        res.send('[' +JSON.stringify(p)+']');
     }
 });
 app.post("/launchProject", function(req, res) {
@@ -846,6 +894,8 @@ everyone.now.s_git_status = function(committerCallback) {
     console.log("git tatus project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
+    var status = {};
+    var err = null
     repo.status(committerCallback);
 }
 everyone.now.s_git_checkout = function(paths, committerCallback) {
@@ -905,6 +955,36 @@ everyone.now.s_deployProject = function(txt, deployerCallback) {
 };
 //--------
 //
+//   Project Functions
+//
+function readJSON(file, callback) {
+    try {
+        var data = fs.readFileSync(file),
+                myObj;
+        try {
+            myObj = JSON.parse(data);
+            callback(myObj, null);
+        }
+        catch (err) {
+            callback({}, err);
+        }
+    } catch (err) {
+        callback({}, err);
+    }
+}
+
+function readProjects() {
+    readJSON(baseDir + '/config/projects.json', function(data, err) {
+        if (err) {
+            console.log('There has been an error parsing');
+            console.log(err);
+        }
+        projects = data;
+        console.log('Projects', projects);
+    });
+}
+
+////
 // Git Repository management stuff.
 //
 function localRepoInitBare(gitRepoPath, paths, callback) {

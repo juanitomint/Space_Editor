@@ -5,6 +5,7 @@ Ext.define('Codespace.view.Viewport', {
     requires: [
         //'app.view.WithToolbar',
         'Codespace.view.FileTree',
+        'Codespace.view.ProjectTree',
         'Codespace.view.FileCode',
         'Codespace.view.ToolBar',
     ],
@@ -16,6 +17,7 @@ Ext.define('Codespace.view.Viewport', {
                 id: 'MainToolbar'
 
             },
+            //----util Panel
             {
                 title: '<i class="fa fa-comment"></i> (2)',
                 region: 'east', // position for region
@@ -85,78 +87,121 @@ Ext.define('Codespace.view.Viewport', {
                         }
                     }
                 ]
-            }, {
+            },
+            //-----FILE & project
+            {
                 // xtype: 'panel' implied by default
-                region: 'west',
                 xtype: 'panel',
-                layout: 'border',
-                split: true, // enable resizing
                 width: 300,
+                split: true, // enable resizing
                 collapsible: true, // make collapsible
-                id: 'west-region-container',
-                title: PROJECT,
+                collapsed: false,
+                layout: 'fit',
+                region: 'west',
                 listeners: {
                     resize: Codespace.app.resizeTabs,
                     collapse: Codespace.app.resizeTabs,
                     expand: Codespace.app.resizeTabs
                 },
                 items: [
-                    //----left-side
                     {
-                        region: 'center',
-                        xtype: 'filetree',
-                        border: 0,
-                        id: 'FileTree',
-                        /*
-                        plugins: [
+                        id: 'LeftTabs',
+                        xtype: 'tabpanel',
+                        items: [
+                            //----tree panel
                             {
-                                ptype: 'treefilter',
-                                allowParentFolders: true,
-                                collapseOnClear: false,
-                            }
-                        ],*/
-                        viewConfig: {
-                            stateful: true,
-                            stateId: 'FileTree',
-                            plugins: [
-                                {
-                                    ptype: 'treeviewdragdrop',
-                                    containerScroll: true
-                                }
-                            ]
-                        },
-                        tbar: {
-                            layout: 'fit',
-                            items: [{
-                                    xtype: 'trigger',
-                                    triggerCls: 'x-form-clear-trigger',
-                                    onTriggerClick: function() {
-                                        this.reset();
-                                        this.focus();
-                                    }
-                                    , listeners: {
-                                        change: function(field, newVal) {
-                                            var tree = Ext.getCmp('FileTree');
-                                            tree.filter(newVal, 'name');
+                                xtype: 'panel',
+                                layout: 'border',
+                                id: 'TreeTab',
+                                split: true, // enable resizing
+                                width: 300,
+                                collapsible: true, // make collapsible
+                                title: PROJECT,
+                                items: [
+                                    //----left-side
+                                    {
+                                        region: 'center',
+                                        xtype: 'filetree',
+                                        border: 0,
+                                        id: 'FileTree',
+                                        /*
+                                         plugins: [
+                                         {
+                                         ptype: 'treefilter',
+                                         allowParentFolders: true,
+                                         collapseOnClear: false,
+                                         }
+                                         ],*/
+                                        viewConfig: {
+                                            stateful: true,
+                                            stateId: 'FileTree',
+                                            plugins: [
+                                                {
+                                                    ptype: 'treeviewdragdrop',
+                                                    containerScroll: true
+                                                }
+                                            ]
+                                        },
+                                        tbar: {
+                                            layout: 'fit',
+                                            items: [{
+                                                    xtype: 'trigger',
+                                                    triggerCls: 'x-form-clear-trigger',
+                                                    onTriggerClick: function() {
+                                                        this.reset();
+                                                        this.focus();
+                                                    }
+                                                    , listeners: {
+                                                        change: function(field, newVal) {
+                                                            var tree = Ext.getCmp('FileTree');
+                                                            tree.filter(newVal, 'name');
+                                                        }
+                                                        , buffer: 250
+                                                    }
+                                                }]
                                         }
-                                        , buffer: 250
-                                    }
-                                }]
-                        }
-                        //---end tbar
-                    },
-                    {
-                        title: 'Projects',
-                        region: 'south',
-                        collapsible: true,
-                        collapsed: true,
-                        height: '35%',
-                        html: "PROJECTS"
+                                        //---end tbar
+                                    },
+                                    {
+                                        title: 'Navigator',
+                                        region: 'south',
+                                        collapsible: true,
+                                        collapsed: true,
+                                        height: '35%',
+                                        html: "navtree"
 
-                    }
-                    //----left-side
+                                    }
+                                    //----left-side
+                                ]},
+                            //----project panel
+                            {
+                                title: 'Projects',
+                                id: 'ProjectsTab',
+                                items: [
+                                    {
+                                        xtype: 'projecttree',
+                                        border: 0,
+                                        id: 'ProjectsTree',
+                                        viewConfig: {
+                                            plugins: [
+                                                {
+                                                    ptype: 'treeviewdragdrop',
+                                                    containerScroll: true
+                                                }
+                                            ],
+                                            copy: true
+                                        },
+                                    }
+                                    //---end project tree
+                                ]
+                            }
+                            //---end Project Tab
+                        ]
+                    },
                 ]
-            }, {
+                        //----end tab items
+            },
+            {
 //                title: 'Center Region',
                 region: 'center', // center region is required, no width/height specified
                 xtype: 'panel',

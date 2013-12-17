@@ -10,6 +10,25 @@ function clearCls(node) {
         }
     });
 }
+var GitBranch = function(){
+    now.s_git_branch(function(errs, branch) {
+            console.log("Git branch recived");
+            if (errs) {
+                console.log(errs);
+                Ext.MessageBox.show({
+                    title: 'Error!',
+                    msg: 'Error branch:<br/>' + errs[0] + '<br/>',
+                    buttons: Ext.MessageBox.OK,
+                    icon: Ext.MessageBox.ERROR
+                });
+            } else {
+              tree = Ext.getCmp('FileTree');
+              //---get the 1st tree node
+              Ext.getCmp('TreeTab').setTitle(tree.title=tree.getRootNode().childNodes[0].data.name+' ['+branch.name+']');
+              tree.branch=branch.name;
+            }
+        });
+};
 var GitStatus = Ext.create('Ext.Action', {
     iconCls: 'fa fa-refresh',
     text: 'Status',
@@ -26,6 +45,7 @@ var GitStatus = Ext.create('Ext.Action', {
                     icon: Ext.MessageBox.ERROR
                 });
             } else {
+                tree.status=status;
                 clearCls(tree.getRootNode());
                 var data = status.files;
                 for (var file in data) {
@@ -41,6 +61,8 @@ var GitStatus = Ext.create('Ext.Action', {
                         }
                     }
                 }
+                //----update git branch
+                GitBranch();
             }
         });
 
@@ -315,7 +337,7 @@ Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
     models: ['file'],
-    stores: ['FileTree'],
+    stores: ['FileTree','ProjectTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
         Ext.getCmp('utiltabs').setActiveTab(1);
