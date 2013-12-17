@@ -848,6 +848,16 @@ everyone.now.s_git_status = function(committerCallback) {
     var repo = git(teamProjGitPath);
     repo.status(committerCallback);
 }
+everyone.now.s_git_checkout = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("checkout project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.checkout(paths, function(err) {
+        committerCallback(err);
+    });
+
+};
 everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
@@ -865,7 +875,7 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     repo.commit(safeMsg, {}, function(err) {
         committerCallback(err);
     });
-    
+
 };
 
 everyone.now.s_git_fetchCommits = function(fetcherCallback) {
