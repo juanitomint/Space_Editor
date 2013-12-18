@@ -9,33 +9,33 @@ Ext.define('Codespace.view.ProjectTree', {
     rootVisible: false,
     useArrows: true,
     margin: 0,
-//    contextFolderMenu: Ext.create('Ext.menu.Menu', {
-//        title: 'Folder Menu',
-//        scope: this,
-//        items: ['Folder',
-//            CreateFolder,
-//            DeleteFolder,
-//            CreateFile,
-//            'Git',
-//            GitCommit
-//        ]
-//    }),
-//    contextFileMenu: Ext.create('Ext.menu.Menu', {
-//        title: 'File Menu',
-//        scope: this,
-//        items: [
-//            DeleteFile,
-//            {
-//                xtype: 'menuseparator'
-//            },
-//            'Git',
-//            GitCommit,
-//            {
-//                xtype: 'menuseparator'
-//            },
-//            GitCheckout
-//        ]
-//    }),
+    contextProjectMenu: Ext.create('Ext.menu.Menu', {
+        title: 'Folder Menu',
+        scope: this,
+        items: ['Folder',
+            CreateFolder,
+            DeleteFolder,
+            CreateFile,
+            'Git',
+            GitCommit
+        ]
+    }),
+    contextUserMenu: Ext.create('Ext.menu.Menu', {
+        title: 'User Menu',
+        scope: this,
+        items: [
+            DeleteFile,
+            {
+                xtype: 'menuseparator'
+            },
+            'Git',
+            GitCommit,
+            {
+                xtype: 'menuseparator'
+            },
+            GitCheckout
+        ]
+    }),
     columns: [
         {
             xtype: 'treecolumn', //this is so we know which column will show the tree
@@ -51,8 +51,13 @@ Ext.define('Codespace.view.ProjectTree', {
             text: 'Reload',
             handler: function() {
                 Ext.getCmp('ProjectsTree').store.load();
-                
+
             }
+        }
+        , {
+            iconCls: 'fa fa-plus-square',
+            text: 'Add',
+            handler:ProjectAdd
         }
     ],
     initComponent: function() {
@@ -123,13 +128,14 @@ Ext.define('Codespace.view.ProjectTree', {
         itemcontextmenu: function(view, rec, node, index, e) {
             e.stopEvent();
             if (rec.isLeaf()) {
-                //this.contextFileMenu.showAt(e.getXY());
+                this.contextUserMenu.showAt(e.getXY());
             } else {
-                //this.contextFolderMenu.showAt(e.getXY());
+                this.contextProjectMenu.showAt(e.getXY());
             }
             return false;
         },
         itemdblclick: function(me, record, item, index, e, eOpts) {
+            ProjectAdd(record);
 //            //---if tab exists make it the active one
 //            if (Ext.getCmp(record.data.id + '-tab')) {
 //                Ext.getCmp('filetabs').setActiveTab(Ext.getCmp(record.data.id + '-tab'));

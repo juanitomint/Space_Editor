@@ -9,7 +9,10 @@ and open the template in the editor.
 */
 
 .x-btn-default-toolbar-small-menu-active, .x-btn-default-toolbar-small-pressed {
-border-color: #9d9d9d;
-background-image: none;
-background-color: #d6d6d6;
+    border-color: #9d9d9d;
+    background-image: none;
+    background-color: #d6d6d6;
+}
+.x-toolbar {
+    font-size: 15px;
 }

@@ -52,12 +52,6 @@ Ext.define('Codespace.view.ToolBar', {
                     GitStatus,
                     GitCommit,
                     GitCheckout,
-                    GitAdd,
-                    GitRemove,
-                    {
-                        xtype: 'menuseparator'
-                    },
-                    GitInit,
                     {text: 'Pull'},
                     {text: 'Push'}
                 ]
@@ -280,9 +274,9 @@ Ext.define('Codespace.view.ToolBar', {
         },
         //-----logout
         {
-            text: '<i class="fa fa-power-off"></i>',
-            handler: function() {
-                window.location = '/logout'
+            text:'<i class="fa fa-power-off"></i>',
+            handler:function(){
+                window.location='/logout'
             }
         }
         //----END Editor Toolbar

@@ -7,13 +7,8 @@
     font-family: "Inconsolata";
     src: url("./fonts/Inconsolata.otf");
 }*/
-body {
-    overflow: hidden;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #2a3239;
-    opacity: .99;
-    color: #fefefe;
+a {
+    color:#333;
 }
 .codeEditor { 
     position: absolute;
@@ -41,8 +36,8 @@ body {
 .status-green{
     color:#58C554;
 }
-.git-status-untracked{
-    color:#58C554;
+.git-status-untracked {
+    color:#398439;
 }
 .git-status-ignored{
     color:#888;
