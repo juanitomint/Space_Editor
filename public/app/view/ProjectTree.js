@@ -18,8 +18,8 @@ Ext.define('Codespace.view.ProjectTree', {
                 handler: function() {
                     var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
                     var rec = sm.getSelection()[0];
-                    window.location='?project='+rec.data['path'];
-                    
+                    window.location = '?project=' + rec.data['path'];
+
                 }
             },
             {
@@ -160,8 +160,10 @@ Ext.define('Codespace.view.ProjectTree', {
             }
             return false;
         },
-        itemdblclick: function(me, record, item, index, e, eOpts) {
-            ProjectAdd(record);
+        itemdblclick: function(me, rec, item, index, e, eOpts) {
+            if (!rec.isLeaf()) {
+                ProjectAdd(rec);
+            }
 //            //---if tab exists make it the active one
 //            if (Ext.getCmp(record.data.id + '-tab')) {
 //                Ext.getCmp('filetabs').setActiveTab(Ext.getCmp(record.data.id + '-tab'));
