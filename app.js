@@ -392,21 +392,21 @@ app.get("/getProjectsTree", function(req, res) {
 
                 for (j in ps[i].users) {
                     ps[i].users[j].id = ps[i].users[j].mail;
-                    ps[i].users[j].leaf= true;
-                    ps[i].users[j].iconCls='icon-user';
+                    ps[i].users[j].leaf = true;
+                    ps[i].users[j].iconCls = 'icon-user';
                     delete ps[i].users[j].passw;
                 }
                 //----4 tree
                 ps[i].children = ps[i].users;
                 delete ps[i].users;
             } else {
-              ps[i].children=[];  
+                ps[i].children = [];
             }
         }
-        p.children=ps;
+        p.children = ps;
         res.setHeader('Content-type', 'application/json;charset=UTF-8');
 
-        res.send('[' +JSON.stringify(p)+']');
+        res.send('[' + JSON.stringify(p) + ']');
     }
 });
 app.post("/launchProject", function(req, res) {
@@ -889,14 +889,46 @@ everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback)
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
 //---GIT Related Functions
+everyone.now.s_git_init = function(committerCallback) {
+    var team = this.user.teamID;
+    console.log("git init project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git.init(teamProjGitPath, function(err, repo) {
+        if (err) {
+            committerCallback(err);
+        } else {
+            repo.status(committerCallback);
+        }
+    });
+}
 everyone.now.s_git_status = function(committerCallback) {
     var team = this.user.teamID;
-    console.log("git tatus project... >> " + team);
+    console.log("git status project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     var status = {};
     var err = null
     repo.status(committerCallback);
+}
+
+everyone.now.s_git_remove = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("remove from git: project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.remove(paths, function(err) {
+        committerCallback(err);
+    });
+}
+everyone.now.s_git_add = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("checkout project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.add(paths, function(err) {
+        committerCallback(err);
+    });
+
 }
 everyone.now.s_git_checkout = function(paths, committerCallback) {
     var team = this.user.teamID;
@@ -907,7 +939,17 @@ everyone.now.s_git_checkout = function(paths, committerCallback) {
         committerCallback(err);
     });
 
-};
+}
+
+everyone.now.s_git_branch = function(committerCallback) {
+    var team = this.user.teamID;
+    console.log("git branch... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    var err = null
+    repo.branch(committerCallback);
+}
+
 everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
