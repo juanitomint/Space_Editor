@@ -151,7 +151,7 @@ var GitInit = Ext.create('Ext.Action', {
 //                icon: Ext.MessageBox.ERROR
 //            });
             } else {
-                
+                GitStatus.execute();
             }
         });
     }
@@ -184,6 +184,7 @@ var GitStatus = Ext.create('Ext.Action', {
                         node = tree.store.getById(id);
                         if (node) {
                             cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
+                            cls=(data[file].type=='UU') ? 'git-status-conflict' :cls;
                             node.data = Ext.Object.merge(node.data, data[file]);
                             node.set('cls', cls);
                         }
