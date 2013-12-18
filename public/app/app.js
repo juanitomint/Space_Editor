@@ -10,25 +10,68 @@ function clearCls(node) {
         }
     });
 }
-var GitBranch = function(){
+var GitBranch = function() {
     now.s_git_branch(function(errs, branch) {
-            console.log("Git branch recived");
+        console.log("Git branch recived");
+        if (errs) {
+
+            /*
+             * no branch
+             console.log(errs);
+             Ext.MessageBox.show({
+             title: 'Error!',
+             msg: 'Error branch:<br/>' + errs[0] + '<br/>',
+             buttons: Ext.MessageBox.OK,
+             icon: Ext.MessageBox.ERROR
+             });
+             */
+        } else {
+            tree = Ext.getCmp('FileTree');
+            //---get the 1st tree node
+            Ext.getCmp('TreeTab').setTitle(PROJECT + ' [' + branch.name + ']');
+            tree.branch = branch.name;
+        }
+    });
+};
+var GitInit = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-info',
+    text: 'Init',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        now.s_git_init(function(errs, status) {
+            console.log("Git init->status recived");
             if (errs) {
                 console.log(errs);
                 Ext.MessageBox.show({
                     title: 'Error!',
-                    msg: 'Error branch:<br/>' + errs[0] + '<br/>',
+                    msg: 'Error on Git Init:<br/>' + errs[0] + '<br/>',
                     buttons: Ext.MessageBox.OK,
                     icon: Ext.MessageBox.ERROR
                 });
             } else {
-              tree = Ext.getCmp('FileTree');
-              //---get the 1st tree node
-              Ext.getCmp('TreeTab').setTitle(tree.title=tree.getRootNode().childNodes[0].data.name+' ['+branch.name+']');
-              tree.branch=branch.name;
+                tree.status = status;
+                clearCls(tree.getRootNode());
+                var data = status.files;
+                for (var file in data) {
+                    if (data.hasOwnProperty(file)) {
+                        //---remove trailing /
+                        id = '/' + file.replace(/\/$/, '')
+                        id = id.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                        node = tree.store.getById(id);
+                        if (node) {
+                            cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
+                            node.data = Ext.Object.merge(node.data, data[file]);
+                            node.set('cls', cls);
+                        }
+                    }
+                }
+
+
             }
         });
-};
+
+    }
+});
 var GitStatus = Ext.create('Ext.Action', {
     iconCls: 'fa fa-refresh',
     text: 'Status',
@@ -37,15 +80,16 @@ var GitStatus = Ext.create('Ext.Action', {
         now.s_git_status(function(errs, status) {
             console.log("Git status recived");
             if (errs) {
-                console.log(errs);
-                Ext.MessageBox.show({
-                    title: 'Error!',
-                    msg: 'Error commiting:<br/>' + errs[0] + '<br/>',
-                    buttons: Ext.MessageBox.OK,
-                    icon: Ext.MessageBox.ERROR
-                });
+//                not a git repo
+//                console.log(errs);
+//                Ext.MessageBox.show({
+//                    title: 'Error!',
+//                    msg: 'Error commiting:<br/>' + errs[0] + '<br/>',
+//                    buttons: Ext.MessageBox.OK,
+//                    icon: Ext.MessageBox.ERROR
+//                });
             } else {
-                tree.status=status;
+                tree.status = status;
                 clearCls(tree.getRootNode());
                 var data = status.files;
                 for (var file in data) {
@@ -94,7 +138,7 @@ var GitCheckout = Ext.create('Ext.Action', {
                             icon: Ext.MessageBox.ERROR
                         });
                     } else {
-                        console.log("Commit Ok!");
+                        console.log("Checkout Ok!");
                         GitStatus.execute();
                         tree.getSelectionModel().deselectAll();
                         //---commit ok
@@ -132,6 +176,88 @@ var GitCommit = Ext.create('Ext.Action', {
                         });
                     } else {
                         console.log("Commit Ok!");
+                        GitStatus.execute();
+                        tree.getSelectionModel().deselectAll();
+                        //---commit ok
+                    }
+                });
+            }
+        }
+        );
+    }
+});
+var GitAdd = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-plus-square',
+    text: 'Add Items',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        var paths = [];
+        sel = tree.selModel.getSelection();
+        sel.forEach(function(node) {
+            paths.push(node.data.path.replace(/^\//, ''));
+        });
+        Ext.MessageBox.confirm('Add files to repository', 'You are about to add:<br>' + paths.length + ' Items', function(btn, text) {
+            if (btn == 'yes') {
+                var paths = [];
+                sel = tree.selModel.getSelection();
+                sel.forEach(function(node) {
+                    paths.push(node.data.path.replace(/^\//, ''));
+                });
+                console.log('About to commit', paths);
+                now.s_git_add(paths, function(errs) {
+                    console.log("add finished.. any errors?");
+                    if (errs) {
+                        console.log(errs);
+                        Ext.MessageBox.show({
+                            title: 'Error!',
+                            msg: 'Error adding:<br/>' + errs[0] + '<br/>',
+                            buttons: Ext.MessageBox.OK,
+                            icon: Ext.MessageBox.ERROR
+                        });
+                    } else {
+                        console.log("add Ok!");
+                        GitStatus.execute();
+                        tree.getSelectionModel().deselectAll();
+                        //---update branch if posible
+                    }
+                });
+            }
+        }
+        );
+    }
+});
+var GitRemove = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-minus-square',
+    text: 'Remove Items',
+    handler: function(widget, event) {
+        tree = Ext.getCmp('FileTree');
+        var n = tree.getSelectionModel().getSelection()[0];
+        var paths = [];
+        sel = tree.selModel.getSelection();
+        sel.forEach(function(node) {
+            paths.push(node.data.path.replace(/^\//, ''));
+        });
+        Ext.MessageBox.confirm('Remove files from repository', 'You are about to remove:<br>' + paths.length + ' items', function(btn, text) {
+            if (btn == 'yes') {
+                var paths = [];
+                sel = tree.selModel.getSelection();
+                sel.forEach(function(node) {
+                    paths.push(node.data.path.replace(/^\//, ''));
+                });
+                console.log('About to commit', paths);
+                now.s_git_remove(paths, function(errs) {
+                    console.log("add finished.. any errors?");
+                    if (errs) {
+                        console.log(errs);
+                        Ext.MessageBox.show({
+                            title: 'Error!',
+                            msg: 'Error adding:<br/>' + errs[0] + '<br/>',
+                            buttons: Ext.MessageBox.OK,
+                            icon: Ext.MessageBox.ERROR
+                        });
+                    } else {
+                        console.log("add Ok!");
                         GitStatus.execute();
                         tree.getSelectionModel().deselectAll();
                         //---commit ok
@@ -337,7 +463,7 @@ Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
     models: ['file'],
-    stores: ['FileTree','ProjectTree'],
+    stores: ['FileTree', 'ProjectTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
         Ext.getCmp('utiltabs').setActiveTab(1);
