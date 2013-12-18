@@ -65,6 +65,8 @@ Ext.define('Codespace.view.ProjectTree', {
             sortable: true,
             dataIndex: 'name',
             flex: 1
+        },{
+            text:'status'
         }
     ]
     ,
