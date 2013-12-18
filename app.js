@@ -957,10 +957,11 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var safeMsg = Utf8.encode(txt).replace(/\"/g, "\\\"");
     var repo = git(teamProjGitPath);
     //----fix empty paths
-    for(i in paths){
-        if(paths[i]=='') paths[i]='./'; 
+    for (i in paths) {
+        if (paths[i] == '')
+            paths[i] = './';
     }
-    
+
     repo.add(paths, function(err) {
         if (err) {
             console.log('s_git_ciommit-> add', err);
@@ -975,7 +976,7 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     });
     repo.commit(safeMsg, {}, function(err) {
         if (err) {
-        console.log('s_git_ciommit-> commit', err);
+            console.log('s_git_ciommit-> commit', err);
         }
         committerCallback(err);
     });
@@ -1040,6 +1041,38 @@ everyone.now.s_project_save = function(project, createCallback) {
             projects.push(project);
         }
     }
+    writeJSON('/config/projects.json', projects, createCallback);
+}
+everyone.now.s_user_save = function(user, project, createCallback) {
+    if (project.name && project.path) {
+        var team = this.user.teamID;
+        var exists = false;
+        console.log('s_user_save', user, project);
+        user.creator = {name: this.user.about.name, email: this.user.about.email};
+        for (i in projects) {
+            //---if project name exists then update data
+            if (projects[i].name == project.name) {
+                console.log('FIND PROJECT');
+                if (projects[i].users) {
+                    for (j in projects[i].users) {
+                        if (projects[i].users[j] == user.mail) {
+                            projects[i].users[j] = user;
+                            exits = true;
+                        }
+                    }
+
+                } else {
+                    //initialize users
+                    projects[i].users=[];
+                }
+                if (!exists) {
+                    //---add project to projects
+                    projects[i].users.push(user);
+                }
+            }
+        }
+    }
+    console.log('s_user_save END', projects);
     writeJSON('/config/projects.json', projects, createCallback);
 }
 
