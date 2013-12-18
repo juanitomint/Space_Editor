@@ -1046,7 +1046,7 @@ function sendTextChange(fname) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     textChangeTimeout = null;
     //console.log("send text change.");
-    editor = Ext.getCmp(fname + '-tab').getEditor();
+    editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
     var currentText = editor.getSession().getValue();
     if (currentText === previousText) {
         //console.log("text is the same. sidestepping update.");
@@ -1523,7 +1523,7 @@ function setFileStatusIndicator(fname, status) {
 // ---------------------------------------------------------
 // READY! :)
 // ---------------------------------------------------------
-var PROJECT = "git.test";
+var PROJECT = "git.conflict";
 $(window).ready(function() {
     var getProject = getURLGetVariable("project");
     if (getProject) {
