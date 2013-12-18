@@ -20,7 +20,7 @@ Ext.define('Codespace.store.ProjectTree', {
         }],
     listeners: {
         load: function() {
-            //this.up('projecttree').initComponent();
+            Ext.getCmp('ProjectsTree').expandAll();
         },
         init: function() {
             // this.store.load()

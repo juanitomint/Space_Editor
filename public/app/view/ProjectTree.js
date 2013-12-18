@@ -12,12 +12,34 @@ Ext.define('Codespace.view.ProjectTree', {
     contextProjectMenu: Ext.create('Ext.menu.Menu', {
         title: 'Folder Menu',
         scope: this,
-        items: ['Folder',
-            CreateFolder,
-            DeleteFolder,
-            CreateFile,
-            'Git',
-            GitCommit
+        items: [{
+                text: 'Open',
+                iconCls: 'fa fa-folder-open',
+                handler: function() {
+                    var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+                    var rec = sm.getSelection()[0];
+                    window.location='?project='+rec.data['path'];
+                    
+                }
+            },
+            {
+                iconCls: 'fa fa-plus-square',
+                text: 'Add User',
+                handler: function() {
+                    Ext.getCmp('ProjectsTree').user = null;
+                    UserAdd();
+                }
+            },
+            {
+                iconCls: 'fa fa-minus-square',
+                text: 'Delete',
+                handler: function() {
+                    var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+                    var rec = sm.getSelection()[0];
+                    sm.deselectAll();
+                    ProjectDel(rec);
+                }
+            }
         ]
     }),
     contextUserMenu: Ext.create('Ext.menu.Menu', {
@@ -41,7 +63,8 @@ Ext.define('Codespace.view.ProjectTree', {
             xtype: 'treecolumn', //this is so we know which column will show the tree
             text: 'Projects',
             sortable: true,
-            dataIndex: 'name'
+            dataIndex: 'name',
+            flex: 1
         }
     ]
     ,
@@ -57,17 +80,20 @@ Ext.define('Codespace.view.ProjectTree', {
         , {
             iconCls: 'fa fa-plus-square',
             text: 'Add',
-            handler:ProjectAdd
+            handler: function() {
+                Ext.getCmp('ProjectsTree').rec = null;
+                ProjectAdd();
+            }
         }
     ],
     initComponent: function() {
-        Ext.apply(this, {
-            stateful: true,
-            stateId: this.id + '-state',
-            stateEvents: ['itemcollapse', 'itemexpand']
-
-
-        });
+//        Ext.apply(this, {
+//            stateful: true,
+//            stateId: this.id + '-state',
+//            stateEvents: ['itemcollapse', 'itemexpand']
+//
+//
+//        });
         this.callParent();
     }, //----end initComponent
     getState: function() {

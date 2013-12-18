@@ -35,9 +35,8 @@ readJSON(baseDir + '/config/config.json', function(data, err) {
 });
 var port = process.env.WEB_PORT || config.port;
 console.log("'LOADING PROJECTS:'", baseDir);
-var projects = {};
-readProjects();
-
+var projects = readProjects();
+console.log('Projects', projects);
 //console.log(dirTree('/var/www/git.test'));
 //process.exit();
 // 
@@ -366,7 +365,7 @@ app.get("/getFileTree", function(req, res) {
             filesAndInfo = dirTree(projectRoot, projectRoot);
             res.setHeader('Content-type', 'application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
-        } catch (ex) {
+        } catch (err) {
             console.log("<span style='color: #F00;'>*** exception walking files!</span>");
             console.log(err);
         }
@@ -376,7 +375,7 @@ app.get("/getFileTree", function(req, res) {
 });
 app.get("/getProjectsTree", function(req, res) {
     if (req) {
-        readProjects();
+        var projects_copy = readProjects();
         var p = {
             path: "",
             id: "",
@@ -384,8 +383,8 @@ app.get("/getProjectsTree", function(req, res) {
             type: "folder",
         };
         var ps = [];
-        for (i in projects) {
-            ps[i] = projects[i];
+        for (i in projects_copy) {
+            ps[i] = projects_copy[i];
             ps[i].id = ps[i].path;
             //---clear trivial passw
             if (ps[i].users) {
@@ -889,15 +888,58 @@ everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback)
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
 //---GIT Related Functions
+everyone.now.s_git_init = function(committerCallback) {
+    var team = this.user.teamID;
+    console.log("git init project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git.init(teamProjGitPath, function(err, repo) {
+        if (err) {
+            committerCallback(err);
+        } else {
+            repo.status(committerCallback);
+        }
+    });
+}
 everyone.now.s_git_status = function(committerCallback) {
     var team = this.user.teamID;
-    console.log("git tatus project... >> " + team);
+    console.log("git status project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     var status = {};
     var err = null
     repo.status(committerCallback);
 }
+
+everyone.now.s_git_remove = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("remove from git: project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.remove(paths, function(err) {
+        committerCallback(err);
+    });
+}
+everyone.now.s_git_add = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("checkout project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.add(paths, function(err) {
+        committerCallback(err);
+    });
+
+}
+everyone.now.s_git_checkout = function(paths, committerCallback) {
+    var team = this.user.teamID;
+    console.log("checkout project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    repo.checkout(paths, function(err) {
+        committerCallback(err);
+    });
+
+}
+
 everyone.now.s_git_branch = function(committerCallback) {
     var team = this.user.teamID;
     console.log("git branch... >> " + team);
@@ -906,6 +948,7 @@ everyone.now.s_git_branch = function(committerCallback) {
     var err = null
     repo.branch(committerCallback);
 }
+
 everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
@@ -951,46 +994,78 @@ everyone.now.s_deployProject = function(txt, deployerCallback) {
     console.log("DEPLOYING Project >> " + team);
     localProjectDeploy(this.user, deployerCallback);
 };
-everyone.now.s_project_save = function(project, createCallback) {
+everyone.now.s_project_delete = function(project, deleteCallback) {
     if (project.name && project.path) {
         var team = this.user.teamID;
         for (i in projects) {
             //---if project name exists then update data
             if (projects[i].name == project.name) {
-                projects[i].name=project.name;
-                projects[i].path=project.path;
-                projects[i].url=project.url;
-            } else {
-                //---add creator data
-                project.creator = {name: this.user.about.name, email: this.user.about.email};
-                //---add project to projects
-                projects.push(project);
+                projects.splice(i, 1);
             }
         }
-        var data = JSON.stringify(projects);
-        fs.writeFile(baseDir + '/config/projects.json', data, function(err) {
-            if (err) {
-                console.log('There has been an error saving your configuration data.');
-                console.log(err.message);
-                createCallback(err);
-            }
-            console.log('Configuration saved successfully.')
-        });
-        createCallback();
-
     }
+    console.log('Deleted Project:' + project.name);
+    writeJSON('/config/projects.json', projects, deleteCallback);
 }
+everyone.now.s_project_save = function(project, createCallback) {
+    if (project.name && project.path) {
+        var team = this.user.teamID;
+        var exists = false;
+        project.creator = {name: this.user.about.name, email: this.user.about.email};
+        for (i in projects) {
+            //---if project name exists then update data
+            if (projects[i].name == project.name) {
+                projects[i].name = project.name;
+                projects[i].path = project.path;
+                projects[i].url = project.url;
+                projects[i].creator = project.creator;
+                exists = true;
+            }
+        }
+        if (!exists) {
+            //---add project to projects
+            projects.push(project);
+        }
+    }
+    writeJSON('/config/projects.json', projects, createCallback);
+}
+
+
+
+
+
 //--------
 //
 //   Project Functions
 //
+function writeJSON(file, data, callback) {
+    try {
+        var data = JSON.stringify(data);
+        fs.writeFile(baseDir + file, data, function(err) {
+            if (err) {
+                console.log('There has been an error saving your configuration data.');
+                console.log(err.message);
+                callback(err);
+            }
+            callback();
+            console.log('Configuration saved successfully.')
+        });
+    } catch (err) {
+        callback(err);
+    }
+}
+
 function readJSON(file, callback) {
     try {
         var data = fs.readFileSync(file),
                 myObj;
         try {
             myObj = JSON.parse(data);
-            callback(myObj, null);
+            if (callback) {
+                callback(myObj, null);
+            } else {
+                return myObj;
+            }
         }
         catch (err) {
             callback({}, err);
@@ -1001,14 +1076,7 @@ function readJSON(file, callback) {
 }
 
 function readProjects() {
-    readJSON(baseDir + '/config/projects.json', function(data, err) {
-        if (err) {
-            console.log('There has been an error parsing');
-            console.log(err);
-        }
-        projects = data;
-        console.log('Projects', projects);
-    });
+    return readJSON(baseDir + '/config/projects.json');
 }
 
 ////
@@ -1207,7 +1275,6 @@ function removeUserFromFileGroup(userObj, fname) {
     console.log('removed');
     console.log(groupFilesUsers);
     console.log('-----------------------------------------------');
-
     if (fname && fname !== "") {
         groupname += "/" + fname;
     }

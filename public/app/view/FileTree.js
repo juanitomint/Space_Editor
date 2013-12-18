@@ -17,7 +17,9 @@ Ext.define('Codespace.view.FileTree', {
             DeleteFolder,
             CreateFile,
             'Git',
-            GitCommit
+            GitCommit,
+            GitAdd,
+            GitRemove,
         ]
     }),
     contextFileMenu: Ext.create('Ext.menu.Menu', {
