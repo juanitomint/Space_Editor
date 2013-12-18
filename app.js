@@ -925,6 +925,7 @@ everyone.now.s_git_add = function(paths, committerCallback) {
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     repo.add(paths, function(err) {
+        console.log('s_git_add', err);
         committerCallback(err);
     });
 
@@ -955,15 +956,27 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var safeMsg = Utf8.encode(txt).replace(/\"/g, "\\\"");
     var repo = git(teamProjGitPath);
+    //----fix empty paths
+    for(i in paths){
+        if(paths[i]=='') paths[i]='./'; 
+    }
+    
     repo.add(paths, function(err) {
-        if (err)
+        if (err) {
+            console.log('s_git_ciommit-> add', err);
             committerCallback(err);
+        }
     });
     repo.identify({name: this.user.about.name, email: this.user.about.email}, function(err) {
-        if (err)
+        if (err) {
+            console.log('s_git_ciommit-> identify', err);
             committerCallback(err);
+        }
     });
     repo.commit(safeMsg, {}, function(err) {
+        if (err) {
+        console.log('s_git_ciommit-> commit', err);
+        }
         committerCallback(err);
     });
 
