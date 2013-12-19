@@ -1,4 +1,4 @@
-Ext.define('Codespace.model.file', {
+Ext.define('Codespace.model.user', {
     extend: 'Ext.data.Model',
-    fields: ['id', 'name', 'mail'],
+    fields: ['id', 'name', 'mail','passw'],
 });

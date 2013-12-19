@@ -10,7 +10,7 @@ Ext.define('Codespace.view.ProjectTree', {
     useArrows: true,
     margin: 0,
     contextProjectMenu: Ext.create('Ext.menu.Menu', {
-        title: 'Folder Menu',
+        title: 'Project Menu',
         scope: this,
         items: [{
                 text: 'Open',
@@ -46,16 +46,17 @@ Ext.define('Codespace.view.ProjectTree', {
         title: 'User Menu',
         scope: this,
         items: [
-            DeleteFile,
             {
-                xtype: 'menuseparator'
+                text: 'Edit',
+                iconCls: 'fa fa-edit',
+                handler: function() {
+                    var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+                    var rec = sm.getSelection()[0];
+                    user = Ext.create('Codespace.model.user', rec.raw);
+                    UserAdd(user);
+                }
             },
-            'Git',
-            GitCommit,
-            {
-                xtype: 'menuseparator'
-            },
-            GitCheckout
+            UserRemoveBtn,
         ]
     }),
     columns: [
@@ -65,8 +66,8 @@ Ext.define('Codespace.view.ProjectTree', {
             sortable: true,
             dataIndex: 'name',
             flex: 1
-        },{
-            text:'status'
+        }, {
+            text: 'status'
         }
     ]
     ,
@@ -165,6 +166,9 @@ Ext.define('Codespace.view.ProjectTree', {
         itemdblclick: function(me, rec, item, index, e, eOpts) {
             if (!rec.isLeaf()) {
                 ProjectAdd(rec);
+            } else {
+                user = Ext.create('Codespace.model.user', rec.raw);
+                UserAdd(user);
             }
 //            //---if tab exists make it the active one
 //            if (Ext.getCmp(record.data.id + '-tab')) {

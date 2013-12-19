@@ -1047,23 +1047,22 @@ everyone.now.s_user_save = function(user, project, createCallback) {
     if (project.name && project.path) {
         var team = this.user.teamID;
         var exists = false;
-        console.log('s_user_save', user, project);
         user.creator = {name: this.user.about.name, email: this.user.about.email};
         for (i in projects) {
             //---if project name exists then update data
             if (projects[i].name == project.name) {
-                console.log('FIND PROJECT');
                 if (projects[i].users) {
                     for (j in projects[i].users) {
                         if (projects[i].users[j] == user.mail) {
+                            user.passw=(user.passw)?user.passw:projects[i].users[j].passw;
                             projects[i].users[j] = user;
-                            exits = true;
+                            exists = true;
                         }
                     }
 
                 } else {
                     //initialize users
-                    projects[i].users=[];
+                    projects[i].users = [];
                 }
                 if (!exists) {
                     //---add project to projects
@@ -1072,9 +1071,32 @@ everyone.now.s_user_save = function(user, project, createCallback) {
             }
         }
     }
-    console.log('s_user_save END', projects);
     writeJSON('/config/projects.json', projects, createCallback);
 }
+everyone.now.s_user_delete = function(user, project, deleteCallback) {
+    if (project.name && project.path) {
+        var team = this.user.teamID;
+        var exists = false;
+        console.log('s_user_delete', user, project);
+        user.creator = {name: this.user.about.name, email: this.user.about.email};
+        for (i in projects) {
+            //---if project name exists then update data
+            if (projects[i].name == project.name) {
+                if (projects[i].users) {
+                    for (j in projects[i].users) {
+                        if (projects[i].users[j].mail == user.mail) {
+        
+                            projects[i].users.splice(j, 1);
+
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+    writeJSON('/config/projects.json', projects, deleteCallback);
+};
 
 
 

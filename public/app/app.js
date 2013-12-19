@@ -52,21 +52,25 @@ var ProjectAdd = function(rec) {
                         labelWidth: 120,
                         labelAlign: 'right',
                         fieldLabel: 'Project Name:',
-                        name: 'name'
+                        name: 'name',
+                        allowBlank: false
                     },
                     {
                         xtype: 'textfield',
                         labelWidth: 120,
                         labelAlign: 'right',
                         fieldLabel: 'Project relative path:',
-                        name: 'path'
+                        name: 'path',
+                        allowBlank: false
                     },
                     {
                         xtype: 'textfield',
                         labelWidth: 120,
                         labelAlign: 'right',
                         fieldLabel: 'Project url:',
-                        name: 'url'
+                        name: 'url',
+                        allowBlank: false,
+                        vtype: 'url'
                     }
                 ],
                 bbar: [
@@ -117,6 +121,60 @@ var ProjectAdd = function(rec) {
         }
     }).show(); //---end show;
 };
+var UserRemoveBtn = Ext.create('Ext.Action', {
+    text: 'Remove',
+    iconCls: 'fa fa-minus-square',
+    handler: function() {
+        var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+        var user = sm.getSelection()[0];
+        var project = user.parentNode;
+        Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + rec.get('name'), function(btn, text) {
+            if (btn == 'yes') {
+                now.s_user_delete(user.raw, project.raw, function(errs) {
+                    if (errs) {
+                        console.log(errs);
+                        Ext.MessageBox.show({
+                            title: 'Error!',
+                            msg: 'Error Deleting:<br/>' + errs[0] + '<br/>',
+                            buttons: Ext.MessageBox.OK,
+                            icon: Ext.MessageBox.ERROR
+                        });
+                    } else {
+                        //----remove from treree succesfull
+                        user.remove();
+                    }
+                });
+            }
+        });
+        if (this.up('window'))
+            this.up('window').destroy();
+    }
+});
+var UserAddBtn = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-save',
+    text: 'save',
+    handler: function() {
+        var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+        var project = sm.getSelection()[0].data;
+        user = this.up('form').getValues();
+        now.s_user_save(user, project, function(errs) {
+            if (errs) {
+                console.log(errs);
+                Ext.MessageBox.show({
+                    title: 'Error!',
+                    msg: 'Error adding user:<br/>' + errs[0] + '<br/>',
+                    buttons: Ext.MessageBox.OK,
+                    icon: Ext.MessageBox.ERROR
+                });
+            } else {
+                //----create/save succesfull
+                Ext.getCmp('ProjectsTree').store.load();
+            }
+        });
+        if (this.up('window'))
+            this.up('window').destroy();
+    }
+});
 var UserAdd = function(rec) {
     Ext.create('widget.window', {
         title: 'Add User',
@@ -141,7 +199,8 @@ var UserAdd = function(rec) {
                         labelWidth: 120,
                         labelAlign: 'right',
                         fieldLabel: 'User Name:',
-                        name: 'name'
+                        name: 'name',
+                        allowBlank: false,
                     },
                     {
                         xtype: 'textfield',
@@ -156,46 +215,15 @@ var UserAdd = function(rec) {
                         labelWidth: 120,
                         labelAlign: 'right',
                         fieldLabel: 'email:',
-                        name: 'mail'
+                        name: 'mail',
+                        allowBlank: false,
+                        vtype: 'email'
                     }
                 ],
                 bbar: [
-                    {
-                        text: 'Remove',
-                        iconCls: 'fa fa-minus-square',
-                        handler: function() {
-                            var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
-                            var rec = sm.getSelection()[0];
-                            //window.location = '?project=' + rec.data['path'];
-
-                        }
-                    },
+                    UserRemoveBtn,
                     '->',
-                    {
-                        xtype: 'button',
-                        iconCls: 'fa fa-save',
-                        text: 'save',
-                        handler: function() {
-                            var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
-                            var project = sm.getSelection()[0].data;
-                            user = this.up('form').getValues();
-                            now.s_user_save(user,project, function(errs) {
-                                if (errs) {
-                                    console.log(errs);
-                                    Ext.MessageBox.show({
-                                        title: 'Error!',
-                                        msg: 'Error branch:<br/>' + errs[0] + '<br/>',
-                                        buttons: Ext.MessageBox.OK,
-                                        icon: Ext.MessageBox.ERROR
-                                    });
-                                } else {
-                                    //----create/save succesfull
-                                    Ext.getCmp('ProjectsTree').store.load();
-                                }
-                            });
-                            this.up('window').destroy();
-                        }
-                    }
+                    UserAddBtn
                 ]
             }],
         listeners: {
@@ -209,6 +237,8 @@ var UserAdd = function(rec) {
         }
     }).show(); //---end show;
 };
+
+
 var GitBranch = function() {
     now.s_git_branch(function(errs, branch) {
         console.log("Git branch recived");
@@ -229,8 +259,8 @@ var GitBranch = function() {
     });
 };
 var GitInit = Ext.create('Ext.Action', {
-    text:'Init',
-    iconCls:'fa fa-check',
+    text: 'Init',
+    iconCls: 'fa fa-check',
     handler: function() {
         now.s_git_init(function(errs) {
             console.log("Git Init");
@@ -276,7 +306,7 @@ var GitStatus = Ext.create('Ext.Action', {
                         node = tree.store.getById(id);
                         if (node) {
                             cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
-                            cls=(data[file].type=='UU') ? 'git-status-conflict' :cls;
+                            cls = (data[file].type == 'UU') ? 'git-status-conflict' : cls;
                             node.data = Ext.Object.merge(node.data, data[file]);
                             node.set('cls', cls);
                         }
