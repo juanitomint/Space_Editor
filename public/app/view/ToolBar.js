@@ -26,7 +26,8 @@ Ext.define('Codespace.view.ToolBar', {
                         handler: function() {
                             Ext.getCmp('filetabs').getActiveTab().close();
                         }
-                    }
+                    },
+                    DeleteFile
                 ]
             })
         },

@@ -50,7 +50,11 @@ Ext.define('Codespace.view.FileTree', {
             text: 'Files',
             flex: 3,
             sortable: true,
-            dataIndex: 'name'
+            dataIndex: 'name',
+            editor: {
+                xtype: 'textfield',
+                allowBlank: true
+            }
         },
         {
             //we must use the templateheader component so we can use a custom tpl
@@ -160,6 +164,17 @@ Ext.define('Codespace.view.FileTree', {
         this.callParent(arguments);
 
     },
+    viewConfig : {
+        emptyText : '<center><span class="empty-table">No data!</span></center>',
+        singleSelect : true,
+        stripeRows : true
+    },
+    selType: 'cellmodel',
+    plugins: [
+        Ext.create('Ext.grid.plugin.CellEditing', {
+            //clicksToEdit: 1
+        })
+    ],
     listeners: {
         keypress: function(e, t, eOpts) {
             console.log('keypress');
