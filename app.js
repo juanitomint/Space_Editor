@@ -247,6 +247,7 @@ var teamID = config.defaultTeamId;
 function dirTree(filename, projectRoot) {
 //----return if file contains dot
 
+
     var stats = fs.statSync(filename);
     var info = {
         path: filename.replace(projectRoot, ''),
@@ -286,10 +287,16 @@ app.get("/getFileTree", function(req, res) {
     if (req.query.project && req.query.project.length > 2) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
+        //---Create path if not exists
+        //@todo error handling
+        if (!fs.existsSync(projectRoot)) {
+            fs.mkdirSync(projectRoot);
+        } 
         //---set globals 4 show/hide dot files/folders
         showDotFolders = (req.query.showDotFolders) ? true : config.tree.showDotFolders;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
         try {
+
             filesAndInfo = dirTree(projectRoot, projectRoot);
             res.setHeader('Content-type', 'application/json;charset=UTF-8');
             res.send('[' + JSON.stringify(filesAndInfo) + ']');
@@ -982,7 +989,7 @@ everyone.now.s_user_save = function(user, project, createCallback) {
                 if (projects[i].users) {
                     for (j in projects[i].users) {
                         if (projects[i].users[j] == user.mail) {
-                            user.passw=(user.passw)?user.passw:projects[i].users[j].passw;
+                            user.passw = (user.passw) ? user.passw : projects[i].users[j].passw;
                             projects[i].users[j] = user;
                             exists = true;
                         }
@@ -1013,7 +1020,7 @@ everyone.now.s_user_delete = function(user, project, deleteCallback) {
                 if (projects[i].users) {
                     for (j in projects[i].users) {
                         if (projects[i].users[j].mail == user.mail) {
-        
+
                             projects[i].users.splice(j, 1);
 
                         }

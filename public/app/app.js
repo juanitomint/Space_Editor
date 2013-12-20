@@ -559,27 +559,32 @@ var DeleteFile = Ext.create('Ext.Action', {
     handler: function(widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
-        if (n.isLeaf()) {
-            Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
-                if (btn == 'yes') {
-                    path = n.data.path;
-                    now.s_deleteFile(path, function(fname, errs) {
-                        console.log("Created file.. any errors?");
-                        if (errs.length) {
-                            console.log(errs);
-                            Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
-                        } else {
-                            n.remove();
-                        }
+        if (n) {
+            if (n.isLeaf()) {
+                Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                    if (btn == 'yes') {
+                        path = n.data.path;
+                        now.s_deleteFile(path, function(fname, errs) {
+                            console.log("Created file.. any errors?");
+                            if (errs.length) {
+                                console.log(errs);
+                                Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
+                            } else {
+                                n.remove();
+                            }
 
 
-                    });
+                        });
+                    }
                 }
+                );
+            } else {
+                //---show message
+                Ext.MessageBox.alert('Error!', "Can't delete File here");
             }
-            );
         } else {
             //---show message
-            Ext.MessageBox.alert('Error!', "'Can't delete File here");
+            Ext.MessageBox.alert('Error!', "Nothing selected!");
         }
     }
 });
