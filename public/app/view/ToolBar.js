@@ -9,10 +9,7 @@ Ext.define('Codespace.view.ToolBar', {
             xtype: 'splitbutton',
             menu: new Ext.menu.Menu({
                 items: [
-                    {
-                        text: 'New',
-                        iconCls: 'fa fa-file-o'
-                    },
+                    CreateFile,
                     {
                         text: 'Save',
                         iconCls: 'fa fa-save',
