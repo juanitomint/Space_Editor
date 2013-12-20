@@ -164,15 +164,15 @@ Ext.define('Codespace.view.FileTree', {
         this.callParent(arguments);
 
     },
-    viewConfig : {
-        emptyText : '<center><span class="empty-table">No data!</span></center>',
-        singleSelect : true,
-        stripeRows : true
+    viewConfig: {
+        emptyText: '<center><span class="empty-table">No data!</span></center>',
+        singleSelect: true,
+        stripeRows: true
     },
     selType: 'cellmodel',
     plugins: [
         Ext.create('Ext.grid.plugin.CellEditing', {
-            //clicksToEdit: 1
+            triggerEvent:'none'
         })
     ],
     listeners: {
@@ -189,6 +189,7 @@ Ext.define('Codespace.view.FileTree', {
             return false;
         },
         itemdblclick: function(me, record, item, index, e, eOpts) {
+            e.stopEvent();
             //---if tab exists make it the active one
             if (Ext.getCmp(record.data.id + '-tab')) {
                 Ext.getCmp('filetabs').setActiveTab(Ext.getCmp(record.data.id + '-tab'));
