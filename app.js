@@ -283,7 +283,7 @@ function dirTree(filename, projectRoot) {
     }
 }
 
-app.get("/getFileTree", function(req, res) {
+app.get("/getFileTree", ensureAuthenticated, function(req, res) {
     if (req.query.project && req.query.project.length > 2) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
@@ -308,7 +308,7 @@ app.get("/getFileTree", function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.get("/getProjectsTree", function(req, res) {
+app.get("/getProjectsTree",ensureAuthenticated, function(req, res) {
     if (req) {
         var projects_copy = readProjects();
         var p = {
@@ -343,7 +343,7 @@ app.get("/getProjectsTree", function(req, res) {
         res.send('[' + JSON.stringify(p) + ']');
     }
 });
-app.post("/launchProject", function(req, res) {
+app.post("/launchProject", ensureAuthenticated,function(req, res) {
     if (!ENABLE_LAUNCH) {
         res.send("FAIL: Sorry, but launching projects is not currently enabled.");
         return;
@@ -389,7 +389,7 @@ app.post("/launchProject", function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.post("/createFile", function(req, res) {
+app.post("/createFile",ensureAuthenticated, function(req, res) {
     console.log("CREATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -420,7 +420,7 @@ app.post("/createFile", function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/deleteFile", function(req, res) {
+app.post("/deleteFile",ensureAuthenticated, function(req, res) {
     console.log("DELETE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -452,7 +452,7 @@ app.post("/deleteFile", function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/renameFile", function(req, res) {
+app.post("/renameFile",ensureAuthenticated, function(req, res) {
     console.log("RENAME FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -495,7 +495,7 @@ app.post("/renameFile", function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/duplicateFile", function(req, res) {
+app.post("/duplicateFile",ensureAuthenticated, function(req, res) {
     console.log("DUPLICATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -539,7 +539,7 @@ app.post("/duplicateFile", function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.get("/allUsersEditingProjectsIFrame", function(req, res) {
+app.get("/allUsersEditingProjectsIFrame",ensureAuthenticated, function(req, res) {
     var html = "<html></head><script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script><head><body><script>";
     //html += "var u = "+JSON.stringify(nowUsersList)+";";
     html += "function receiveMessage(event){var o = event.origin; var p = parent; $.get('/allUsersEditingProjects', function(data){p.postMessage(JSON.parse(data), o);});};";
@@ -547,7 +547,7 @@ app.get("/allUsersEditingProjectsIFrame", function(req, res) {
     html += "</script></body></html>";
     res.send(html);
 });
-app.get("/allUsersEditingProjects", function(req, res) {
+app.get("/allUsersEditingProjects",ensureAuthenticated, function(req, res) {
     var nowUsers = everyone.users || {}; //nowjs.server.connected || {};
     var nowUsersList = [];
     _.each(nowUsers, function(val, name) {
