@@ -146,18 +146,6 @@ function safelyOpenFileFromEntry(el) {
         closeFileBrowser();
     }
 }
-
-function setUsersInFile(fname, usersInFile) {
-    for (var i = 0; i < mostRecentFilesAndInfo.length; i++) {
-        var f = mostRecentFilesAndInfo[i];
-        if (f[0] == fname) {
-            f[1] = usersInFile;
-            updateFileBrowserFromFileList(mostRecentFilesAndInfo);
-            return;
-        }
-    }
-    console.log("Unable to add user from file: " + fname);
-}
 function getUsersInFile(fname) {
     for (var i = 0; i < mostRecentFilesAndInfo.length; i++) {
         var f = mostRecentFilesAndInfo[i];
@@ -269,7 +257,7 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
             console.log('cInfo', cInfo)
             cInfo[fname] = cInfo[fname] || [];
             cInfo[fname]['timeLastSeen'] -= TIME_UNTIL_GONE;
-            tab = Ext.getCmp(fname + '-tab');
+            tab = Ext.getCmp(fname_stripped + '-tab');
             if (tab) {
                 editor = tab.getEditor();
                 if (editor) {
