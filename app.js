@@ -248,42 +248,47 @@ function dirTree(filename, projectRoot) {
 //----return if file contains dot
 
 
-    var stats = fs.statSync(filename);
-    if(filename===projectRoot) filename=projectRoot+'/';
-    var id = filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-    var info = {
-        path: filename.replace(projectRoot, ''),
-        //id: filename.replace(projectRoot, ''),
-        id: id,
-        name: path.basename(filename),
-        text: path.basename(filename)
-    };
-    //console.log(filename,stats);
-    //console.log(filename,stats.isDirectory(), path.basename(filename)[0] !== '.', stats.isDirectory() && path.basename(filename)[0] !== '.');
-    if (stats.isDirectory()) {
-        if (path.basename(filename)[0] !== '.' || showDotFolders) {
-            info.type = "folder";
-            //info.id=info.id+'/';
-            info.children = fs.readdirSync(filename).map(function(child) {
-                scan=filename + '/' + child, projectRoot
-                scan=scan.replace('//','/');
-                return dirTree(scan,projectRoot);
-            });
-            info.children = info.children.filter(function(n) {
-                if (n)
-                    return n;
-            });
+    try {
+        stats = fs.statSync(filename);
+        if (filename === projectRoot)
+            filename = projectRoot + '/';
+        var id = filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+        var info = {
+            path: filename.replace(projectRoot, ''),
+            //id: filename.replace(projectRoot, ''),
+            id: id,
+            name: path.basename(filename),
+            text: path.basename(filename)
+        };
+        //console.log(filename,stats);
+        //console.log(filename,stats.isDirectory(), path.basename(filename)[0] !== '.', stats.isDirectory() && path.basename(filename)[0] !== '.');
+        if (stats.isDirectory()) {
+            if (path.basename(filename)[0] !== '.' || showDotFolders) {
+                info.type = "folder";
+                //info.id=info.id+'/';
+                info.children = fs.readdirSync(filename).map(function(child) {
+                    scan = filename + '/' + child, projectRoot
+                    scan = scan.replace('//', '/');
+                    return dirTree(scan, projectRoot);
+                });
+                info.children = info.children.filter(function(n) {
+                    if (n)
+                        return n;
+                });
+                return info;
+            }
+        } else {
+            if (path.basename(filename)[0] !== '.' || showDotFiles) {
+                // Assuming it's a file. In real life it could be a symlink or
+                // something else!
+                info.type = "file";
+                info.leaf = true;
+                info.filesize = stats.size;
+            }
             return info;
         }
-    } else {
-        if (path.basename(filename)[0] !== '.' || showDotFiles) {
-            // Assuming it's a file. In real life it could be a symlink or
-            // something else!
-            info.type = "file";
-            info.leaf = true;
-            info.filesize = stats.size;
-        }
-        return info;
+    } catch (err){
+        
     }
 }
 
