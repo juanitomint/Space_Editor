@@ -249,10 +249,12 @@ function dirTree(filename, projectRoot) {
 
 
     var stats = fs.statSync(filename);
+    if(filename===projectRoot) filename=projectRoot+'/';
+    var id = filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     var info = {
         path: filename.replace(projectRoot, ''),
         //id: filename.replace(projectRoot, ''),
-        id: filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_"),
+        id: id,
         name: path.basename(filename),
         text: path.basename(filename)
     };
@@ -263,7 +265,9 @@ function dirTree(filename, projectRoot) {
             info.type = "folder";
             //info.id=info.id+'/';
             info.children = fs.readdirSync(filename).map(function(child) {
-                return dirTree(filename + '/' + child, projectRoot);
+                scan=filename + '/' + child, projectRoot
+                scan=scan.replace('//','/');
+                return dirTree(scan,projectRoot);
             });
             info.children = info.children.filter(function(n) {
                 if (n)
@@ -291,7 +295,7 @@ app.get("/getFileTree", ensureAuthenticated, function(req, res) {
         //@todo error handling
         if (!fs.existsSync(projectRoot)) {
             fs.mkdirSync(projectRoot);
-        } 
+        }
         //---set globals 4 show/hide dot files/folders
         showDotFolders = (req.query.showDotFolders) ? true : config.tree.showDotFolders;
         console.log("Listing all project files [" + projectRoot + "] for user: " + req.user.displayName + " --> (~" + usersInGroup[project] + " sockets)");
@@ -308,7 +312,7 @@ app.get("/getFileTree", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.get("/getProjectsTree",ensureAuthenticated, function(req, res) {
+app.get("/getProjectsTree", ensureAuthenticated, function(req, res) {
     if (req) {
         var projects_copy = readProjects();
         var p = {
@@ -343,7 +347,7 @@ app.get("/getProjectsTree",ensureAuthenticated, function(req, res) {
         res.send('[' + JSON.stringify(p) + ']');
     }
 });
-app.post("/launchProject", ensureAuthenticated,function(req, res) {
+app.post("/launchProject", ensureAuthenticated, function(req, res) {
     if (!ENABLE_LAUNCH) {
         res.send("FAIL: Sorry, but launching projects is not currently enabled.");
         return;
@@ -389,7 +393,7 @@ app.post("/launchProject", ensureAuthenticated,function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.post("/createFile",ensureAuthenticated, function(req, res) {
+app.post("/createFile", ensureAuthenticated, function(req, res) {
     console.log("CREATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -420,7 +424,7 @@ app.post("/createFile",ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/deleteFile",ensureAuthenticated, function(req, res) {
+app.post("/deleteFile", ensureAuthenticated, function(req, res) {
     console.log("DELETE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -452,7 +456,7 @@ app.post("/deleteFile",ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/renameFile",ensureAuthenticated, function(req, res) {
+app.post("/renameFile", ensureAuthenticated, function(req, res) {
     console.log("RENAME FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -495,7 +499,7 @@ app.post("/renameFile",ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/duplicateFile",ensureAuthenticated, function(req, res) {
+app.post("/duplicateFile", ensureAuthenticated, function(req, res) {
     console.log("DUPLICATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -539,7 +543,7 @@ app.post("/duplicateFile",ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.get("/allUsersEditingProjectsIFrame",ensureAuthenticated, function(req, res) {
+app.get("/allUsersEditingProjectsIFrame", ensureAuthenticated, function(req, res) {
     var html = "<html></head><script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script><head><body><script>";
     //html += "var u = "+JSON.stringify(nowUsersList)+";";
     html += "function receiveMessage(event){var o = event.origin; var p = parent; $.get('/allUsersEditingProjects', function(data){p.postMessage(JSON.parse(data), o);});};";
@@ -547,7 +551,7 @@ app.get("/allUsersEditingProjectsIFrame",ensureAuthenticated, function(req, res)
     html += "</script></body></html>";
     res.send(html);
 });
-app.get("/allUsersEditingProjects",ensureAuthenticated, function(req, res) {
+app.get("/allUsersEditingProjects", ensureAuthenticated, function(req, res) {
     var nowUsers = everyone.users || {}; //nowjs.server.connected || {};
     var nowUsersList = [];
     _.each(nowUsers, function(val, name) {
@@ -823,69 +827,80 @@ everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback)
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
 //---GIT Related Functions
-everyone.now.s_git_init = function(committerCallback) {
+everyone.now.s_git_init = function(Calback) {
     var team = this.user.teamID;
     console.log("git init project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git.init(teamProjGitPath, function(err, repo) {
         if (err) {
-            committerCallback(err);
+            Calback(err);
         } else {
-            repo.status(committerCallback);
+            repo.status(Calback);
         }
     });
 }
-everyone.now.s_git_status = function(committerCallback) {
+everyone.now.s_git_status = function(Calback) {
     var team = this.user.teamID;
     console.log("git status project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     var status = {};
     var err = null
-    repo.status(committerCallback);
+    repo.status(Calback);
+}
+everyone.now.s_git_sync = function(Callback) {
+    var team = this.user.teamID;
+    console.log("git status project... >> " + team);
+    var teamProjGitPath = EDITABLE_APPS_DIR + team;
+    var repo = git(teamProjGitPath);
+    var status = {};
+    var err = null
+    repo.sync(Callback);
 }
 
-everyone.now.s_git_remove = function(paths, committerCallback) {
+everyone.now.s_git_remove = function(paths, Calback) {
     var team = this.user.teamID;
     console.log("remove from git: project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     repo.remove(paths, function(err) {
-        committerCallback(err);
+        Calback(err);
     });
 }
-everyone.now.s_git_add = function(paths, committerCallback) {
+everyone.now.s_git_add = function(paths, Calback) {
     var team = this.user.teamID;
-    console.log("checkout project... >> " + team);
+    console.log("Add:" + team);
+    console.log("paths:");
+    console.log(paths);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     repo.add(paths, function(err) {
         console.log('s_git_add', err);
-        committerCallback(err);
+        Calback(err);
     });
 
 }
-everyone.now.s_git_checkout = function(paths, committerCallback) {
+everyone.now.s_git_checkout = function(paths, Calback) {
     var team = this.user.teamID;
     console.log("checkout project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     repo.checkout(paths, function(err) {
-        committerCallback(err);
+        Calback(err);
     });
 
 }
 
-everyone.now.s_git_branch = function(committerCallback) {
+everyone.now.s_git_branch = function(Calback) {
     var team = this.user.teamID;
     console.log("git branch... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
     var err = null
-    repo.branch(committerCallback);
+    repo.branch(Calback);
 }
 
-everyone.now.s_git_commit = function(txt, paths, committerCallback) {
+everyone.now.s_git_commit = function(txt, paths, Calback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -900,20 +915,20 @@ everyone.now.s_git_commit = function(txt, paths, committerCallback) {
     repo.add(paths, function(err) {
         if (err) {
             console.log('s_git_ciommit-> add', err);
-            committerCallback(err);
+            Calback(err);
         }
     });
     repo.identify({name: this.user.about.name, email: this.user.about.email}, function(err) {
         if (err) {
             console.log('s_git_ciommit-> identify', err);
-            committerCallback(err);
+            Calback(err);
         }
     });
     repo.commit(safeMsg, {}, function(err) {
         if (err) {
             console.log('s_git_ciommit-> commit', err);
         }
-        committerCallback(err);
+        Calback(err);
     });
 
 };

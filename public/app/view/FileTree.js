@@ -169,7 +169,7 @@ Ext.define('Codespace.view.FileTree', {
         singleSelect: true,
         stripeRows: true
     },
-    selType: 'cellmodel',
+    //selType: 'cellmodel',
     plugins: [
         Ext.create('Ext.grid.plugin.CellEditing', {
             triggerEvent:'none'

@@ -1523,7 +1523,7 @@ function setFileStatusIndicator(fname, status) {
 // ---------------------------------------------------------
 // READY! :)
 // ---------------------------------------------------------
-var PROJECT = "git.conflict";
+var PROJECT = "git.test";
 $(window).ready(function() {
     var getProject = getURLGetVariable("project");
     if (getProject) {

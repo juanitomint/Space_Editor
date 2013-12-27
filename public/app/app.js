@@ -280,12 +280,79 @@ var GitInit = Ext.create('Ext.Action', {
 });
 
 var GitStatus = Ext.create('Ext.Action', {
-    iconCls: 'fa fa-refresh',
+    iconCls: 'fa fa-info-circle',
     text: 'Status',
     handler: function(widget, event) {
         tree = Ext.getCmp('FileTree');
         now.s_git_status(function(errs, status) {
             console.log("Git status recived");
+            if (errs) {
+                console.log(errs);
+//                Ext.MessageBox.show({
+//                    title: 'Error!',
+//                    msg: 'Error commiting:<br/>' + errs[0] + '<br/>',
+//                    buttons: Ext.MessageBox.OK,
+//                    icon: Ext.MessageBox.ERROR
+//                });
+            } else {
+                tree.status = status;
+                clearCls(tree.getRootNode());
+                var data = status.files;
+                for (var file in data) {
+                    if (data.hasOwnProperty(file)) {
+                        //---remove trailing /
+                        path = '/' + file.replace(/\/$/, '');
+                        id = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                        node = tree.store.getById(id);
+                        cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
+                        switch (data[file].type) {
+                            case 'UU':
+                                cls = 'git-status-conflict';
+                                break;
+                            case 'A':
+                                cls = 'git-status-untracked';
+                                break;
+                            case 'M':
+                                cls = 'git-status-modified';
+                                break;
+                            case 'D':
+                                cls = 'git-status-deleted';
+                                break;
+                        }
+                        if (!node) {
+                            //---ad file to tree
+                            a = file.split('/');
+                            name = a.pop();
+                            parent_path = '/' + a.join('/');
+                            parent_id = parent_path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+                            node = new Ext.create('Codespace.model.file', {
+                                path: path,
+                                id: id,
+                                name: name,
+                                cls: cls,
+                                'type': 'file',
+                                leaf : true
+                            });
+                            
+                            parent = tree.store.getById(parent_id);
+                            node=parent.appendChild(node);
+                        }
+                        node.data = Ext.Object.merge(node.data, data[file]);
+                        node.set('cls', cls);
+                    }
+                }
+                //----update git branch
+                GitBranch();
+            }
+        });
+    }
+});
+var GitSync = Ext.create('Ext.Action', {
+    iconCls: 'fa fa-refresh',
+    text: 'Sync',
+    handler: function(widget, event) {
+        now.s_git_sync(function(errs, status) {
+            console.log("Git sync recived");
             if (errs) {
                 console.log(errs);
 //                Ext.MessageBox.show({
@@ -415,7 +482,7 @@ var GitAdd = Ext.create('Ext.Action', {
                 var paths = [];
                 sel = tree.selModel.getSelection();
                 sel.forEach(function(node) {
-                    paths.push(node.data.path.replace(/^\//, ''));
+                    paths.push(node.data.path.replace(/^\//, '').replace('', '.'));
                 });
                 console.log('About to commit', paths);
                 now.s_git_add(paths, function(errs) {

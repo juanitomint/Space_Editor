@@ -42,6 +42,10 @@ a {
 .git-status-ignored{
     color:#888;
 }
+
+.git-status-deleted{
+    color:#999;
+}
 .tab-content {
     height: 100%;
 }
