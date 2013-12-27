@@ -12,16 +12,9 @@ Ext.define('Codespace.view.ProjectTree', {
     contextProjectMenu: Ext.create('Ext.menu.Menu', {
         title: 'Project Menu',
         scope: this,
-        items: [{
-                text: 'Open',
-                iconCls: 'fa fa-folder-open',
-                handler: function() {
-                    var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
-                    var rec = sm.getSelection()[0];
-                    window.location = '?project=' + rec.data['path'];
-
-                }
-            },
+        items: [
+            ProjectOpen,
+            ProjectAdd,
             {
                 iconCls: 'fa fa-plus-square',
                 text: 'Add User',
@@ -84,8 +77,10 @@ Ext.define('Codespace.view.ProjectTree', {
             iconCls: 'fa fa-plus-square',
             text: 'Add',
             handler: function() {
+                var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+                sm.deselectAll();
                 Ext.getCmp('ProjectsTree').rec = null;
-                ProjectAdd();
+                ProjectAdd.execute();
             }
         }
     ],
@@ -165,7 +160,8 @@ Ext.define('Codespace.view.ProjectTree', {
         },
         itemdblclick: function(me, rec, item, index, e, eOpts) {
             if (!rec.isLeaf()) {
-                ProjectAdd(rec);
+                ProjectOpen.execute();
+                //ProjectAdd(rec);
             } else {
                 user = Ext.create('Codespace.model.user', rec.raw);
                 UserAdd(user);

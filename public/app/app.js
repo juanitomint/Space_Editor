@@ -18,8 +18,7 @@ var ProjectDel = function(rec) {
                     console.log(errs);
                     Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
                 } else {
-                    Ext.getCmp('ProjectsTree').store.load(function() {
-                    });
+                    Ext.getCmp('ProjectsTree').store.load();
                 }
 
 
@@ -28,99 +27,115 @@ var ProjectDel = function(rec) {
     }
     );
 }
-var ProjectAdd = function(rec) {
-    Ext.create('widget.window', {
-        title: 'Add new Project',
-        closable: true,
-        closeAction: 'destroy',
-        width: 400,
-        minWidth: 250,
-        height: 152,
-        layout: 'fit',
-        bodyPadding: 5,
-        rec: rec,
-        items: [{
-                xtype: 'form',
-                id: 'ProjectAddForm',
-                layout: {
-                    type: 'vbox',
-                    align: 'stretch'  // Child items are stretched to full width
-                },
-                items: [
-                    {
-                        xtype: 'textfield',
-                        labelWidth: 120,
-                        labelAlign: 'right',
-                        fieldLabel: 'Project Name:',
-                        name: 'name',
-                        allowBlank: false
-                    },
-                    {
-                        xtype: 'textfield',
-                        labelWidth: 120,
-                        labelAlign: 'right',
-                        fieldLabel: 'Project relative path:',
-                        name: 'path',
-                        allowBlank: false
-                    },
-                    {
-                        xtype: 'textfield',
-                        labelWidth: 120,
-                        labelAlign: 'right',
-                        fieldLabel: 'Project url:',
-                        name: 'url',
-                        allowBlank: false,
-                        vtype: 'url'
-                    }
-                ],
-                bbar: [
-                    {
-                        text: 'Open',
-                        iconCls: 'fa fa-folder-open',
-                        handler: function() {
-                            var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
-                            var rec = sm.getSelection()[0];
-                            window.location = '?project=' + rec.data['path'];
+var ProjectOpen = Ext.create('Ext.Action', {
+    text: 'Open',
+    iconCls: 'fa fa-folder-open',
+    handler: function() {
+        var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+        var rec = sm.getSelection()[0];
+        window.location = '?project=' + rec.data['path'];
 
-                        }
+    }
+});
+var ProjectAdd = Ext.create('Ext.Action', {
+    text: 'Edit',
+    iconCls: 'fa fa-edit',
+    handler: function() {
+        var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+        var rec = sm.getSelection()[0];
+        Ext.create('widget.window', {
+            title: 'Add new Project',
+            closable: true,
+            closeAction: 'destroy',
+            width: 400,
+            minWidth: 250,
+            height: 152,
+            layout: 'fit',
+            bodyPadding: 5,
+            rec: rec,
+            items: [{
+                    xtype: 'form',
+                    id: 'ProjectAddForm',
+                    layout: {
+                        type: 'vbox',
+                        align: 'stretch'  // Child items are stretched to full width
                     },
-                    '->',
-                    {
-                        xtype: 'button',
-                        iconCls: 'fa fa-save',
-                        text: 'save',
-                        handler: function() {
-                            project = this.up('form').getValues();
-                            now.s_project_save(project, function(errs) {
-                                if (errs) {
-                                    console.log(errs);
-                                    Ext.MessageBox.show({
-                                        title: 'Error!',
-                                        msg: 'Error branch:<br/>' + errs[0] + '<br/>',
-                                        buttons: Ext.MessageBox.OK,
-                                        icon: Ext.MessageBox.ERROR
-                                    });
-                                } else {
-                                    //----create/save succesfull
-                                    Ext.getCmp('ProjectsTree').store.load();
-                                }
-                            });
-                            this.up('window').destroy();
+                    items: [
+                        {
+                            xtype: 'textfield',
+                            labelWidth: 120,
+                            labelAlign: 'right',
+                            fieldLabel: 'Project Name:',
+                            name: 'name',
+                            allowBlank: false
+                        },
+                        {
+                            xtype: 'textfield',
+                            labelWidth: 120,
+                            labelAlign: 'right',
+                            fieldLabel: 'Project relative path:',
+                            name: 'path',
+                            allowBlank: false
+                        },
+                        {
+                            xtype: 'textfield',
+                            labelWidth: 120,
+                            labelAlign: 'right',
+                            fieldLabel: 'Project url:',
+                            name: 'url',
+                            allowBlank: false,
+                            vtype: 'url'
                         }
+                    ],
+                    bbar: [
+                        {
+                            text: 'Open',
+                            iconCls: 'fa fa-folder-open',
+                            handler: function() {
+                                var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
+                                var rec = sm.getSelection()[0];
+                                window.location = '?project=' + rec.data['path'];
+
+                            }
+                        },
+                        '->',
+                        {
+                            xtype: 'button',
+                            iconCls: 'fa fa-save',
+                            text: 'save',
+                            handler: function() {
+                                project = this.up('form').getValues();
+                                now.s_project_save(project, function(errs) {
+                                    if (errs) {
+                                        console.log(errs);
+                                        Ext.MessageBox.show({
+                                            title: 'Error!',
+                                            msg: 'Error branch:<br/>' + errs[0] + '<br/>',
+                                            buttons: Ext.MessageBox.OK,
+                                            icon: Ext.MessageBox.ERROR
+                                        });
+                                    } else {
+                                        //----create/save succesfull
+                                        Ext.getCmp('ProjectsTree').store.load();
+                                    }
+                                });
+                                this.up('window').destroy();
+                            }
+                        }
+                    ]
+                }],
+            listeners: {
+                show: function() {
+                    rec = this.rec;
+                    form = this.down('form');
+                    if (rec) {
+                        form.loadRecord(rec);
                     }
-                ]
-            }],
-        listeners: {
-            show: function() {
-                rec = this.rec;
-                form = this.down('form');
-                if (rec) {
-                    form.loadRecord(rec);
                 }
             }
-        }
-    }).show(); //---end show;
-};
+        }).show(); //---end show;
+    }//---end handler
+});
 var UserRemoveBtn = Ext.create('Ext.Action', {
     text: 'Remove',
     iconCls: 'fa fa-minus-square',
@@ -331,11 +346,11 @@ var GitStatus = Ext.create('Ext.Action', {
                                 name: name,
                                 cls: cls,
                                 'type': 'file',
-                                leaf : true
+                                leaf: true
                             });
-                            
+
                             parent = tree.store.getById(parent_id);
-                            node=parent.appendChild(node);
+                            node = parent.appendChild(node);
                         }
                         node.data = Ext.Object.merge(node.data, data[file]);
                         node.set('cls', cls);
