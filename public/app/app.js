@@ -350,7 +350,8 @@ var GitStatus = Ext.create('Ext.Action', {
                             });
 
                             parent = tree.store.getById(parent_id);
-                            node = parent.appendChild(node);
+                            if (parent)
+                                node = parent.appendChild(node);
                         }
                         node.data = Ext.Object.merge(node.data, data[file]);
                         node.set('cls', cls);
