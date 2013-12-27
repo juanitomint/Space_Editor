@@ -35,7 +35,6 @@ var allCollabInfo = [];
         $(container).hide().attr('id', 'conmenu').css('position', 'absolute').appendTo(document.body);
         $(marker).hide().attr('id', 'conmenuMarker').css('position', 'absolute').appendTo(document.body);
     });
-
     function mouseDownGrabber(clickEvent) {
         clickEvent.stopPropagation();
         resetMenu();
@@ -200,7 +199,6 @@ function getProjectFileInfo(fname) {
 }
 
 var userColorMap = ["#9DDC23", "#00FFFF", "#FF308F", "#FFD400", "#FF0038", "#7C279B", "#FF4E00", "#6C8B1B", "#0A869B"];
-
 // ---------------------------------------------------------
 // NOW BIndings
 // ---------------------------------------------------------
@@ -213,17 +211,17 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     me = (fromUserId == now.core.clientId) ? true : false;
     groupChatMsg(fromUserName, msg, me, userColor);
 }
-now.c_addCollaborator=function (user){
-    name=user.about.name;
+now.c_addCollaborator = function(user) {
+    name = user.about.name;
     userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    collaborators[user.clientId]=user.about;
-    addCollaborator(user.clientId,name,userColor);
+    collaborators[user.clientId] = user.about;
+    addCollaborator(user.clientId, name, userColor);
 }
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
     }
-    //---set the collabinfo
+//---set the collabinfo
     if (allCollabInfo[fromUserId] == undefined) {
         allCollabInfo[fromUserId] = [];
         allCollabInfo[fromUserId]['name'] = fromUserName;
@@ -288,7 +286,7 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
             }
             cInfo[fname]['isShown'] = false;
         }
-        //}
+//}
     }
     if (event == "deleteFile") {
         removeFileFromList(fname);
@@ -327,14 +325,12 @@ now.c_updateTree = function(param) {
 now.c_setUsersInFile = setUsersInFile;
 function setUsersInFile(fname, usersInFile) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-
     tree = Ext.getCmp('FileTree')
     node = tree.store.getNodeById(fname_stripped);
     //node = $("#fileTree").tree('getNodeById', fname_stripped);
     if (node) {
 
         node.set('users', usersInFile);
-
         if (node.parentNode != null) {
             node = node.parentNode;
             users = 0;
@@ -362,7 +358,7 @@ now.c_confirmProject = function(teamID) {
 // ---------------------------------------------------------
 function BroadcastKeydown(event) {
     if (event.keyCode == 13) {
-        // ENTER was pressed
+// ENTER was pressed
         var txt = this.value;
         if (txt != "") {
             var usedAsCommand = false;
@@ -396,7 +392,7 @@ function BroadcastKeydown(event) {
         return false;
     }
     if (event.keyCode == 27) {
-        // ESC was pressed
+// ESC was pressed
         toggleShiftShift();
         return false;
     }
@@ -408,11 +404,10 @@ function followMe() {
 }
 function addCollaborator(userId, fromUserName, color) {
     if (userId && fromUserName && !Ext.get(userId) && userId !== now.core.clientId) {
-        
+
         avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
         avatar = '<div class="avatar" style="background-color:' + color + '"></div>';
-
-        timeStamp = '<time datetime="'+Date()+'">'+fromUserName+'</time>';
+        timeStamp = '<time datetime="' + Date() + '">' + fromUserName + '</time>';
         Ext.get('contact-ol').createChild('<li id="' + userId + '" class="other">' + avatar + ' <div class="contact">' + timeStamp + '</div></li>');
     }
 }
@@ -426,8 +421,7 @@ function groupChatMsg(fromUserName, msg, me, color) {
     color = (me) ? '#444' : color;
     avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
     avatar = '<div class="avatar"  style="background-color:' + color + '"></div>';
-
-    timeStamp = '<time datetime="'+Date()+'">' + fromUserName + ':</time>';
+    timeStamp = '<time datetime="' + Date() + '">' + fromUserName + ':</time>';
     Ext.get('chat-ol').createChild('<li class="' + add + '">' + avatar + ' <div class="messages">' + timeStamp + msg + '</div></li>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
@@ -528,7 +522,8 @@ var alreadyRequestedRemoteFile = false;
 var TIME_UNTIL_GONE = 7000;
 var NOTIFICATION_TIMEOUT = 10000;
 var autoCheckStep = 0;
-var collaborators=[];
+var collaborators = [];
+var PROJECT = '';
 function sendTextChange(fname) {
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     textChangeTimeout = null;
@@ -655,7 +650,6 @@ var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
 
         var results = dmp.patch_apply(patches, currentText);
         var newText = results[0];
-
         // TODO: get text around cursor and then use it later for a fuzzy-match to keep it in the same spot.
         //console.log("DIFF TO DELTAS");
         var diff = dmp.diff_main(currentText, newText);
@@ -663,7 +657,6 @@ var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
         //console.log(deltas);
 
         var doc = editor.getSession().doc;
-
         //
         // COMPUTE THE DIFF FROM THE PATCH AND ACTUALLY INSERT/DELETE TEXT VIA THE EDITOR (AUTO TRACKS CURSOR, AND DOESN'T RESET THE ENTIRE TEXT FIELD).
         //
@@ -746,7 +739,6 @@ var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
         doc.applyDeltas(aceDeltas);
         previousText = newText;
         ignoreAceChange = false;
-
         if (!localChangeJustSent && (t - timeOfLastLocalChange) > 2000) {
             //console.log("no local changes have been made in a couple seconds >> md5 should match..");
             var newMD5 = Crypto.MD5(newText);
@@ -789,9 +781,8 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
         return;
     }
     var cInfo = allCollabInfo[id];
-
     if (cInfo == undefined) {
-        // first time seeing this user!
+// first time seeing this user!
         allCollabInfo[id] = [];
         cInfo = allCollabInfo[id];
         // let collaborator know I'm here.
@@ -801,7 +792,6 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
         cInfo[fname] = [];
     }
     cInfo[fname]['name'] = name;
-
     cInfo[fname]['timeLastSeen'] = (new Date()).getTime();
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
@@ -828,24 +818,44 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
     cInfo[fname]['isShown'] = true;
 }
 now.c_updateWithDiffPatches = function(id, patches, md5, fname) {
-    //console.log(patches);
+//console.log(patches);
     updateWithDiffPatchesLocal(id, patches, md5, fname);
 }
 
 now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
-    //if(!initialStateIsWelcome){
+//if(!initialStateIsWelcome){
     console.log("user requesting full file: " + fname + " >> " + collabID);
     if (infile == fname) {
         fileRequesterCallback(infile, previousText, null, false); // (fname, filedata, err, isSaved)
     } else {
         console.log("Oh No! They think I'm editing a file I'm not. I'm in: " + infile);
     }
-    //}else{
-    //  console.log("received request for initial state, but I just got here. ignoring.");
-    //}
+//}else{
+//  console.log("received request for initial state, but I just got here. ignoring.");
+//}
 }
 now.c_fileStatusChanged = function(fname, status) {
     setFileStatusIndicator(fname, status);
+}
+now.c_setTeamID = function(val) {
+    PROJECT = val;
+    document.title = PROJECT;
+    //register into the project and join the group.
+    Ext.getCmp('FileTree').store.setProxy({
+        type:'ajax',
+        method: 'GET',
+        noCache: false, //---get rid of the ?dc=.... in urls
+        url: '/getFileTree?project=' + PROJECT,
+        reader: {
+            type: 'json'
+        }
+
+    });
+    //Ext.getCmp('FileTree').store.setProxy = proxy;
+    Ext.getCmp('FileTree').store.load();
+    now.s_setTeamID(PROJECT);
+    now.s_sendUserEvent("join"); // let everyone know who I am!
+    setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
 }
 
 var alreadyConnected = false;
@@ -862,7 +872,6 @@ now.ready(function() {
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
-
     now.core.on('disconnect', function() {
         console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
         nowIsOnline = false;
@@ -923,7 +932,6 @@ function openFileFromServer(fname, forceOpen, editor) {
             previousText = editor.getSession().getValue();
             //autoFoldCodeProgressive();
             setFileStatusIndicator(fname, "ok");
-
             removeAllCollaborators(fname);
             ifOnlineLetCollaboratorsKnowImHere();
             openIsPending = false;
@@ -1010,16 +1018,3 @@ function setFileStatusIndicator(fname, status) {
 // ---------------------------------------------------------
 // READY! :)
 // ---------------------------------------------------------
-
-$(window).ready(function() {
-    PROJECT = "codespace.test";
-    var getProject = getURLGetVariable("project");
-    if (getProject) {
-        PROJECT = getProject;
-    }
-    document.title = PROJECT;
-});
-
-
-
-

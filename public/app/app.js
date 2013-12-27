@@ -770,10 +770,7 @@ Ext.application({
     launch: function() {
         Ext.getCmp('utiltabs').setActiveTab(1);
         Ext.getCmp('utiltabs').setActiveTab(0);
-        //register into the project and join the group.
-        now.s_setTeamID(PROJECT);
-        now.s_sendUserEvent("join"); // let everyone know who I am!
-        setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
+        now.s_get1stProject(); 
     },
     setToolbarSettings: function(me) {
         if (me) {

@@ -641,6 +641,12 @@ everyone.now.s_updateTree = function() {
         }
     }
 }
+everyone.now.s_get1stProject= function() {
+    clientId = this.now.clientId;
+    var pathExploded=projects[0].path.split('/');
+    pname=pathExploded.pop();
+    this.now.c_setTeamID(pname);
+}
 everyone.now.s_setTeamID = function(val) {
     this.user.teamID = val;
     clientId = this.now.clientId;
