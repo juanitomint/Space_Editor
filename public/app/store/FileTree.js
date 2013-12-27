@@ -13,9 +13,14 @@ Ext.define('Codespace.store.FileTree', {
             direction: 'ASC'
         }],
     listeners: {
+        beforeload: function() {
+            Ext.getCmp('FileTree').setLoading(true);
+        },
         load: function() {
+             tree = Ext.getCmp('FileTree');
+            Ext.getCmp('TreeTab').setTitle(tree.getRootNode().childNodes[0].data.name);
+            Ext.getCmp('FileTree').setLoading(false);
             now.s_updateTree();
-
             GitStatus.execute();
             if (location.hash) {
                 queryString = Ext.Object.fromQueryString(window.location.hash);

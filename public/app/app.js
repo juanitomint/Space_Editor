@@ -269,7 +269,7 @@ var GitBranch = function() {
         } else {
             tree = Ext.getCmp('FileTree');
             //---get the 1st tree node
-            Ext.getCmp('TreeTab').setTitle(tree.title = tree.getRootNode().childNodes[0].data.name + ' [' + branch.name + ']');
+            Ext.getCmp('TreeTab').setTitle(tree.getRootNode().childNodes[0].data.name + ' [' + branch.name + ']');
             tree.branch = branch.name;
         }
     });
@@ -770,7 +770,12 @@ Ext.application({
     launch: function() {
         Ext.getCmp('utiltabs').setActiveTab(1);
         Ext.getCmp('utiltabs').setActiveTab(0);
-        now.s_get1stProject(); 
+        var getProject = getURLGetVariable("project");
+        if (getProject) {
+            now.s_setActiveProject(getProject);
+        } else {
+            now.s_setActiveProject();
+        }
     },
     setToolbarSettings: function(me) {
         if (me) {

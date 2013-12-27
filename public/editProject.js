@@ -851,7 +851,6 @@ now.c_setTeamID = function(val) {
         }
 
     });
-    //Ext.getCmp('FileTree').store.setProxy = proxy;
     Ext.getCmp('FileTree').store.load();
     now.s_setTeamID(PROJECT);
     now.s_sendUserEvent("join"); // let everyone know who I am!

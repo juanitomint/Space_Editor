@@ -287,8 +287,8 @@ function dirTree(filename, projectRoot) {
             }
             return info;
         }
-    } catch (err){
-        
+    } catch (err) {
+
     }
 }
 
@@ -641,10 +641,12 @@ everyone.now.s_updateTree = function() {
         }
     }
 }
-everyone.now.s_get1stProject= function() {
+everyone.now.s_setActiveProject = function(pname) {
     clientId = this.now.clientId;
-    var pathExploded=projects[0].path.split('/');
-    pname=pathExploded.pop();
+    if (!pname) {
+        var pathExploded = projects[0].path.split('/');
+        pname = pathExploded.pop();
+    }
     this.now.c_setTeamID(pname);
 }
 everyone.now.s_setTeamID = function(val) {
