@@ -31,6 +31,7 @@ var ProjectOpen = Ext.create('Ext.Action', {
     text: 'Open',
     iconCls: 'fa fa-folder-open',
     handler: function() {
+        event.preventDefault();
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var rec = sm.getSelection()[0];
         window.location = '?project=' + rec.data['path'];
@@ -767,8 +768,8 @@ Ext.application({
     stores: ['FileTree', 'ProjectTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
-        //Ext.getCmp('utiltabs').setActiveTab(1);
-        //Ext.getCmp('utiltabs').setActiveTab(0);
+        Ext.getCmp('utiltabs').setActiveTab(1);
+        Ext.getCmp('utiltabs').setActiveTab(0);
         //register into the project and join the group.
         now.s_setTeamID(PROJECT);
         now.s_sendUserEvent("join"); // let everyone know who I am!

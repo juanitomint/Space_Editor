@@ -1,7 +1,7 @@
 {
     "port": 3000,
     "appsDir": "/var/www/",
-    "defaultTeamId": "dna2",
+    "defaultTeamId": "CodeSpace",
     "enableLog": false,
     "google": {
         "returnUrl":"http://localhost"

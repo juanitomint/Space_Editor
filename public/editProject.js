@@ -858,7 +858,7 @@ now.ready(function() {
     nowIsOnline = true;
     alreadyConnected = true;
     console.log("Using NowJS -- this clientId: " + now.core.clientId);
-    now.s_setTeamID(PROJECT);
+    //now.s_setTeamID(PROJECT);
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
