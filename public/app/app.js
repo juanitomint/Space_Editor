@@ -1,27 +1,33 @@
-var POJECT='';
+var PROJECT = '';
 Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
     expires: new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)), //7 days from now
 }));
 //---ext actions
+var LoadErr=function(err){
+    console.log(err);
+};
+EditProjectLoad=function(){
+    
+    console.log(">>>> Now bindings <<<<<");
+};
+function NowLoad() {
+    console.log(">>>> now.js Loaded <<<<<");
+    Ext.Loader.loadScriptFile('js/nowbindings.js', EditProjectLoad, LoadErr, this, true);
+}
 function AppLaunch() {
-    Ext.Loader.loadScript('./nowjs/now.js',function(err){
-        console.log(err);
-    },null,this,true);
-    Ext.Loader.loadScript('editProject.js',function(err){
-        console.log(err);
-    },null,this,true);
     console.log(">>>> LAUNCH <<<<<");
+    Ext.Loader.loadScriptFile('./nowjs/now.js', NowLoad, LoadErr, this, true);
     Ext.getCmp('utiltabs').setActiveTab(1);
     Ext.getCmp('utiltabs').setActiveTab(0);
     /*
-    if (!nowIsOnline) {
-        var getProject = getURLGetVariable("project");
-        if (getProject) {
-            now.s_setActiveProject(getProject);
-        } else {
-            now.s_setActiveProject();
-        }
-    }*/
+     if (!nowIsOnline) {
+     var getProject = getURLGetVariable("project");
+     if (getProject) {
+     now.s_setActiveProject(getProject);
+     } else {
+     now.s_setActiveProject();
+     }
+     }*/
 }
 function clearCls(node) {
     node.eachChild(function(n) {
@@ -789,7 +795,7 @@ Ext.application({
     stores: ['FileTree', 'ProjectTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
-        
+
         AppLaunch();
 
     },
