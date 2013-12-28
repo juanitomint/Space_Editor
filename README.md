@@ -1,16 +1,15 @@
-# Space is a real-time collaborative code editor!
+# CodeSpace is a real-time collaborative code IDE!
 
-Space is built on NodeJS and uses NowJS under the hood to support websockets for realtime collaboration. The editor is built on ACE (the same front-end used in Cloud9 IDE) and uses Google's diff-match-patch to send edits information to contributors as changes are made to the code.
+CodeSpace is built on NodeJS and uses NowJS for realtime collaboration. The editor is built on ACE (the same front-end used in Cloud9 IDE) and uses Google's diff-match-patch to send edits information to contributors as changes are made to the code.
+This project is base-on and inspired on the great work of the folks from ChaosCollective.org
 
 ## Demo
 
-Try out Space for yourself on the demo site here:
-http://spacedemo.chaoscollective.org/?project=SandboxApp
+
 
 ## More Details
 
-Check out the Space overview page here for more details and a video:
-http://chaoscollective.org/projects/builtinspace.html
+
 
 ## Libraries/Platforms used
  - NodeJS
@@ -26,5 +25,4 @@ But making Space open source is only half the battle, now we need to take it to 
 
 Happy coding!
 
-xoxo,
-the Chaos Collective
+
