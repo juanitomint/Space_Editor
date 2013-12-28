@@ -2,114 +2,8 @@
 // Right-click context menu plugin for jQuery...
 // -----------------------------------------
 var allCollabInfo = [];
-(function($) {
-    /**
-     * @author corey aufang (with many modifications by seewhatsticks dev team)
-     * @version 1.0.1
-     */
-    $.conmenu = function(options) {
-        var alreadyHandled = false;
-        // first check to see if we already have the selector.
-        for (var i = 0; i < items.length; i++) {
-            if (options.selector == items[i].selector) {
-                //console.log("Overwriting previous rightclick handler: " + options.selector);
-                items[i] = options;
-                alreadyHandled = true;
-            }
-        }
-        if (!alreadyHandled) {
-            // add a new selector to the set.
-            items.push(options);
-        }
-        $(options.selector).bind(window.opera ? 'click' : 'contextmenu', showmenu);
-    };
-    //defaults
-    $.conmenu.containerType = 'div';
-    $.conmenu.choicesType = 'div';
-    var items = [];
-    var container = document.createElement($.conmenu.containerType);
-    var marker = document.createElement($.conmenu.containerType);
-    $(container).addClass("rightClickContainer");
-    $(marker).addClass("rightClickMarker");
-    $(document).ready(function() {
-        $(container).hide().attr('id', 'conmenu').css('position', 'absolute').appendTo(document.body);
-        $(marker).hide().attr('id', 'conmenuMarker').css('position', 'absolute').appendTo(document.body);
-    });
-    function mouseDownGrabber(clickEvent) {
-        clickEvent.stopPropagation();
-        resetMenu();
-        console.log("I eat your clicks!");
-    }
 
-    function showmenu(event) {
-        event.stopPropagation();
-        resetMenu();
-        if (window.opera && !event.ctrlKey) {
-            return;
-        }
-        else {
-            $(document.body).bind('mousedown', mouseDownGrabber);
-        }
-        var foundFirst = false;
-        $.each(items, function() {
-            if ($.inArray(event.currentTarget, $(this.selector)) > -1) {
-                $.each(this.choices, function() {
-                    if (!foundFirst) {
-                        foundFirst = true;
-                    }
-                    var action = this.action;
-                    $(document.createElement($.conmenu.choicesType)).addClass("rightClickItem").html(this.label).mousedown(function(clickEvent) {
-                        clickEvent.stopPropagation();
-                        resetMenu();
-                        action(event.currentTarget);
-                    }).appendTo(container);
-                });
-            }
-        });
-        var size = {
-            'height': $(window).height(),
-            'width': $(window).width(),
-            'sT': $(window).scrollTop(),
-            'cW': $(container).width(),
-            'cH': $(container).height()
-        };
-        //console.log(container);
-        $(marker).css({
-            'left': (event.clientX - 3),
-            'top': (event.clientY - 3)
-        }).show();
-        $(container).css({
-            'left': ((event.clientX + size.cW) > size.width ? (event.clientX - size.cW) : event.clientX),
-            'top': ((event.clientY + size.cH) > size.height && event.clientY > size.cH ? (event.clientY + size.sT - size.cH) : event.clientY + size.sT)
-        }).show();
-        //console.log(container);
-        return false;
-    }
 
-    function resetMenu() {
-        $(container).hide().empty();
-        $(marker).hide();
-        $(document.body).unbind('mousedown', mouseDownGrabber);
-    }
-})(jQuery);
-// -----------------------------------------
-// JQuery plugin disable selection.
-// -----------------------------------------
-(function($) {
-    $.fn.disableSelection = function() {
-        return this.each(function() {
-            $(this).attr('unselectable', 'on').css({
-                '-moz-user-select': 'none',
-                '-webkit-user-select': 'none',
-                'user-select': 'none'
-            }).each(function() {
-                this.onselectstart = function() {
-                    return false;
-                };
-            });
-        });
-    };
-})(jQuery);
 // ---------------------------------------------------------
 // Main functions...
 // ---------------------------------------------------------
@@ -830,7 +724,7 @@ now.c_setTeamID = function(val) {
     document.title = PROJECT;
     //register into the project and join the group.
     Ext.getCmp('FileTree').store.setProxy({
-        type:'ajax',
+        type: 'ajax',
         method: 'GET',
         noCache: false, //---get rid of the ?dc=.... in urls
         url: '/getFileTree?project=' + PROJECT,
@@ -840,6 +734,7 @@ now.c_setTeamID = function(val) {
 
     });
     Ext.getCmp('FileTree').store.load();
+    this.now.teamID = PROJECT;
     now.s_setTeamID(PROJECT);
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
@@ -847,6 +742,7 @@ now.c_setTeamID = function(val) {
 
 var alreadyConnected = false;
 now.ready(function() {
+    console.log(">>>> NOW READY <<<<");
     if (alreadyConnected) {
         // seeing ready after already being connected.. assume server was reset!
         //alert("editor server was reset... \nreloading page...");
@@ -855,8 +751,13 @@ now.ready(function() {
     nowIsOnline = true;
     alreadyConnected = true;
     console.log("Using NowJS -- this clientId: " + now.core.clientId);
-    //now.s_setTeamID(PROJECT);
-    now.s_sendUserEvent("join"); // let everyone know who I am!
+    var getProject = getURLGetVariable("project");
+        if (getProject) {
+            now.s_setActiveProject(getProject);
+        } else {
+            now.s_setActiveProject();
+        }
+    //now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
     now.core.on('disconnect', function() {
@@ -870,6 +771,7 @@ now.ready(function() {
         });
     });
     now.core.on('connect', function() {
+        console.log(">>>> NOW CONNECT<<<<");
         console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
         nowIsOnline = true;
     });

@@ -2,15 +2,18 @@
 // SERVER-SIDE
 // Node.JS! :)
 //
+
 console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
 
-var git = require("gift");
-var express = require("express");
-var util = require("util");
 var fs = require('fs');
 var path = require('path');
+var util = require("util");
+var git = require("gift");
+//var_dump(dirTree('/var/www/git.test', '/var/www/git.test'));
+//process.exit();
+var express = require("express");
 var crypto = require('crypto');
 var walk = require('walk');
 var passport = require('passport'),
@@ -37,8 +40,9 @@ var port = process.env.WEB_PORT || config.port;
 console.log("'LOADING PROJECTS:'", baseDir);
 var projects = readProjects();
 console.log('Projects', projects);
-//console.log(dirTree('/var/www/git.test'));
-//process.exit();
+function var_dump(obj){
+    console.log (JSON.stringify(obj,null,4));
+}
 // 
 // ------------------------------------------------
 // BASIC USER AUTH w/ EXPRESS
@@ -246,20 +250,27 @@ var teamID = config.defaultTeamId;
 
 function dirTree(filename, projectRoot) {
 //----return if file contains dot
-
-
     try {
         stats = fs.statSync(filename);
-        if (filename === projectRoot)
-            filename = projectRoot + '/';
-        var id = filename.replace(projectRoot, '').replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+        if (filename === projectRoot) {
+            // filename = projectRoot + '/';
+        }
+        //----remove first /
+        var tpath = filename.replace(projectRoot, '').replace(/\//, '');
+        //---check if its root
+        if (tpath == '') {
+            tpath = '/';
+        }
+        var id = tpath.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
         var info = {
-            path: filename.replace(projectRoot, ''),
+            path: tpath,
             //id: filename.replace(projectRoot, ''),
             id: id,
             name: path.basename(filename),
             text: path.basename(filename)
         };
+//        console.log({id:id,filename:filename, projectRoot: projectRoot});
+//        process.exit();
         //console.log(filename,stats);
         //console.log(filename,stats.isDirectory(), path.basename(filename)[0] !== '.', stats.isDirectory() && path.basename(filename)[0] !== '.');
         if (stats.isDirectory()) {
@@ -666,15 +677,14 @@ everyone.now.s_setTeamID = function(val) {
 }
 everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
     var userObj = this.user;
-    //var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
-    var filegroup = nowjs.getGroup(userObj.teamID + fname);
+    var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     //console.log(filegroup);
     filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser, fname);
 };
 everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) {
     var userObj = this.user;
-    localFileIsMostRecent[userObj.teamID  + fname] = false; // mark file as changed.
-    var filegroup = nowjs.getGroup(userObj.teamID + fname);
+    localFileIsMostRecent[userObj.teamID + "/" + fname] = false; // mark file as changed.
+    var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     filegroup.now.c_updateWithDiffPatches(this.user.clientId, patches, crc32, fname);
 };
 // NOW: Remote file tools.
@@ -683,12 +693,12 @@ everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileReque
     var userObj = this.user;
     addUserToFileGroup(userObj, fname);
     //removeUserFromAllFileGroupsAndAddToThis(origUser, fname);
-    if (localFileIsMostRecent[userObj.teamID +  fname] === true || localFileIsMostRecent[userObj.teamID + fname] === undefined) {
+    if (localFileIsMostRecent[userObj.teamID + "/" + fname] === true || localFileIsMostRecent[userObj.teamID + "/" + fname] === undefined) {
         localFileFetch(userObj, fname, fileRequesterCallback);
         //console.log("FILE FETCH: " + userObj.teamID + " >> " + fname + ", by user: " + (userObj.about.name || callerID));
     } else {
         console.log("FILE FETCH (passed to user): " + userObj.teamID + " >> " + fname + ", by user: " + callerID);
-        var filegroup = nowjs.getGroup(userObj.teamID  + fname);
+        var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
         var users = filegroup.getUsers(function(users) {
             var foundUser = false;
             for (var i = 0; i < users.length; i++) {
@@ -722,7 +732,7 @@ everyone.now.s_saveUserFileContentsToServer = function(fname, fcontents, fileSav
 everyone.now.s_requestFullFileFromUserID = function(fname, id, fileRequesterCallback) {
     var callerID = this.user.clientId;
     var userObj = this.user;
-    var filegroup = nowjs.getGroup(userObj.teamID  + fname);
+    var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     filegroup.hasClient(id, function(bool) {
         if (bool) {
             //console.log("requesting full file. valid filegroup. :)");
@@ -784,13 +794,13 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
             rt += "/";
         }
         var fname = rt + fileStats.name;
-        var sz = fileSizeCache[team + fname];
+        var sz = fileSizeCache[team + "/" + fname];
         if (sz === undefined) {
             // first time checking files size.. get it!
             sz = fileStats.size;
             fileSizeCache[team + "/" + fname] = sz;
         }
-        var n = usersInGroup[team  + fname];
+        var n = usersInGroup[team + "/" + fname];
         if (n) {
             filesAndInfo.push([fname, n, sz]);
         } else {
@@ -1276,8 +1286,7 @@ function addUserToFileGroup(userObj, fname) {
         groupFilesUsers[fname].push(userObj.clientId);
     }
     if (fname && fname !== "") {
-        //groupname += "/" + fname;
-        groupname += fname;
+        groupname += "/" + fname;
     }
     //console.log("ADD TO GROUP: " + groupname);
     //console.log("        team: " + userObj.teamID);
@@ -1309,8 +1318,7 @@ function removeUserFromFileGroup(userObj, fname) {
     console.log(groupFilesUsers);
     console.log('-----------------------------------------------');
     if (fname && fname !== "") {
-        //groupname += "/" + fname;
-        groupname += fname;
+        groupname += "/" + fname;
     }
     var g = nowjs.getGroup(groupname);
     if (g.users[userObj.clientId]) {
@@ -1360,7 +1368,7 @@ var fileTodoCache = {};
 var fileFixMeCache = {};
 function localFileFetch(userObj, fname, fileRequesterCallback) {
     var team = userObj.teamID;
-    fs.readFile(EDITABLE_APPS_DIR + team + fname, "utf-8", function(err, data) {
+    fs.readFile(EDITABLE_APPS_DIR + team + "/" + fname, "utf-8", function(err, data) {
         if (err) {
             console.warn("couldn't open: " + team + "/" + fname);
         }
@@ -1369,19 +1377,19 @@ function localFileFetch(userObj, fname, fileRequesterCallback) {
 }
 function localFileSave(userObj, fname, fcontents, fileSaverCallback) {
     var team = userObj.teamID;
-    fs.writeFile(EDITABLE_APPS_DIR + team + fname, fcontents, function(err) {
+    fs.writeFile(EDITABLE_APPS_DIR + team + "/" + fname, fcontents, function(err) {
         if (err) {
             console.log(err);
         } else {
-            localFileIsMostRecent[team  + fname] = true; // mark file as saved with no pending changes.
-            console.log("FILE SAVED: " + team + fname);
-            var filegroup = nowjs.getGroup(team + fname);
+            localFileIsMostRecent[team + "/" + fname] = true; // mark file as saved with no pending changes.
+            console.log("FILE SAVED: " + team + "/" + fname);
+            var filegroup = nowjs.getGroup(team + "/" + fname);
             filegroup.now.c_fileStatusChanged(fname, "saved");
             var sz = fcontents.length;
-            fileSizeCache[team  + fname] = sz;
+            fileSizeCache[team + "/" + fname] = sz;
             if (sz < 1000000) {
-                fileTodoCache[team + fname] = occurrences(fcontents, "TODO");
-                fileFixMeCache[team + fname] = occurrences(fcontents, "FIXME");
+                fileTodoCache[team + "/" + fname] = occurrences(fcontents, "TODO");
+                fileFixMeCache[team + "/" + fname] = occurrences(fcontents, "FIXME");
             }
         }
         fileSaverCallback(err);

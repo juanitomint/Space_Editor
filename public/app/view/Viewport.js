@@ -116,7 +116,7 @@ Ext.define('Codespace.view.Viewport', {
                                 split: true, // enable resizing
                                 width: 300,
                                 collapsible: true, // make collapsible
-                                title: PROJECT,
+                                title: 'project',
                                 items: [
                                     //----left-side
                                     {
