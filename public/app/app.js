@@ -338,7 +338,7 @@ var GitStatus = Ext.create('Ext.Action', {
                 for (var file in data) {
                     if (data.hasOwnProperty(file)) {
                         //---remove trailing /
-                        path = '/' + file.replace(/\/$/, '');
+                        path = file.replace(/\/$/, '');
                         id = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
                         node = tree.store.getById(id);
                         cls = (data[file].tracked) ? 'git-status-modified' : 'git-status-untracked';
