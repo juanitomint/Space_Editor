@@ -265,22 +265,24 @@ function ifOnlineVerifyCollaboratorsAreStillHere_CleanNotifications_AutoSave() {
     for (var prop in allCollabInfo) {
         if (allCollabInfo.hasOwnProperty(prop)) {
             var cInfo = allCollabInfo[prop];
-            if (cInfo[fname]['isShown']) {
-                var tDiff = t - cInfo[fname]['timeLastSeen'];
-                if (tDiff > TIME_UNTIL_GONE) {
-                    console.log("Looks like " + cInfo['name'] + " is no longer around in: " + fname);
-                    var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
-                    var ses = editor.getSession();
-                    if (lastCursorID !== undefined) {
-                        ses.removeMarker(lastCursorID); // remove collaborator's cursor.
+            if (cInfo[fname]) {
+                if (cInfo[fname]['isShown']) {
+                    var tDiff = t - cInfo[fname]['timeLastSeen'];
+                    if (tDiff > TIME_UNTIL_GONE) {
+                        console.log("Looks like " + cInfo['name'] + " is no longer around in: " + fname);
+                        var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
+                        var ses = editor.getSession();
+                        if (lastCursorID !== undefined) {
+                            ses.removeMarker(lastCursorID); // remove collaborator's cursor.
+                        }
+                        var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
+                        if (lastSelID !== undefined) {
+                            ses.removeMarker(lastSelID); // remove collaborator's selection.
+                        }
+                        cInfo[fname]['isShown'] = false;
+                    } else {
+                        activeCollabs++;
                     }
-                    var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
-                    if (lastSelID !== undefined) {
-                        ses.removeMarker(lastSelID); // remove collaborator's selection.
-                    }
-                    cInfo[fname]['isShown'] = false;
-                } else {
-                    activeCollabs++;
                 }
             }
         }
