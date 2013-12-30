@@ -8,6 +8,7 @@ Ext.define('Codespace.view.Viewport', {
         'Codespace.view.ProjectTree',
         'Codespace.view.FileCode',
         'Codespace.view.ToolBar',
+        'Codespace.view.NavTree',
     ],
     initComponent: function() {
         this.items = [
@@ -123,14 +124,13 @@ Ext.define('Codespace.view.Viewport', {
                                         xtype: 'filetree',
                                         border: 0,
                                         id: 'FileTree',
-                                        /*
-                                         plugins: [
-                                         {
-                                         ptype: 'treefilter',
-                                         allowParentFolders: true,
-                                         collapseOnClear: false,
-                                         }
-                                         ],*/
+                                        plugins: [
+                                            {
+                                                ptype: 'treefilter',
+                                                allowParentFolders: true,
+                                                collapseOnClear: false,
+                                            }
+                                        ],
                                         viewConfig: {
                                             stateful: true,
                                             stateId: 'FileTree',
@@ -163,48 +163,49 @@ Ext.define('Codespace.view.Viewport', {
                                     },
                                     {
                                         title: 'NavTree',
+                                        id:'NavTree',
                                         region: 'south',
                                         split: true,
                                         collapsible: true,
-                                        collapsed: true,
+                                        collapsed: false,
                                         height: '55%',
                                         layout: 'fit',
-                                        items: [
-                                            Ext.create('Ext.tree.Panel', {
-                                                id: "NavTree",
-                                                store: "NavTree",
-                                                columns: [
-                                                    {
-                                                        text: 'Line',
-                                                        flex: 1,
-                                                        dataIndex: 'line',
-                                                    },
-                                                    {
-                                                        xtype: 'treecolumn', //this is so we know which column will show the tree
-                                                        text: "</>",
-                                                        flex: 3,
-                                                        sortable: true,
-                                                        dataIndex: 'text'
-
-                                                    }
-                                                ],
-                                                listeners: {
-                                                    itemdblclick: function(me, record, item, index, e, eOpts) {
-                                                        e.stopEvent();
-                                                        if(record.isLeaf())
-                                                        editor.scrollToLine(record.data.line);
-                                                    }
-                                                },
-                                            })
-                                        ],
-                                        tbar: [
-                                            {
-                                                text: "Analyze",
-                                                iconCls: "fa fa-code",
-                                                handler: AnalizeCode
-                                            }
-                                        ]
-
+                                        xtype: 'navtree',
+                                        /*
+                                         items: [
+                                         Ext.create('Ext.tree.Panel', {
+                                         id: "NavTree",
+                                         store: "NavTree",
+                                         columns: [
+                                         {
+                                         text: 'Line',
+                                         flex: 1,
+                                         dataIndex: 'vline',
+                                         },
+                                         {
+                                         xtype: 'treecolumn', //this is so we know which column will show the tree
+                                         text: "</>",
+                                         flex: 3,
+                                         sortable: true,
+                                         dataIndex: 'text'
+                                         
+                                         },
+                                         {
+                                         text: 'type',
+                                         flex: 1,
+                                         dataIndex: 'type',
+                                         }
+                                         ],
+                                         listeners: {
+                                         itemdblclick: function(me, record, item, index, e, eOpts) {
+                                         e.stopEvent();
+                                         if (record.isLeaf())
+                                         editor.scrollToLine(record.data.line);
+                                         }
+                                         },
+                                         })
+                                         ],
+                                         */
                                     }
                                     //----left-side
                                 ]},

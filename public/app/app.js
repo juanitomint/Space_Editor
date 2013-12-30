@@ -3,55 +3,105 @@ Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
     expires: new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)), //7 days from now
 }));
 //---ext actions
+var searchArr = ['support.function', 'identifier', 'keyword'];
+var GetParamsFromToken = function(param, token) {
+    data = [];
+    for (j in token) {
+        if (token[j].type == param) {
+            data.push(token[j].value);
+        }
+    }
+    return data;
+}
+var GetParamFromToken = function(param, token) {
+    for (j in token) {
+        if (token[j].type == param) {
+            return token[j].value;
+        }
+    }
+}
+var isWorthToken = function(token) {
+    rtoken = {};
+    for (x in token) {
+        if (searchArr.indexOf(token[x].type) !== -1) {
+            rtoken = {
+                'type': token[x].type,
+                'value': token[x].value,
+            }
+            return rtoken;
+        }
+    }
+    return rtoken;
+};
 var ClearNavTree = function() {
     Ext.getCmp('NavTree').getRootNode().removeAll();
 };
 var AnalizeCode = function() {
-    var searchArr = ['support.function', 'identifier', 'keyword'];
     var tabs = Ext.getCmp('filetabs');
     var navtree = Ext.getCmp('NavTree');
     var editor = tabs.getActiveTab().getEditor();
     var tokens = editor.session.bgTokenizer.lines
+    var foldWidgets = editor.session.foldWidgets;
     navtree.getRootNode().removeAll();
+    navtree.store.isLoading(true);
     for (i in tokens) {
-        if (tokens[i]) {
-            if (tokens[i][0]) {
-                var token = tokens[i];
-                var type = token[0].type;
-                var value = token[0].value;
-                if (searchArr.indexOf(type) !== -1) {
-                    CreateTypeNode(value);
-                    var params = [];
-                    var node = {};
-                    switch (type) {
-                        case 'support.function':
-                            params.push(token[2].value);
-                            break;
-                        case 'keyword':
-                            for (j in token) {
-                                ttype = token[j].type;
-                                switch (ttype) {
-                                    case "identifier":
-                                        node.text = token[j].value;
-                                        break;
-                                    case "variable":
-                                        break;
-                                        params.push(token[j].value);
-                                }
-                            }
-                            node.text = node.text + ' (' + params.join(',') + ')';
+//        if (foldWidgets[i] == 'start')        {
+        var token = tokens[i];
+        //console.log(i);
+        var rtoken = isWorthToken(token);
+        if (rtoken.type) {
+            //console.log(i, rtoken.type, rtoken.value, token);
+            var params = [];
+            var node = {};
+            switch (rtoken.type) {
+                case 'identifier':
+                    CreateTypeNode(rtoken.value);
+                    params = GetParamsFromToken('identifier', token);
+                    node.text = params.join('.');
+                    node.line = i;
+                    node.vline = +i+1;
+                    node.leaf = true;
+                    node.type = rtoken.value;
+                    CreateCodeNode(rtoken.value, node);
+                    break;
+                case 'support.function':
+                    /*
+                     CreateTypeNode(rtoken.value);
+                     params = GetParamsFromToken('string', token);
+                     node.text = params.join(',');
+                     node.line = i;
+                     node.leaf = true;
+                     node.type = rtoken.value;
+                     CreateCodeNode(rtoken.value, node);
+                     */
+                    break;
+                case 'keyword':
+                    switch (rtoken.value) {
+                        case 'function':
+                        case 'class':
+                        case 'static':
+                        case 'public':
+                        case 'private':
+                            CreateTypeNode(rtoken.value);
+                            var value = GetParamFromToken('identifier', token);
+                            params = GetParamsFromToken('variable', token);
+                            node.text = value + ' (' + params.join(',') + ')';
                             node.line = i;
+                            node.vline = +i + 1;
                             node.leaf = true;
-                            CreateCodeNode(value, node);
+                            node.type = rtoken.value;
+                            CreateCodeNode(rtoken.value, node);
                             break;
+
                     }
-                    console.log("line:" + (+i + 1) + ' ' + type + ':' + value + ' params:' + params.join(','));
-                    console.log(tokens[i]);
-                }
+                    break;
             }
         }
+
+        //}
     }//---end for tokens
     navtree.expandAll();
+    navtree.store.isLoading(false);
 };
 var CreateCodeNode = function(type, data) {
     var navtree = Ext.getCmp('NavTree');
@@ -130,7 +180,6 @@ var ProjectOpen = Ext.create('Ext.Action', {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var rec = sm.getSelection()[0];
         window.location = '?project=' + rec.data['path'];
-
     }
 });
 var ProjectAdd = Ext.create('Ext.Action', {
@@ -191,7 +240,6 @@ var ProjectAdd = Ext.create('Ext.Action', {
                                 var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
                                 var rec = sm.getSelection()[0];
                                 window.location = '?project=' + rec.data['path'];
-
                             }
                         },
                         '->',
@@ -348,8 +396,6 @@ var UserAdd = function(rec) {
         }
     }).show(); //---end show;
 };
-
-
 var GitBranch = function() {
     now.s_git_branch(function(errs, branch) {
         console.log("Git branch recived");
@@ -389,7 +435,6 @@ var GitInit = Ext.create('Ext.Action', {
         });
     }
 });
-
 var GitStatus = Ext.create('Ext.Action', {
     iconCls: 'fa fa-info-circle',
     text: 'Status',
@@ -444,7 +489,6 @@ var GitStatus = Ext.create('Ext.Action', {
                                 'type': 'file',
                                 leaf: true
                             });
-
                             parent = tree.store.getById(parent_id);
                             if (parent)
                                 node = parent.appendChild(node);
@@ -865,7 +909,6 @@ Ext.application({
     launch: function() {
 
         AppLaunch();
-
     },
     setToolbarSettings: function(me) {
         if (me) {

@@ -176,10 +176,7 @@ Ext.define('Codespace.view.FileTree', {
         })
     ],
     listeners: {
-        keypress: function(e, t, eOpts) {
-            console.log('keypress');
-        },
-        itemcontextmenu: function(view, rec, node, index, e) {
+       itemcontextmenu: function(view, rec, node, index, e) {
             e.stopEvent();
             if (rec.isLeaf()) {
                 this.contextFileMenu.showAt(e.getXY());
