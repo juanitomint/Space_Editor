@@ -1,6 +1,6 @@
 {
     "user": "CHAOS",
-    "name": "ChaosEditorMain",
+    "name": "CodeSpace",
     "domain": "editor.chaoscollective.org",
     "repository": {
         "type": "local",
@@ -8,5 +8,34 @@
     },
     "scripts": {
         "start": "server.js"
+    },
+    "description": "CodeSpace is built on NodeJS and uses NowJS for realtime collaboration. The editor is built on ACE (the same front-end used in Cloud9 IDE) and uses Google's diff-match-patch to send edits information to contributors as changes are made to the code. This project is base-on and inspired on the great work of the folks from ChaosCollective.org",
+    "version": "0.6.4",
+    "main": "app.js",
+    "keywords": [
+        "collaborative",
+        "realtime",
+        "ide",
+        "web",
+        "node.js"
+    ],
+    "author": "",
+    "license": "BSD-2-Clause",
+    "dependencies": {
+        "ejs": "0.8.4",
+        "express": "3.4.4",
+        "gift": ">0.0.6",
+        "connect-flash": "0.1.1",
+        "node-proxy": "0.7.0",
+        "now": "0.8.1",
+        "passport-google": "0.3.0",
+        "passport": "0.1.17",
+        "passport-google-oauth": "0.1.5",
+        "passport-local": "0.1.6",
+        "ejs-locals": "1.0.2",
+        "underscore": "1.5.2",
+        "walk": "2.2.1",
+        "stylus": "0.39.4",
+        "gzippo": "0.2.0"
     }
 }
