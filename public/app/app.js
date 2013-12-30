@@ -3,11 +3,79 @@ Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
     expires: new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)), //7 days from now
 }));
 //---ext actions
-var LoadErr=function(err){
+var ClearNavTree = function() {
+    Ext.getCmp('NavTree').getRootNode().removeAll();
+};
+var AnalizeCode = function() {
+    var searchArr = ['support.function', 'identifier', 'keyword'];
+    var tabs = Ext.getCmp('filetabs');
+    var navtree = Ext.getCmp('NavTree');
+    var editor = tabs.getActiveTab().getEditor();
+    var tokens = editor.session.bgTokenizer.lines
+    navtree.getRootNode().removeAll();
+    for (i in tokens) {
+        if (tokens[i]) {
+            if (tokens[i][0]) {
+                var token = tokens[i];
+                var type = token[0].type;
+                var value = token[0].value;
+                if (searchArr.indexOf(type) !== -1) {
+                    CreateTypeNode(value);
+                    var params = [];
+                    var node = {};
+                    switch (type) {
+                        case 'support.function':
+                            params.push(token[2].value);
+                            break;
+                        case 'keyword':
+                            for (j in token) {
+                                ttype = token[j].type;
+                                switch (ttype) {
+                                    case "identifier":
+                                        node.text = token[j].value;
+                                        break;
+                                    case "variable":
+                                        break;
+                                        params.push(token[j].value);
+                                }
+                            }
+                            node.text = node.text + ' (' + params.join(',') + ')';
+                            node.line = i;
+                            node.leaf = true;
+                            CreateCodeNode(value, node);
+                            break;
+                    }
+                    console.log("line:" + (+i + 1) + ' ' + type + ':' + value + ' params:' + params.join(','));
+                    console.log(tokens[i]);
+                }
+            }
+        }
+    }//---end for tokens
+    navtree.expandAll();
+};
+var CreateCodeNode = function(type, data) {
+    var navtree = Ext.getCmp('NavTree');
+    node = navtree.store.getById(type);
+    if (node) {
+        node.appendChild(data);
+    }
+};
+var CreateTypeNode = function(type) {
+    var navtree = Ext.getCmp('NavTree');
+    var root = navtree.getRootNode();
+    if (!navtree.store.getById(type)) {
+        root.appendChild({
+            text: type,
+            id: type,
+            children: []
+        });
+    }
+};
+var LoadErr = function(err) {
     console.log(err);
 };
-EditProjectLoad=function(){
-    
+EditProjectLoad = function() {
+
     console.log(">>>> Now bindings <<<<<");
 };
 function NowLoad() {
@@ -791,8 +859,8 @@ var DeleteNode = Ext.create('Ext.Action', {
 Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
-    models: ['file'],
-    stores: ['FileTree', 'ProjectTree'],
+    models: ['file', 'user', 'code'],
+    stores: ['FileTree', 'ProjectTree', 'NavTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
 
@@ -872,6 +940,7 @@ Ext.application({
                                         Codespace.app.setToolbarSettings(this);
                                         this.getEditor().resize();
                                         setFileStatusIndicator(this.path, this.status);
+                                        AnalizeCode.call();
                                     }
                                 },
                                 editorcreated: function() {
@@ -924,6 +993,7 @@ Ext.application({
                                     Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                     now.s_leaveFile(this.path);
                                     Codespace.app.updateHash();
+                                    ClearNavTree.call();
                                 }
                             }
                         }

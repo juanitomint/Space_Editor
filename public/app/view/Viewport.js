@@ -115,7 +115,6 @@ Ext.define('Codespace.view.Viewport', {
                                 id: 'TreeTab',
                                 split: true, // enable resizing
                                 width: 300,
-                                collapsible: true, // make collapsible
                                 title: 'project',
                                 items: [
                                     //----left-side
@@ -163,12 +162,48 @@ Ext.define('Codespace.view.Viewport', {
                                         //---end tbar
                                     },
                                     {
-                                        title: 'Navigator',
+                                        title: 'NavTree',
                                         region: 'south',
+                                        split: true,
                                         collapsible: true,
                                         collapsed: true,
-                                        height: '35%',
-                                        html: "navtree"
+                                        height: '55%',
+                                        layout: 'fit',
+                                        items: [
+                                            Ext.create('Ext.tree.Panel', {
+                                                id: "NavTree",
+                                                store: "NavTree",
+                                                columns: [
+                                                    {
+                                                        text: 'Line',
+                                                        flex: 1,
+                                                        dataIndex: 'line',
+                                                    },
+                                                    {
+                                                        xtype: 'treecolumn', //this is so we know which column will show the tree
+                                                        text: "</>",
+                                                        flex: 3,
+                                                        sortable: true,
+                                                        dataIndex: 'text'
+
+                                                    }
+                                                ],
+                                                listeners: {
+                                                    itemdblclick: function(me, record, item, index, e, eOpts) {
+                                                        e.stopEvent();
+                                                        if(record.isLeaf())
+                                                        editor.scrollToLine(record.data.line);
+                                                    }
+                                                },
+                                            })
+                                        ],
+                                        tbar: [
+                                            {
+                                                text: "Analyze",
+                                                iconCls: "fa fa-code",
+                                                handler: AnalizeCode
+                                            }
+                                        ]
 
                                     }
                                     //----left-side

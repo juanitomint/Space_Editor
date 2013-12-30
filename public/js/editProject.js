@@ -493,6 +493,8 @@ function openFileFromServer(fname, forceOpen, editor) {
 //    openIsPending = true;
     //---get tab editor
     if (editor) {
+        //----attach analizecode to tokenizer
+        editor.session.bgTokenizer.on('update',AnalizeCode);
         editor.setReadOnly(true);
         ignoreAceChange = true;
         editor.getSession().setValue(""); // clear the editor.
@@ -525,9 +527,11 @@ function openFileFromServer(fname, forceOpen, editor) {
             removeAllCollaborators(fname);
             ifOnlineLetCollaboratorsKnowImHere();
             openIsPending = false;
+             //setTimeout(AnalizeCode(editor),500);
         });
         initialFileloadTimeout = null;
         setFileStatusIndicator(fname, "unknown");
+        
     }
 }
 function saveFileToServer(fname, previousText) {
