@@ -24,7 +24,7 @@ function addFileToList(fname) {
         }
     }
     mostRecentFilesAndInfo.push([fname, 0]);
-    updateFileBrowserFromFileList(mostRecentFilesAndInfo);
+    //updateFileBrowserFromFileList(mostRecentFilesAndInfo);
 }
 function removeFileFromList(fname) {
     for (var i = 0; i < mostRecentFilesAndInfo.length; i++) {
