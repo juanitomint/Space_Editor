@@ -96,7 +96,7 @@ app.use(express.bodyParser());
 app.use(express.cookieParser());
 //app.use(passport.session());
 app.use(express.session({
-    secret: "a very secret secret",
+    secret: "9668e5386d4c47bfe6eb84e5e1daa375",
     store: new express.session.MemoryStore,
     cookie: {
         path: '/',
@@ -144,6 +144,9 @@ function ensureAuthenticated(req, res, next) {
         //console.log(req.user);
         return next();
     }
+    req.session.projectname=(req.query.projectname)?req.query.projectname:null;
+    req.session.fname=(req.query.fname)?req.query.fname:null;
+    
     res.redirect('/login')
 }
 
@@ -170,6 +173,7 @@ app.get('/account', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/login', function(req, res) {
+    
     res.render('login', {
         user: req.user,
         query: req.query
