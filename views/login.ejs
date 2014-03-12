@@ -38,7 +38,7 @@ body {
                         <i class="icon-user">
                         </i>Username
                     </span>
-                    <input name="username" id="log inputIcon"  class="username span2" type="text" value="juanb">
+                    <input name="username" id="log inputIcon"  class="username span2" type="text" value="">
                 </div>
 
             </div>
@@ -49,7 +49,7 @@ body {
                         <i class="icon-lock">
                         </i>Password
                     </span>
-                    <input name="password" id="pwd inputIcon" class="password span2" type="password" value="123123">
+                    <input name="password" id="pwd inputIcon" class="password span2" type="password" value="">
                     <input name="fname" id="fname" class="username span2" type="hidden" value="<%= query.fname %>">
                 </div>
 
@@ -63,8 +63,8 @@ body {
             <br/>
             <br/>
         </form>
-            <a href="/auth/google" class="btn btn-primary btn-lg btn-block"><i class="icon fa-google-plus"></i> Sign On with Google</a>
-            <a href="/auth/facebook" class="btn btn-primary btn-lg btn-block"><i class="icon fa-facebook"></i> Sign On with Google</a>
+            <a id="googleAuth" href="/auth/google" class="btn btn-primary btn-lg btn-block"><i class="icon fa-google-plus"></i> Sign On with Google</a>
+            <a id="facebookAuth" href="/auth/facebook" class="btn btn-primary btn-lg btn-block"><i class="icon fa-facebook"></i> Sign On with Google</a>
 
     </div> 
 </div> 
@@ -74,6 +74,17 @@ body {
         <script language='javascript'>
         $(document).ready(function(){
         $('#fname').val(window.location.hash);
+        $('#googleAuth').click(function(e){
+            $('#formAuth').attr('action','/auth/google');
+            $('#formAuth').submit();
+            e.preventDefault();
+
+        });
+        $('#googleFacebook').click(function(){
+            $('#formAuth').attr('action','/auth/google');
+            $('#formAuth').submit();
+
+        });
 });
 </script>
     </body>

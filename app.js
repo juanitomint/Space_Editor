@@ -40,8 +40,8 @@ var port = process.env.WEB_PORT || config.port;
 console.log("'LOADING PROJECTS:'", baseDir);
 var projects = readProjects();
 console.log('Projects', projects);
-function var_dump(obj){
-    console.log (JSON.stringify(obj,null,4));
+function var_dump(obj) {
+    console.log(JSON.stringify(obj, null, 4));
 }
 // 
 // ------------------------------------------------
@@ -133,7 +133,12 @@ passport.use(new LocalStrategy(
             });
         }
 ));
-
+saveFnameInSession = function(req, res, next) {
+    if (req.body.fname) {
+        req.session.fname = req.body.fname;
+    }
+    return next();
+};
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
 //   the request is authenticated (typically via a persistent login session),
@@ -144,9 +149,9 @@ function ensureAuthenticated(req, res, next) {
         //console.log(req.user);
         return next();
     }
-    req.session.projectname=(req.query.projectname)?req.query.projectname:null;
-    req.session.fname=(req.query.fname)?req.query.fname:null;
-    
+    req.session.project = (req.query.project) ? req.query.project : null;
+    req.session.fname = (req.query.fname) ? req.query.fname : null;
+
     res.redirect('/login')
 }
 
@@ -173,7 +178,7 @@ app.get('/account', ensureAuthenticated, function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-    
+
     res.render('login', {
         user: req.user,
         query: req.query
@@ -184,11 +189,14 @@ app.get('/login', function(req, res) {
 //   request.  The first step in Google authentication will involve redirecting
 //   the user to google.com.  After authenticating, Google will redirect the
 //   user back to this application at /auth/google/return
-app.get('/auth/google',
+app.post('/auth/google',
+        //---save fname in session if posted
+        saveFnameInSession,
         passport.authenticate('google', {failureRedirect: '/login'}),
 function(req, res) {
     res.redirect('/');
-});
+}
+);
 
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the
@@ -201,18 +209,33 @@ function(req, res) {
     req.user = req.user || {};
     res.cookie("_username", req.user.emails[0].value);
     console.log("say hello to new user: " + req.user.displayName + ' knwon as:' + req.user.emails[0].value);
-    res.redirect('/');
+
+    querystring = urlSetup(req);
+    res.redirect('/' + querystring);
 });
 /*
  * 
  */
+function urlSetup(req) {
+    querystring = '';
+    if (req.session.project != null) {
+        querystring = '?project=' + req.session.project;
+    }
+    if (req.session.fname != null) {
+        querystring = querystring + req.session.fname;
+    }
+    return querystring;
+}
 app.post('/auth/simple',
+//---save fname in session if posted
+        saveFnameInSession,
         passport.authenticate('local', {failureRedirect: '/login', failureFlash: true}),
 function(req, res) {
     req.user = req.user || {};
     res.cookie("_username", req.user.emails[0].value);
     console.log("say hello to new user: " + req.user.displayName);
-    res.redirect('/' + req.body.fname);
+    querystring = urlSetup(req);
+    res.redirect('/' + querystring);
 });
 
 app.get('/logout', function(req, res) {
