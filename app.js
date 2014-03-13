@@ -11,10 +11,12 @@ var fs = require('fs');
 var path = require('path');
 var util = require("util");
 var git = require("gift");
+//----prepare 4 crypto
+var crypto=require("crypto");
+var shasum = crypto.createHash('sha1');
 //var_dump(dirTree('/var/www/git.test', '/var/www/git.test'));
 //process.exit();
 var express = require("express");
-var crypto = require('crypto');
 var walk = require('walk');
 var passport = require('passport'),
         util = require('util'),
@@ -1055,7 +1057,15 @@ everyone.now.s_user_save = function(user, project, createCallback) {
                 if (projects[i].users) {
                     for (j in projects[i].users) {
                         if (projects[i].users[j] == user.mail) {
-                            user.passw = (user.passw) ? user.passw : projects[i].users[j].passw;
+                            //---manage user passw
+                            if(user.passw){                                 
+                                shasum.update(user.passw);
+                                hash =shasum.digest('hex');
+                                console.log(user.passw+' hashed to:'+hash);
+                                users.passw=hash;
+                            }else {
+                                user.passw =projects[i].users[j].passw
+                            };
                             projects[i].users[j] = user;
                             exists = true;
                         }
