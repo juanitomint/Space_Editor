@@ -314,7 +314,9 @@ var UserAddBtn = Ext.create('Ext.Action', {
     text: 'save',
     handler: function() {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
-        var project = sm.getSelection()[0].data;
+        var st = Ext.getCmp('ProjectsTree').store;
+        var node = sm.getSelection()[0].data;
+        var project=st.getById(node.id).parentNode.data;
         user = this.up('form').getValues();
         now.s_user_save(user, project, function(errs) {
             if (errs) {
