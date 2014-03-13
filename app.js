@@ -12,8 +12,8 @@ var path = require('path');
 var util = require("util");
 var git = require("gift");
 //----prepare 4 crypto
-var crypto=require("crypto");
-var shasum = crypto.createHash('sha1');
+var crypto = require("crypto");
+
 //var_dump(dirTree('/var/www/git.test', '/var/www/git.test'));
 //process.exit();
 var express = require("express");
@@ -1049,23 +1049,24 @@ everyone.now.s_project_save = function(project, createCallback) {
 everyone.now.s_user_save = function(user, project, createCallback) {
     if (project.name && project.path) {
         var team = this.user.teamID;
-        var exists = false;
+        //----hash passw
+        if (user.passw) {
+            shasum = crypto.createHash('sha1');
+            shasum.update(user.passw);
+            hash = shasum.digest('hex');
+            console.log(user.passw + ' hashed to:' + hash);
+            user.passw = hash;
+        }
         user.creator = {name: this.user.about.name, email: this.user.about.email};
         for (i in projects) {
             //---if project name exists then update data
             if (projects[i].name == project.name) {
                 if (projects[i].users) {
+                    var exists = false;
                     for (j in projects[i].users) {
-                        if (projects[i].users[j] == user.mail) {
+                        if (projects[i].users[j].mail == user.mail) {
                             //---manage user passw
-                            if(user.passw){                                 
-                                shasum.update(user.passw);
-                                hash =shasum.digest('hex');
-                                console.log(user.passw+' hashed to:'+hash);
-                                users.passw=hash;
-                            }else {
-                                user.passw =projects[i].users[j].passw
-                            };
+                            user.passw = (user.passw) ? user.passw : projects[i].users[j].passw;
                             projects[i].users[j] = user;
                             exists = true;
                         }
