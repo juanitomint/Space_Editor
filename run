@@ -1,0 +1,2 @@
+#!/bin/sh
+../bin/node ./space/app.js

@@ -1,0 +1,5 @@
+#!/bin/sh
+../bin/node --debug-brk git.js&
+PATH=$PATH:../bin
+../bin/node-inspector
+killall node
