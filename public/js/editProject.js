@@ -93,7 +93,7 @@ function BroadcastKeydown(event) {
     }
     return true;
 }
-function followMe() {
+function followMe(fname) {
 
     now.s_followMe(fname);
 }
