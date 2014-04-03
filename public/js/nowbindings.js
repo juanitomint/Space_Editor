@@ -253,19 +253,19 @@ now.ready(function() {
     //now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
-    now.core.on('disconnect', function() {
-        console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
-        nowIsOnline = false;
-        tabs = Ext.getCmp('filetabs');
-        tabs.items.each(function(tab) {
-            if (tab.path) {
-                setFileStatusIndicator(tab.path, "offline");
-            }
-        });
+});
+now.core.on('disconnect', function() {
+    console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
+    nowIsOnline = false;
+    tabs = Ext.getCmp('filetabs');
+    tabs.items.each(function(tab) {
+        if (tab.path) {
+            setFileStatusIndicator(tab.path, "offline");
+        }
     });
-    now.core.on('connect', function() {
-        console.log(">>>> NOW CONNECT<<<<");
-        console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
-        nowIsOnline = true;
-    });
+});
+now.core.on('connect', function() {
+    console.log(">>>> NOW CONNECT<<<<");
+    console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
+    nowIsOnline = true;
 });

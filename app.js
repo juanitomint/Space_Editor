@@ -113,7 +113,24 @@ passport.use(new LocalStrategy(
         function(username, password, done) {
             // asynchronous verification, for effect...
             process.nextTick(function() {
-
+                user=false;
+                //----hash passwrod
+                shasum = crypto.createHash('sha1');
+                shasum.update(password);
+                hash = shasum.digest('hex');
+                for (i in projects) {
+                    users = projects[i].users;
+                    for(j in users){
+                        if(users[j].name===username && users[j].passw===hash){
+                            user=users[j];
+                            user.emails=[{value:user.email}];
+                            user.username=user.name;
+                            user.displayName=user.name;
+                        return done(null, user);
+                        }
+                        
+                    }
+                }
                 // Find the user by username. If there is no user with the given
                 // username, or the password is not correct, set the user to `false` to
                 // indicate failure and set a flash message. Otherwise, return the
@@ -124,13 +141,7 @@ passport.use(new LocalStrategy(
 //        if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
 //        return done(null, user);
 //      })
-
-                //---fake obj
-                user = {
-                    username: username,
-                    displayName: username,
-                    emails: [{value: username}]
-                };
+            
                 return done(null, user);
             });
         }
@@ -153,7 +164,6 @@ function ensureAuthenticated(req, res, next) {
     }
     req.session.project = (req.query.project) ? req.query.project : null;
     req.session.fname = (req.query.fname) ? req.query.fname : null;
-
     res.redirect('/login')
 }
 
@@ -174,11 +184,9 @@ app.configure(function() {
     app.use(app.router);
     app.use(express.static(__dirname + '/../../public'));
 });
-
 app.get('/account', ensureAuthenticated, function(req, res) {
     res.render('account', {user: req.user});
 });
-
 app.get('/login', function(req, res) {
 
     res.render('login', {
@@ -195,11 +203,10 @@ app.post('/auth/google',
         //---save fname in session if posted
         saveFnameInSession,
         passport.authenticate('google', {failureRedirect: '/login'}),
-function(req, res) {
-    res.redirect('/');
-}
+        function(req, res) {
+            res.redirect('/');
+        }
 );
-
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
@@ -207,14 +214,13 @@ function(req, res) {
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/google/return',
         passport.authenticate('google', {failureRedirect: '/login'}),
-function(req, res) {
-    req.user = req.user || {};
-    res.cookie("_username", req.user.emails[0].value);
-    console.log("say hello to new user: " + req.user.displayName + ' knwon as:' + req.user.emails[0].value);
-
-    querystring = urlSetup(req);
-    res.redirect('/' + querystring);
-});
+        function(req, res) {
+            req.user = req.user || {};
+            res.cookie("_username", req.user.emails[0].value);
+            console.log("say hello to new user: " + req.user.displayName + ' knwon as:' + req.user.emails[0].value);
+            querystring = urlSetup(req);
+            res.redirect('/' + querystring);
+        });
 /*
  * 
  */
@@ -232,22 +238,19 @@ app.post('/auth/simple',
 //---save fname in session if posted
         saveFnameInSession,
         passport.authenticate('local', {failureRedirect: '/login', failureFlash: true}),
-function(req, res) {
-    req.user = req.user || {};
-    res.cookie("_username", req.user.emails[0].value);
-    console.log("say hello to new user: " + req.user.displayName);
-    querystring = urlSetup(req);
-    res.redirect('/' + querystring);
-});
-
+        function(req, res) {
+            req.user = req.user || {};
+            res.cookie("_username", req.user.emails[0].value);
+            console.log("say hello to new user: " + req.user.displayName);
+            querystring = urlSetup(req);
+            res.redirect('/' + querystring);
+        });
 app.get('/logout', function(req, res) {
     req.logout();
     res.redirect('/');
 });
-
 //app.use(express.basicAuth(authorize));
 var uCount = (new Date()).getTime() % 99999;
-
 var staticProvider = express.static(__dirname + '/public');
 app.use(staticProvider); // this is where static files will be served (html, css, js, media, etc.)
 // ------------------------------------------------
@@ -270,7 +273,6 @@ var server = app.listen(port, '0.0.0.0');
 console.log("Listen on http://localhost:" + port);
 var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
-
 var thisAppDirName = __dirname.substring(__dirname.lastIndexOf("/") + 1);
 var teamID = config.defaultTeamId;
 // ------------------------------------------------------------
@@ -388,7 +390,6 @@ app.get("/getProjectsTree", ensureAuthenticated, function(req, res) {
         }
         p.children = ps;
         res.setHeader('Content-type', 'application/json;charset=UTF-8');
-
         res.send('[' + JSON.stringify(p) + ']');
     }
 });
@@ -931,7 +932,6 @@ everyone.now.s_git_add = function(paths, Calback) {
         console.log('s_git_add', err);
         Calback(err);
     });
-
 }
 everyone.now.s_git_checkout = function(paths, Calback) {
     var team = this.user.teamID;
@@ -941,7 +941,6 @@ everyone.now.s_git_checkout = function(paths, Calback) {
     repo.checkout(paths, function(err) {
         Calback(err);
     });
-
 }
 
 everyone.now.s_git_branch = function(Calback) {
@@ -983,9 +982,7 @@ everyone.now.s_git_commit = function(txt, paths, Calback) {
         }
         Calback(err);
     });
-
 };
-
 everyone.now.s_git_fetchCommits = function(fetcherCallback) {
     var team = this.user.teamID;
     console.log("fetching project commits... >> " + team);
@@ -1099,7 +1096,6 @@ everyone.now.s_user_delete = function(user, project, deleteCallback) {
                         if (projects[i].users[j].mail == user.mail) {
 
                             projects[i].users.splice(j, 1);
-
                         }
                     }
 
@@ -1109,11 +1105,6 @@ everyone.now.s_user_delete = function(user, project, deleteCallback) {
     }
     writeJSON('/config/projects.json', projects, deleteCallback);
 };
-
-
-
-
-
 //--------
 //
 //   Project Functions
