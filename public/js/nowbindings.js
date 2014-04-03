@@ -11,9 +11,9 @@ now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) 
     groupChatMsg(fromUserName, msg, me, userColor);
 }
 now.c_addCollaborator = function(user) {
-    name = user.about.name;
+    name = user.name;
     userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    collaborators[user.clientId] = user.about;
+    collaborators[user.clientId] = user;
     addCollaborator(user.clientId, name, userColor);
 }
 now.c_processUserEvent = function(event, fromUserId, fromUserName) {

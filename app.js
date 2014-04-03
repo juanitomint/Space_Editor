@@ -123,7 +123,7 @@ passport.use(new LocalStrategy(
                     for(j in users){
                         if(users[j].name===username && users[j].passw===hash){
                             user=users[j];
-                            user.emails=[{value:user.email}];
+                            user.emails=[{value:user.mail}];
                             user.username=user.name;
                             user.displayName=user.name;
                         return done(null, user);
