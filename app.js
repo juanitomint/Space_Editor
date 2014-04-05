@@ -6,14 +6,12 @@
 console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
-
 var fs = require('fs');
 var path = require('path');
 var util = require("util");
 var git = require("gift");
 //----prepare 4 crypto
 var crypto = require("crypto");
-
 //var_dump(dirTree('/var/www/git.test', '/var/www/git.test'));
 //process.exit();
 var express = require("express");
@@ -23,6 +21,7 @@ var passport = require('passport'),
         GoogleStrategy = require('passport-google').Strategy;
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
+var nowjs = require("now");
 var _ = require('underscore');
 // for showing hide dot folders/files
 var showDotFolders = false;
@@ -38,6 +37,8 @@ readJSON(baseDir + '/config/config.json', function(data, err) {
     }
     config = data;
 });
+//----4 nowjs->authenticated users
+var now_user = {};
 var port = process.env.WEB_PORT || config.port;
 console.log("'LOADING PROJECTS:'", baseDir);
 var projects = readProjects();
@@ -70,12 +71,9 @@ function authorize(user, pw) {
 passport.serializeUser(function(user, done) {
     done(null, user);
 });
-
 passport.deserializeUser(function(obj, done) {
     done(null, obj);
 });
-
-
 // Use the GoogleStrategy within Passport.
 //   Strategies in passport require a `validate` function, which accept
 //   credentials (in this case, an OpenID identifier and profile), and invoke a
@@ -92,43 +90,30 @@ function(identifier, profile, done) {
     });
 }
 ));
-
 var app = express();
-app.use(express.bodyParser());
-app.use(express.cookieParser());
-//app.use(passport.session());
-app.use(express.session({
-    secret: "9668e5386d4c47bfe6eb84e5e1daa375",
-    store: new express.session.MemoryStore,
-    cookie: {
-        path: '/',
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 30 * 2    //60 days
-    }
-}));
+var sessionStore = new express.session.MemoryStore;
 // Passport local
 var LocalStrategy = require('passport-local').Strategy;
-
 passport.use(new LocalStrategy(
         function(username, password, done) {
             // asynchronous verification, for effect...
             process.nextTick(function() {
-                user=false;
+                user = false;
                 //----hash passwrod
                 shasum = crypto.createHash('sha1');
                 shasum.update(password);
                 hash = shasum.digest('hex');
                 for (i in projects) {
                     users = projects[i].users;
-                    for(j in users){
-                        if(users[j].name===username && users[j].passw===hash){
-                            user=users[j];
-                            user.emails=[{value:user.mail}];
-                            user.username=user.name;
-                            user.displayName=user.name;
-                        return done(null, user);
+                    for (j in users) {
+                        if (users[j].name === username && users[j].passw === hash) {
+                            user = users[j];
+                            user.emails = [{value: user.mail}];
+                            user.username = user.name;
+                            user.displayName = user.name;
+                            return done(null, user);
                         }
-                        
+
                     }
                 }
                 // Find the user by username. If there is no user with the given
@@ -141,7 +126,7 @@ passport.use(new LocalStrategy(
 //        if (user.password != password) { return done(null, false, { message: 'Invalid password' }); }
 //        return done(null, user);
 //      })
-            
+
                 return done(null, user);
             });
         }
@@ -173,10 +158,10 @@ app.configure(function() {
     app.set('view engine', 'ejs');
     if (config.enableLog)
         app.use(express.logger());
-    app.use(express.cookieParser());
+    app.use(express.cookieParser('connect'));
     app.use(express.bodyParser());
     app.use(express.methodOverride());
-    app.use(express.session({secret: 'keyboard cat'}));
+    app.use(express.session({secret: "connect", store: sessionStore}));
     // Initialize Passport!  Also use passport.session() middleware, to support
     // persistent login sessions (recommended).
     app.use(passport.initialize());
@@ -240,8 +225,11 @@ app.post('/auth/simple',
         passport.authenticate('local', {failureRedirect: '/login', failureFlash: true}),
         function(req, res) {
             req.user = req.user || {};
+            req.session.user = user;
             res.cookie("_username", req.user.emails[0].value);
+            console.log(".---------------------------.");
             console.log("say hello to new user: " + req.user.displayName);
+            console.log(".---------------------------.");
             querystring = urlSetup(req);
             res.redirect('/' + querystring);
         });
@@ -270,6 +258,7 @@ app.use(function(req, res, next) {
     next();
 });
 var server = app.listen(port, '0.0.0.0');
+var everyone = nowjs.initialize(server);
 console.log("Listen on http://localhost:" + port);
 var EDITABLE_APPS_DIR = config.appsDir;
 var ENABLE_LAUNCH = false;
@@ -619,8 +608,8 @@ app.get("/allUsersEditingProjects", ensureAuthenticated, function(req, res) {
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 var localFileIsMostRecent = []; // an array of flags indicating if the file has been modified since last save.
-var nowjs = require("now");
-var everyone = nowjs.initialize(server);
+
+
 // ------ REALTIME NOWJS COLLABORATION ------
 //var nowcollab = require("../CHAOS/nowcollab");
 //nowcollab.initialize(nowjs, everyone, true);
@@ -631,28 +620,62 @@ nowjs.on('connect', function() {
     if (this.now.teamID != undefined) {
         this.user.teamID = this.now.teamID;
     }
-    //console.log(this.user);
-    //console.log(everyone.users);
     console.log(" >> PROJECT:" + this.user.teamID);
-    // hack to get out best guess at the user (since now.js doesn't give us the request object or session!);
-    var u = {}; //(Auth || {}).getUserFromCache(decodeURIComponent(this.user.cookie['_chaos.auth'])) || {};
-    // now populate it..
-    this.user.about = {};
-    this.user.about._id = u._id || 0;
-    this.user.about.name = u.nameGiven || u.displayName || decodeURIComponent(this.user.cookie["_username"]) || "???";
-    this.user.about.email = u.emailPrimary || this.user.about.name + "@mail.org";
-    // -----
-    this.now.name = this.user.about.name;
-    this.now.userID = this.user.about._id;
-    // -----
-    this.user.grouplist = []; // file groups starts out empty.
-    addUserToGroup(this.user, this.user.teamID); // the blank file group is the the team group.
-    this.now.c_confirmProject(this.user.teamID);
+    /*
+     * Get the userdata from session
+     */
+    var self = this;
+    if (this.user.cookie && this.user.cookie['connect.sid']) {
+        var sid = decodeURIComponent(this.user.cookie['connect.sid']).slice(2, 26);
+        sessionStore.get(sid, function(err, session) {
+            if (session) {
+                passport.deserializeUser(session.passport.user, function(err, user) {
+                    if (!now_user[self.user.clientId]) {
+                        self.user = _.extend(self.user, user);
+                        now_user[self.user.clientId] = self.user;
+                    }
+                    //self.user.session.passport=self.user.session.passport||{};
+                    //self.user.session.passport = user;
+                });
+            }
+        });
+    }
+//console.log(this.user);
+//console.log(everyone.users);
 });
+
+
+/*
+ * This function regiter the user data from the saved session
+ * @returns {undefined}
+ */
+everyone.now.s_user_register = function(teamID) {
+    this.user.teamID = teamID;
+    if (this.now.teamID != undefined) {
+        this.user.teamID = this.now.teamID;
+    }
+// now populate it..
+    user = now_user[this.user.clientId];
+    if (user) {
+        this.user.about = {};
+        this.user.about._id = 0;
+        this.user.name = user.name || "???";
+        this.user.about.name = user.name || "???";
+        this.user.about.email = user.emails[0];
+        // -----
+        this.now.name = this.user.about.name;
+        this.now.userID = this.user.about._id;
+        // -----
+        this.user.grouplist = []; // file groups starts out empty.
+        this.now.c_confirmProject(this.user.teamID);
+        addUserToGroup(this.user, this.user.teamID); // the blank file group is the the team group.  
+    }
+}
+
 nowjs.on('disconnect', function() {
-    //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
-    //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.now.name); 
-    //---cleanup presence
+//console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
+//console.log("DISCONNECT > "+this.user.clientId+" >> "+this.now.name); 
+//---cleanup presence
     for (var fname in groupFilesUsers) {
         if (fname)
             removeUserFromFileGroup(this.user, fname);
@@ -669,7 +692,7 @@ nowjs.on('disconnect', function() {
             teamgroup.now.c_processUserFileEvent(fname, "leaveFile", this.user.clientId, usersInGroup[g]);
         }
     }
-    // finally, remove the user from the team group. (don't need this now since team is also in user.grouplist)
+// finally, remove the user from the team group. (don't need this now since team is also in user.grouplist)
     teamgroup.now.c_processUserEvent("leave", this.user.clientId, this.now.name);
 });
 //---------
@@ -1027,7 +1050,7 @@ everyone.now.s_project_save = function(project, createCallback) {
         var exists = false;
         project.creator = {name: this.user.about.name, email: this.user.about.email};
         for (i in projects) {
-            //---if project name exists then update data
+//---if project name exists then update data
             if (projects[i].name == project.name) {
                 projects[i].name = project.name;
                 projects[i].path = project.path;
@@ -1037,7 +1060,7 @@ everyone.now.s_project_save = function(project, createCallback) {
             }
         }
         if (!exists) {
-            //---add project to projects
+//---add project to projects
             projects.push(project);
         }
     }
@@ -1056,13 +1079,13 @@ everyone.now.s_user_save = function(user, project, createCallback) {
         }
         user.creator = {name: this.user.about.name, email: this.user.about.email};
         for (i in projects) {
-            //---if project name exists then update data
+//---if project name exists then update data
             if (projects[i].name == project.name) {
                 if (projects[i].users) {
                     var exists = false;
                     for (j in projects[i].users) {
                         if (projects[i].users[j].mail == user.mail) {
-                            //---manage user passw
+//---manage user passw
                             user.passw = (user.passw) ? user.passw : projects[i].users[j].passw;
                             projects[i].users[j] = user;
                             exists = true;
@@ -1070,11 +1093,11 @@ everyone.now.s_user_save = function(user, project, createCallback) {
                     }
 
                 } else {
-                    //initialize users
+//initialize users
                     projects[i].users = [];
                 }
                 if (!exists) {
-                    //---add project to projects
+//---add project to projects
                     projects[i].users.push(user);
                 }
             }
@@ -1089,7 +1112,7 @@ everyone.now.s_user_delete = function(user, project, deleteCallback) {
         console.log('s_user_delete', user, project);
         user.creator = {name: this.user.about.name, email: this.user.about.email};
         for (i in projects) {
-            //---if project name exists then update data
+//---if project name exists then update data
             if (projects[i].name == project.name) {
                 if (projects[i].users) {
                     for (j in projects[i].users) {
@@ -1194,8 +1217,8 @@ function localRepoCommit(userObj, gitRepoPath, message, callback) {
     });
 }
 function localRepoFetchGitLog(userObj, gitRepoPath, fname, fetcherCallback) {
-    // TODO: Make the filtering part of the git command, not an after thought with a ton of results.
-    // Seeing all checkpoints since the beginning of a project could lead to looking at many thousand results...
+// TODO: Make the filtering part of the git command, not an after thought with a ton of results.
+// Seeing all checkpoints since the beginning of a project could lead to looking at many thousand results...
     var authString = userObj.about.name + " <" + userObj.about.email + ">";
     var safeAuthString = Utf8.encode(authString).replace(/\"/g, "\\\"");
     var maxInitialFetch = 10; // hardcoded max value so things don't get crazy until it's explicitly part of the git command...    
@@ -1317,9 +1340,9 @@ function addUserToFileGroup(userObj, fname) {
     if (fname && fname !== "") {
         groupname += "/" + fname;
     }
-    //console.log("ADD TO GROUP: " + groupname);
-    //console.log("        team: " + userObj.teamID);
-    //console.log("       fname: " + fname);
+//console.log("ADD TO GROUP: " + groupname);
+//console.log("        team: " + userObj.teamID);
+//console.log("       fname: " + fname);
     var teamgroup = nowjs.getGroup(userObj.teamID);
     teamgroup.now.c_processUserFileEvent(fname, 'joinFile', userObj.clientId);
     addUserToGroup(userObj, groupname);
@@ -1351,8 +1374,8 @@ function removeUserFromFileGroup(userObj, fname) {
     }
     var g = nowjs.getGroup(groupname);
     if (g.users[userObj.clientId]) {
-        // user was in group.
-        // remove user from NOW group.
+// user was in group.
+// remove user from NOW group.
         g.removeUser(userObj.clientId);
         // remove user from local group.
         for (var i = userObj.grouplist.length; i >= 0; i--) {
@@ -1360,16 +1383,16 @@ function removeUserFromFileGroup(userObj, fname) {
                 userObj.grouplist.splice(i, 1);
             }
         }
-        // keep track locally of users in group.
+// keep track locally of users in group.
         usersInGroupMinusMinus(groupname);
         if (fname.length > 0) {
-            //var teamgroup = nowjs.getGroup(userObj.teamID);
+//var teamgroup = nowjs.getGroup(userObj.teamID);
             g.now.c_processUserFileEvent(fname, "leaveFile", userObj.clientId, usersInGroup[groupname]);
         }
-        //console.log("Removed user " + userObj.clientId + " from: " + groupname);
+//console.log("Removed user " + userObj.clientId + " from: " + groupname);
     } else {
-        //console.log(g);
-        //console.log("no need to remove user " + userObj.clientId + " from group: " + groupname + " ???");
+//console.log(g);
+//console.log("no need to remove user " + userObj.clientId + " from group: " + groupname + " ???");
     }
     update_all_trees();
 }
@@ -1379,7 +1402,7 @@ function usersInGroupPlusPlus(group) {
     } else {
         usersInGroup[group] = 1;
     }
-    //console.log("UsersInGroup(+): " + group + " >> " + usersInGroup[group]);
+//console.log("UsersInGroup(+): " + group + " >> " + usersInGroup[group]);
 }
 function usersInGroupMinusMinus(group) {
     if (usersInGroup[group]) {
@@ -1387,7 +1410,7 @@ function usersInGroupMinusMinus(group) {
     } else {
         usersInGroup[group] = 0;
     }
-    //console.log("UsersInGroup(-): " + group + " >> " + usersInGroup[group]);
+//console.log("UsersInGroup(-): " + group + " >> " + usersInGroup[group]);
 }
 //
 // local file stuff
@@ -1761,5 +1784,3 @@ function occurrences(string, substring) {
 //
 console.log("| *. Node up and running .* |");
 console.log("'---------------------------'");
-
-
