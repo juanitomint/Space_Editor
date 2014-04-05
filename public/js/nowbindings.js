@@ -230,6 +230,7 @@ now.c_setTeamID = function(val) {
     });
     Ext.getCmp('FileTree').store.load();
     this.now.teamID = PROJECT;
+    now.s_user_register(PROJECT);
     now.s_setTeamID(PROJECT);
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
@@ -245,6 +246,8 @@ now.ready(function() {
     alreadyConnected = true;
     console.log("Using NowJS -- this clientId: " + now.core.clientId);
     var getProject = getURLGetVariable("project");
+    now.s_user_register(getProject);
+    console.log("Register user ");
     if (getProject) {
         now.s_setActiveProject(getProject);
     } else {
