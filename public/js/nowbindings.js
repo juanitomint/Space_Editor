@@ -235,9 +235,24 @@ now.c_setTeamID = function(val) {
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
 }
+/*
+ * Show a msg to the user with icon
+ * values for icon are: error,info,question,warning
+ * 
+ */
+
+now.c_showMsg=function(title,msg,icon,callback){
+    Ext.MessageBox.show({
+           title: title,
+           msg: msg,
+           buttons: Ext.MessageBox.OK,
+           fn: callback,
+           icon: 'ext-mb-'+icon
+       });
+}
 now.c_followRequest=function(url, mode, fromUserId, fromUserName){
-    Ext.Msg.prompt('FollowMe', 'User' + fromUserName + ' has invited you to follow:<br/>' + url, function(btn, text) {
-        if (btn == 'ok') {
+    Ext.Msg.confirm('FollowMe', 'User <b>' + fromUserName + '</b> has invited you to follow:<br/>' + url, function(btn, text) {
+        if (btn == 'yes') {
             window.location = url;
         }
     });
