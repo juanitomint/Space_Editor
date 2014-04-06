@@ -287,7 +287,7 @@ var UserRemoveBtn = Ext.create('Ext.Action', {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var user = sm.getSelection()[0];
         var project = user.parentNode;
-        Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + rec.get('name'), function(btn, text) {
+        Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + user.get('name'), function(btn, text) {
             if (btn == 'yes') {
                 now.s_user_delete(user.raw, project.raw, function(errs) {
                     if (errs) {
@@ -316,7 +316,7 @@ var UserAddBtn = Ext.create('Ext.Action', {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var st = Ext.getCmp('ProjectsTree').store;
         var node = sm.getSelection()[0].data;
-        var project=st.getById(node.id).parentNode.data;
+        var project=st.getById(node.id).data;
         user = this.up('form').getValues();
         now.s_user_save(user, project, function(errs) {
             if (errs) {
