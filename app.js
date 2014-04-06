@@ -1026,12 +1026,17 @@ everyone.now.s_git_fetchCommits = function(fetcherCallback) {
         fetcherCallback(gitlog);
     });
 };
-everyone.now.s_deployProject = function(txt, deployerCallback) {
-    var team = this.user.teamID;
-    console.log("DEPLOYING Project >> " + team);
-    localProjectDeploy(this.user, deployerCallback);
-};
+//everyone.now.s_deployProject = function(txt, deployerCallback) {
+//    var team = this.user.teamID;
+//    console.log("DEPLOYING Project >> " + team);
+//    localProjectDeploy(this.user, deployerCallback);
+//};
 everyone.now.s_project_delete = function(project, deleteCallback) {
+    //---Check that the user is an Admin
+    if (!this.user.isAdmin) {
+        this.now.c_showMsg('Project Delete ', 'Only Admin can delete projects', 'error', null);
+        return;
+    }
     if (project.name && project.path) {
         var team = this.user.teamID;
         for (i in projects) {
@@ -1045,6 +1050,11 @@ everyone.now.s_project_delete = function(project, deleteCallback) {
     writeJSON('/config/projects.json', projects, deleteCallback);
 }
 everyone.now.s_project_save = function(project, createCallback) {
+    //---Check that the user is an Admin
+    if (!this.user.isAdmin) {
+        this.now.c_showMsg('Project Save', 'Only Admin can save modifications', 'error', null);
+        return;
+    }
     if (project.name && project.path) {
         var team = this.user.teamID;
         var exists = false;
@@ -1067,6 +1077,11 @@ everyone.now.s_project_save = function(project, createCallback) {
     writeJSON('/config/projects.json', projects, createCallback);
 }
 everyone.now.s_user_save = function(user, project, createCallback) {
+    //---Check that the user is an Admin
+    if (!this.user.isAdmin) {
+        this.now.c_showMsg('User Save', 'Only Admin can save modifications', 'error', null);
+        return;
+    }
     if (project.name && project.path) {
         var team = this.user.teamID;
         //----hash passw
@@ -1106,6 +1121,11 @@ everyone.now.s_user_save = function(user, project, createCallback) {
     writeJSON('/config/projects.json', projects, createCallback);
 }
 everyone.now.s_user_delete = function(user, project, deleteCallback) {
+    //---Check that the user is an Admin
+    if (!this.user.isAdmin) {
+        this.now.c_showMsg('User Delete ', 'Only Admin can delete users', 'error', null);
+        return;
+    }
     if (project.name && project.path) {
         var team = this.user.teamID;
         var exists = false;
