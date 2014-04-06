@@ -276,14 +276,9 @@ Ext.define('Codespace.view.ToolBar', {
 
             ]
         },
-        //-----username placehorled
-        {
-            id:'tbar_username',
-            text:'username'
-        },
         //-----logout
         {
-            text: '<i class="fa fa-power-off"></i>',
+            text: Ext.util.Cookies.get('_username')+'&nbsp;<i class="fa fa-power-off"></i>',
             handler: function() {
                 window.location = '/logout'
             }
