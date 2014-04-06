@@ -235,6 +235,13 @@ now.c_setTeamID = function(val) {
     now.s_sendUserEvent("join"); // let everyone know who I am!
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
 }
+now.c_followRequest=function(url, mode, fromUserId, fromUserName){
+    Ext.Msg.prompt('FollowMe', 'User' + fromUserName + ' has invited you to follow:<br/>' + url, function(btn, text) {
+        if (btn == 'ok') {
+            window.location = url;
+        }
+    });
+}
 now.ready(function() {
     console.log(">>>> NOW READY <<<<");
     if (alreadyConnected) {
