@@ -1,4 +1,4 @@
-# CodeSpace is a real-time collaborative code IDE!
+# </>CodeSpace is a real-time collaborative code IDE!
 
 CodeSpace is built on NodeJS and uses NowJS for realtime collaboration. The editor is built on ACE (the same front-end used in Cloud9 IDE) and uses Google's diff-match-patch to send edits information to contributors as changes are made to the code.
 This project is base-on and inspired on the great work of the folks from ChaosCollective.org
