@@ -1052,7 +1052,7 @@ everyone.now.s_project_delete = function(project, deleteCallback) {
 everyone.now.s_project_save = function(project, createCallback) {
     //---Check that the user is an Admin
     if (!this.user.isAdmin) {
-        this.now.c_showMsg('Project Save', 'Only Admin can save modifications', 'error', null);
+        this.now.c_showMsg('Project Save', 'Only Admins can save/add Projects', 'error', null);
         return;
     }
     if (project.name && project.path) {
