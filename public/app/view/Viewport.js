@@ -72,7 +72,12 @@ Ext.define('Codespace.view.Viewport', {
                         listeners: {
                             keypress: function(field, e) {
                                 if (e.getKey() == e.ENTER) {
-                                    now.s_teamMessageBroadcast("personal", this.value);
+                                    msg=this.value;
+                                    //----url replace only if is a pure url
+                                    if(msg.indexOf('http')==0){
+                                       msg=msg.replace(msg,'<a href="'+msg+'">Follow this url</a>');
+                                    }
+                                    now.s_teamMessageBroadcast("personal", msg);
                                     this.setValue();
                                     e.stopEvent();
                                 }

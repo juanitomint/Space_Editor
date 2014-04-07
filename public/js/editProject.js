@@ -117,7 +117,7 @@ function groupChatMsg(fromUserName, msg, me, color) {
     avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
     avatar = '<div class="avatar"  style="background-color:' + color + '"></div>';
     timeStamp = '<time datetime="' + Date() + '">' + fromUserName + ':</time>';
-    Ext.get('chat-ol').createChild('<li class="' + add + '">' + avatar + ' <div class="messages">' + timeStamp + msg + '</div></li>');
+    Ext.get('chat-ol').createChild('<li class="' + add + '">' + avatar + ' <div class="messages">' + timeStamp + Ext.htmlDecode(msg) + '</div></li>');
 }
 function notifyAndAddMessageToLog(userColor, fromUserName, msg) {
     console.log("shout: msg(" + userColor + ", " + fromUserName + ", " + msg + ");");

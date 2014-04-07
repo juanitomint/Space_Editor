@@ -2,7 +2,6 @@
 // NOW BIndings
 // ---------------------------------------------------------
 now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
-    console.log("msg from " + fromUserId + ": " + message);
     name = fromUserName;
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -28,13 +27,17 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
     }
     console.log("UserEvent: " + event + " >> " + fromUserName);
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    if (event == "join") {
-        mostRecentTotalUserCount++;
-        notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
-    } else {
-        mostRecentTotalUserCount--;
-        notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
-        removeCollaborator(fromUserId)
+    switch (event) {
+        case "join":
+            mostRecentTotalUserCount++;
+            notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
+            break;
+        case "leave":
+            mostRecentTotalUserCount--;
+            this.c_processMessage("team", "personal", "bye...", fromUserId, fromUserName);
+            notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
+            removeCollaborator(fromUserId);
+            break;
     }
 }
 now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
@@ -241,16 +244,16 @@ now.c_setTeamID = function(val) {
  * 
  */
 
-now.c_showMsg=function(title,msg,icon,callback){
+now.c_showMsg = function(title, msg, icon, callback) {
     Ext.MessageBox.show({
-           title: title,
-           msg: msg,
-           buttons: Ext.MessageBox.OK,
-           fn: callback,
-           icon: 'ext-mb-'+icon
-       });
+        title: title,
+        msg: msg,
+        buttons: Ext.MessageBox.OK,
+        fn: callback,
+        icon: 'ext-mb-' + icon
+    });
 }
-now.c_followRequest=function(url, mode, fromUserId, fromUserName){
+now.c_followRequest = function(url, mode, fromUserId, fromUserName) {
     Ext.Msg.confirm('FollowMe', 'User <b>' + fromUserName + '</b> has invited you to follow:<br/>' + url, function(btn, text) {
         if (btn == 'yes') {
             window.location = url;
