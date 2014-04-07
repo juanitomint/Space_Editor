@@ -3,6 +3,11 @@
 CodeSpace is built on NodeJS and uses NowJS for realtime collaboration. The editor is built on ACE (the same front-end used in Cloud9 IDE) and uses Google's diff-match-patch to send edits information to contributors as changes are made to the code.
 This project is base-on and inspired on the great work of the folks from ChaosCollective.org
 
+## Features at a glance
+Support simple(built-it) authentication or thru google/facebook
+Sumpport simple git operations (commit, checkout init pull push)
+Create projects and users
+
 ## Demo
 
 
