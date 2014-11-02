@@ -1,4 +1,10 @@
-// -----------------------------------------
+/*
+ * 
+ * @param {type} $
+ * @returns {undefined}
+ * REMOVE
+ */
+// // -----------------------------------------
 // Right-click context menu plugin for jQuery...
 // -----------------------------------------
 (function($) {
@@ -482,27 +488,27 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
 
 }
 
-now.c_processUserEvent = function(event, fromUserId, fromUserName) {
-    if (fromUserId == now.core.clientId) {
-        return;
-    }
-    var cInfo = allCollabInfo[fromUserId];
-    if (cInfo == undefined) {
-        allCollabInfo[fromUserId] = [];
-        cInfo = allCollabInfo[fromUserId];
-        cInfo['name'] = fromUserName;
-        cInfo['timeLastSeen'] = 0;
-    }
-    console.log("UserEvent: " + event + " >> " + fromUserName);
-    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    if (event == "join") {
-        mostRecentTotalUserCount++;
-        notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
-    } else {
-        mostRecentTotalUserCount--;
-        notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
-    }
-}
+//now.c_processUserEvent = function(event, fromUserId, fromUserName) {
+//    if (fromUserId == now.core.clientId) {
+//        return;
+//    }
+//    var cInfo = allCollabInfo[fromUserId];
+//    if (cInfo == undefined) {
+//        allCollabInfo[fromUserId] = [];
+//        cInfo = allCollabInfo[fromUserId];
+//        cInfo['name'] = fromUserName;
+//        cInfo['timeLastSeen'] = 0;
+//    }
+//    console.log("UserEvent: " + event + " >> " + fromUserName);
+//    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+//    if (event == "join") {
+//        mostRecentTotalUserCount++;
+//        notifyAndAddMessageToLog(userColor, fromUserName, "has joined.");
+//    } else {
+//        mostRecentTotalUserCount--;
+//        notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
+//    }
+//}
 now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
     console.log("msg from " + fromUserId + ": " + message);
     var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];

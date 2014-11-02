@@ -3,7 +3,8 @@ Ext.define('Codespace.store.TeamTree', {
     autoLoad: true,
     model: 'Codespace.model.team',
     proxy: {
-        type: 'memory',
+        type: 'memory'
+        /*
         data: {
             success: true,
             children: [{
@@ -23,6 +24,7 @@ Ext.define('Codespace.store.TeamTree', {
                         }]
                 }]
         }
+    ,*/
     },
     sorters: [{
             property: 'leaf',

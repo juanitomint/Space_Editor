@@ -176,10 +176,10 @@ var ProjectOpen = Ext.create('Ext.Action', {
     text: 'Open',
     iconCls: 'fa fa-folder-open',
     handler: function() {
-        event.preventDefault();
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var rec = sm.getSelection()[0];
         window.location = '?project=' + rec.data['path'];
+        return false;
     }
 });
 var ProjectAdd = Ext.create('Ext.Action', {
@@ -905,7 +905,7 @@ var DeleteNode = Ext.create('Ext.Action', {
 Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
-    models: ['file', 'user', 'code'],
+    models: ['file', 'user', 'code','team'],
     stores: ['FileTree', 'ProjectTree', 'NavTree','TeamTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
@@ -985,7 +985,7 @@ Ext.application({
                                         Codespace.app.setToolbarSettings(this);
                                         this.getEditor().resize();
                                         setFileStatusIndicator(this.path, this.status);
-                                        AnalizeCode.call();
+                                        //AnalizeCode.call();
                                     }
                                 },
                                 editorcreated: function() {
@@ -1038,7 +1038,7 @@ Ext.application({
                                     Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                     now.s_leaveFile(this.path);
                                     Codespace.app.updateHash();
-                                    ClearNavTree.call();
+                                    //ClearNavTree.call();
                                 }
                             }
                         }

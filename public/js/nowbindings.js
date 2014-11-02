@@ -1,21 +1,22 @@
 // ---------------------------------------------------------
 // NOW BIndings
 // ---------------------------------------------------------
-now.c_processMessage = function(scope, type, message, fromUserId, fromUserName) {
+now.c_processMessage = function (scope, type, message, fromUserId, fromUserName) {
     name = fromUserName;
-    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+    var userColor = getColor(name)
     var msg = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     notifyAndAddMessageToLog(userColor, fromUserName, msg);
     me = (fromUserId == now.core.clientId) ? true : false;
     groupChatMsg(fromUserName, msg, me, userColor);
 }
-now.c_addCollaborator = function(user) {
-    name = user.name;
-    userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+now.c_addCollaborator = function (user) {
+    name = user.displayName;
+    name = user.emails[0].value;
+    userColor = getColor(name);
     collaborators[user.clientId] = user;
-    addCollaborator(user.clientId, name, userColor);
+    addCollaborator(user.clientId, user.displayName, userColor);
 }
-now.c_processUserEvent = function(event, fromUserId, fromUserName) {
+now.c_processUserEvent = function (event, fromUserId, fromUserName) {
     if (fromUserId == now.core.clientId) {
         return;
     }
@@ -26,7 +27,7 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
         allCollabInfo[fromUserId]['timeLastSeen'] = 0;
     }
     console.log("UserEvent: " + event + " >> " + fromUserName);
-    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+    var userColor = getColor(name);
     switch (event) {
         case "join":
             mostRecentTotalUserCount++;
@@ -34,13 +35,12 @@ now.c_processUserEvent = function(event, fromUserId, fromUserName) {
             break;
         case "leave":
             mostRecentTotalUserCount--;
-            this.c_processMessage("team", "personal", "bye...", fromUserId, fromUserName);
             notifyAndAddMessageToLog(userColor, fromUserName, "has left.");
             removeCollaborator(fromUserId);
             break;
     }
 }
-now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
+now.c_processUserFileEvent = function (fname, event, fromUserId, usersInFile, secondaryFilename, msg) {
 
     if (fromUserId == now.core.clientId) {
         return;
@@ -56,13 +56,15 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
     console.log("UserFileEvent: " + event + " >> " + fname + " >> " + uName + ", usersInFile: " + usersInFile);
     if (event == "joinFile") {
-        setUsersInFile(fname, usersInFile);
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        setUsersInFile(fromUserId, usersInFile);
+        addCollaboratorToFile(fromUserId, fname);
+        var userColor =getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "joined file: <div class='itemType_fileAction'>" + fname + "</div>");
         console.log("added notify for joinFile");
     }
     if (event == "leaveFile") {
         setUsersInFile(fname, usersInFile);
+        removeCollaboratorFromFile(fromUserId, fname);
         fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
 //if (fname == infile) {
         // remove the user's marker, they just left!
@@ -92,46 +94,59 @@ now.c_processUserFileEvent = function(fname, event, fromUserId, usersInFile, sec
     }
     if (event == "deleteFile") {
         removeFileFromList(fname);
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "deleted file: <div class='itemType_fileAction'>" + fname + "</div>");
     }
     if (event == "createFile") {
         addFileToList(fname);
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "created file: <div class='itemType_fileAction'>" + fname + "</div>");
     }
     if (event == "renameFile" && secondaryFilename != undefined) {
         removeFileFromList(fname);
         addFileToList(secondaryFilename);
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor =getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "renamed file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>to</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
     }
     if (event == "duplicateFile" && secondaryFilename != undefined) {
         addFileToList(secondaryFilename);
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "duplicated file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>as</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
     }
     if (event == "commitProject") {
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "commited project with note: <div class='itemType_projectAction'>" + msg + "</div>");
     }
     if (event == "launchProject") {
         console.log("launch!");
-        var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "<div class='itemType_projectAction'>Launched the project!</div>");
     }
 
 }
-now.c_updateTree = function(param) {
+now.c_updateTree = function (param) {
 }
 now.c_setUsersInFile = setUsersInFile;
+now.c_updateTeamTree = updateTeamTree;
+function updateTeamTree(fname, usersInFile) {
+    /*
+     * Update TeamTree
+     */
+    for (j in usersInFile) {
+        addCollaboratorToFile(usersInFile[j], fname);
+    }
+
+}
 function setUsersInFile(fname, usersInFile) {
+
     fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     tree = Ext.getCmp('FileTree')
     node = tree.store.getNodeById(fname_stripped);
     //node = $("#fileTree").tree('getNodeById', fname_stripped);
+    /*
+     * Update FileTree
+     */
     if (node) {
-
         node.set('users', usersInFile);
         if (node.parentNode != null) {
             node = node.parentNode;
@@ -142,67 +157,62 @@ function setUsersInFile(fname, usersInFile) {
                 users += (child.data.users) ? child.data.users : 0;
             }
             //---check if node path exists
-            if (node.data.path)
+            if (node.data.path) {
                 setUsersInFile(node.data.path, users);
+            }
         }
     }
+    console.log("setUsersInFile: " + fname, usersInFile);
     return
-    console.log("Unable to add user from file: " + fname);
 }
-now.c_confirmProject = function(teamID) {
+now.c_confirmProject = function (teamID) {
     now.teamID = teamID;
     console.log("PROJECT: " + now.teamID);
     // <a href='http://"+teamID+".chaoscollective.org/'
     $("#topProjName").html(teamID + "");
 }
-now.c_updateCollabCursor = function(id, name, range, changedByUser, fname) {
-
+now.c_updateCollabCursor = function(id, name, range, changedByUser) {
     if (id == now.core.clientId) {
         return;
     }
     var cInfo = allCollabInfo[id];
     if (cInfo == undefined) {
-// first time seeing this user!
+        // first time seeing this user!
         allCollabInfo[id] = [];
         cInfo = allCollabInfo[id];
+        cInfo['name'] = name;
         // let collaborator know I'm here.
         ifOnlineLetCollaboratorsKnowImHere();
     }
-    if (cInfo[fname] == undefined) {
-        cInfo[fname] = [];
-    }
-    cInfo[fname]['name'] = name;
-    cInfo[fname]['timeLastSeen'] = (new Date()).getTime();
-    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-    editor = Ext.getCmp(fname_stripped + '-tab').getEditor();
+    cInfo['timeLastSeen'] = (new Date()).getTime();
     var ses = editor.getSession();
     var rSel = Range.fromPoints(range.start, range.end);
     var rCur = Range.fromPoints(range.start, {row: range.start.row, column: range.start.column + 1});
-    var lastSelID = cInfo[fname]['lastSelectionMarkerID'];
+    var lastSelID = cInfo['lastSelectionMarkerID'];
     if (lastSelID !== undefined) {
         ses.removeMarker(lastSelID);
     }
-    var lastCursorID = cInfo[fname]['lastCursorMarkerID'];
+    var lastCursorID = cInfo['lastCursorMarkerID'];
     if (lastCursorID !== undefined) {
         ses.removeMarker(lastCursorID);
     }
     var uid = id;
-    if (name.indexOf("_") > 0) {
-        uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
-    }
-    var userColor = userColorMap[(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % userColorMap.length];
-    cInfo[fname]['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
-    cInfo[fname]['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
-        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo[fname]['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+//    if (name.indexOf("_") > 0) {
+//        uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
+//    }
+    var userColor = getColor(name);
+    cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
+    cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", function(html, range, left, top, config) {
+        html.push("<div class='collab_cursor' style='top: " + top + "px; left: " + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + cInfo['name'] + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
     }, false); // range, clazz, type, inFront
-    cInfo[fname]['isShown'] = true;
+    cInfo['isShown'] = true;
 }
-now.c_updateWithDiffPatches = function(id, patches, md5, fname) {
+now.c_updateWithDiffPatches = function (id, patches, md5, fname) {
 //console.log(patches);
     updateWithDiffPatchesLocal(id, patches, md5, fname);
 }
 
-now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
+now.c_userRequestedFullFile = function (fname, collabID, fileRequesterCallback) {
 //if(!initialStateIsWelcome){
     console.log("user requesting full file: " + fname + " >> " + collabID);
     if (infile == fname) {
@@ -214,10 +224,10 @@ now.c_userRequestedFullFile = function(fname, collabID, fileRequesterCallback) {
 //  console.log("received request for initial state, but I just got here. ignoring.");
 //}
 }
-now.c_fileStatusChanged = function(fname, status) {
+now.c_fileStatusChanged = function (fname, status) {
     setFileStatusIndicator(fname, status);
 }
-now.c_setTeamID = function(val) {
+now.c_setTeamID = function (val) {
     PROJECT = val;
     document.title = PROJECT;
     //register into the project and join the group.
@@ -244,7 +254,7 @@ now.c_setTeamID = function(val) {
  * 
  */
 
-now.c_showMsg = function(title, msg, icon, callback) {
+now.c_showMsg = function (title, msg, icon, callback) {
     Ext.MessageBox.show({
         title: title,
         msg: msg,
@@ -253,14 +263,14 @@ now.c_showMsg = function(title, msg, icon, callback) {
         icon: 'ext-mb-' + icon
     });
 }
-now.c_followRequest = function(url, mode, fromUserId, fromUserName) {
-    Ext.Msg.confirm('FollowMe', 'User <b>' + fromUserName + '</b> has invited you to follow:<br/>' + url, function(btn, text) {
+now.c_followRequest = function (url, mode, fromUserId, fromUserName) {
+    Ext.Msg.confirm('FollowMe', 'User <b>' + fromUserName + '</b> has invited you to follow:<br/>' + url, function (btn, text) {
         if (btn == 'yes') {
             window.location = url;
         }
     });
 }
-now.ready(function() {
+now.ready(function () {
     console.log(">>>> NOW READY <<<<");
     if (alreadyConnected) {
         // seeing ready after already being connected.. assume server was reset!
@@ -282,17 +292,17 @@ now.ready(function() {
     setInterval(ifOnlineLetCollaboratorsKnowImHere, TIME_UNTIL_GONE / 3);
     var specifiedFileToOpen = getURLHashVariable("fname");
 });
-now.core.on('disconnect', function() {
+now.core.on('disconnect', function () {
     console.log("DISCONNECT... Setting nowIsOnline to false"); // this.user.clientId
     nowIsOnline = false;
     tabs = Ext.getCmp('filetabs');
-    tabs.items.each(function(tab) {
+    tabs.items.each(function (tab) {
         if (tab.path) {
             setFileStatusIndicator(tab.path, "offline");
         }
     });
 });
-now.core.on('connect', function() {
+now.core.on('connect', function () {
     console.log(">>>> NOW CONNECT<<<<");
     console.log("CONNECT... Setting nowIsOnline to true"); // this.user.clientId
     nowIsOnline = true;

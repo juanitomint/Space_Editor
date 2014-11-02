@@ -704,6 +704,7 @@ everyone.now.s_updateTree = function () {
         if (fname != '') {
             if (groupFilesUsers[fname])
                 this.now.c_setUsersInFile(fname, groupFilesUsers[fname].length);
+                this.now.c_updateTeamTree(fname, groupFilesUsers[fname]);
         }
     }
 }
@@ -734,7 +735,7 @@ everyone.now.s_sendCursorUpdate = function (fname, range, changedByUser) {
     var userObj = this.user;
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     //console.log(filegroup);
-    filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser, fname);
+    filegroup.now.c_updateCollabCursor(this.user.clientId, this.user.displayName, range, changedByUser, fname);
 };
 everyone.now.s_sendDiffPatchesToCollaborators = function (fname, patches, crc32) {
     var userObj = this.user;
@@ -820,7 +821,10 @@ everyone.now.s_enterFile = function (fname) {
 everyone.now.s_leaveFile = function (fname) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
     var fromUserId = this.user.clientId;
+    var fromUserName = this.user.displayName;
+    
     removeUserFromFileGroup(this.user, fname);
+    teamgroup.now.c_processUserFileEvent(fname,'leaveFile', fromUserId);
 };
 everyone.now.s_sendUserEvent = function (event) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
@@ -1341,7 +1345,8 @@ function addUserToGroup(userObj, groupname) {
         var teamgroup = nowjs.getGroup(userObj.teamID);
         //} 
         //----tell others user has joined
-        g.now.c_processUserEvent("join", userObj.clientId, userObj.name);
+        
+        g.now.c_processUserEvent("join", userObj.clientId, userObj.displayName);
         console.log("Added user " + userObj.clientId + " to group: " + groupname);
     } else {
         console.log("no need to add user " + userObj.clientId + " to group: " + groupname + " ???");
@@ -1375,6 +1380,7 @@ function update_all_trees() {
         if (fname != '') {
             if (groupFilesUsers[fname])
                 everyone.now.c_setUsersInFile(fname, groupFilesUsers[fname].length);
+                everyone.now.c_updateTeamTree(fname, groupFilesUsers[fname]);
         }
     }
 }

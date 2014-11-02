@@ -34,8 +34,16 @@ Ext.define('Codespace.view.Viewport', {
                     {
                         id: 'utiltabs',
                         xtype: 'tabpanel',
+                        activeTab:'TeamTree',
                         items: [
                             //----chat tab
+                            {
+                                title: 'Team <span id="contacts-count"></span>',
+                                id: 'TeamTree',
+                                layout: 'fit',
+                                xtype: 'teamtree',
+                                
+                            },
                             {
                                 title: 'chat',
                                 id: 'chat-tab',
@@ -43,12 +51,6 @@ Ext.define('Codespace.view.Viewport', {
                                 overflowY: 'scroll',
                                 bodyCls: 'discussion',
                                 html: '<ol id="chat-ol" class="discussion"></ol>'
-                            },
-                            {
-                                title: 'Team <span id="contacts-count"></span>',
-                                id: 'TeamTree',
-                                layout: 'fit',
-                                xtype: 'teamtree',
                             }
                             //----chat tab
                         ]
@@ -164,53 +166,20 @@ Ext.define('Codespace.view.Viewport', {
                                                 }]
                                         }
                                         //---end tbar
-                                    },
-                                    {
-                                        title: 'NavTree',
-                                        id: 'NavTree',
-                                        region: 'south',
-                                        split: true,
-                                        collapsible: true,
-                                        collapsed: false,
-                                        height: '55%',
-                                        layout: 'fit',
-                                        xtype: 'navtree',
-                                        /*
-                                         items: [
-                                         Ext.create('Ext.tree.Panel', {
-                                         id: "NavTree",
-                                         store: "NavTree",
-                                         columns: [
-                                         {
-                                         text: 'Line',
-                                         flex: 1,
-                                         dataIndex: 'vline',
-                                         },
-                                         {
-                                         xtype: 'treecolumn', //this is so we know which column will show the tree
-                                         text: "</>",
-                                         flex: 3,
-                                         sortable: true,
-                                         dataIndex: 'text'
-                                         
-                                         },
-                                         {
-                                         text: 'type',
-                                         flex: 1,
-                                         dataIndex: 'type',
-                                         }
-                                         ],
-                                         listeners: {
-                                         itemdblclick: function(me, record, item, index, e, eOpts) {
-                                         e.stopEvent();
-                                         if (record.isLeaf())
-                                         editor.scrollToLine(record.data.line);
-                                         }
-                                         },
-                                         })
-                                         ],
-                                         */
                                     }
+//                                    ,
+//                                    {
+//                                        title: 'NavTree',
+//                                        id: 'NavTree',
+//                                        region: 'south',
+//                                        split: true,
+//                                        collapsible: true,
+//                                        collapsed: false,
+//                                        height: '55%',
+//                                        layout: 'fit',
+//                                        xtype: 'navtree',
+//
+//                                    }
                                     //----left-side
                                 ]},
                             //----project panel

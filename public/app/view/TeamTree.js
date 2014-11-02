@@ -25,7 +25,14 @@ Ext.define('Codespace.view.TeamTree', {
             text: '',
             flex: 1,
             sortable: true,
-            dataIndex: 'color'
+            dataIndex: 'color',
+            renderer: function (color) {
+                if (color) {
+                    return '<div class="collaborator_color" style="background-color:' + color + '"/>';
+                } else {
+                    return '';
+                }
+            }
         },
         {
             xtype: 'treecolumn', //this is so we know which column will show the tree
@@ -67,6 +74,7 @@ Ext.define('Codespace.view.TeamTree', {
                 TeamOpen.execute();
                 //TeamAdd(rec);
             } else {
+                //---open file at cursor
                 user = Ext.create('Codespace.model.user', rec.raw);
                 UserAdd(user);
             }

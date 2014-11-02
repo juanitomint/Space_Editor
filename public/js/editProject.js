@@ -47,7 +47,9 @@ function getProjectFileInfo(fname) {
 }
 
 var userColorMap = ["#9DDC23", "#00FFFF", "#FF308F", "#FFD400", "#FF0038", "#7C279B", "#FF4E00", "#6C8B1B", "#0A869B"];
-
+function getColor(str){
+    return userColorMap[(str.charCodeAt(0) + str.charCodeAt(name.length - 1)) % userColorMap.length];
+}
 // ---------------------------------------------------------
 // MSG Related Functions
 // ---------------------------------------------------------
@@ -99,17 +101,44 @@ function followMe(fname) {
 }
 function addCollaborator(userId, fromUserName, color) {
     if (userId && fromUserName && !Ext.get(userId) && userId !== now.core.clientId) {
-        Ext.getCmp('TeamTree').getRootNode().appendChild({
-            id:userId,
-            name:fromUserName,
-            color:color
-        });
+        if (Ext.getCmp('TeamTree').store.getById(userId) == null) {
+            Ext.getCmp('TeamTree').getRootNode().appendChild({
+                id: userId,
+                name: fromUserName,
+                color: color
+            });
+        }
+    }
+}
+function removeCollaboratorFromFile(userId, fname) {
+    fname_stripped =userId+'_'+fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+
+    user = Ext.getCmp('TeamTree').store.getById(userId);
+    if (user) {
+        if (Ext.getCmp('TeamTree').store.getById(fname_stripped)) {
+            Ext.getCmp('TeamTree').store.getById(fname_stripped).remove();
+        }
+    }
+}
+function addCollaboratorToFile(userId, fname) {
+    fname_stripped =userId+'_'+ fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+
+    user = Ext.getCmp('TeamTree').store.getById(userId);
+    if (user) {
+        if (Ext.getCmp('TeamTree').store.getById(fname_stripped) == null) {
+            user.appendChild({
+                id: fname_stripped,
+                name: fname,
+                leaf: true
+            });
+        }
     }
 }
 function removeCollaborator(userId) {
-    if (Ext.get(userId)) {
-        Ext.get(userId).remove();
+    if (Ext.getCmp('TeamTree').store.getById(userId)) {
+        Ext.getCmp('TeamTree').store.getById(userId).remove();
     }
+
 }
 function groupChatMsg(fromUserName, msg, me, color) {
     add = (me) ? 'self' : 'other';
@@ -495,8 +524,8 @@ function openFileFromServer(fname, forceOpen, editor) {
     if (editor) {
         //----attach analizecode to tokenizer
         /* analize disable
-        editor.session.bgTokenizer.on('update', AnalizeCode);
-        */
+         editor.session.bgTokenizer.on('update', AnalizeCode);
+         */
         editor.setReadOnly(true);
         ignoreAceChange = true;
         editor.getSession().setValue(""); // clear the editor.
