@@ -4,6 +4,8 @@
 //
 
 console.log(".---------------------------.");
+console.log("| *      CodeSpace      * |");
+console.log(".---------------------------.");
 console.log("| * Starting Node service * |");
 console.log("'---------------------------'");
 var fs = require('fs');
@@ -30,7 +32,7 @@ var groupFilesUsers = [];
 var baseDir = path.dirname(fs.realpathSync(__filename));
 console.log("'LOADING CONFIG:'");
 var config = {};
-readJSON(baseDir + '/config/config.json', function(data, err) {
+readJSON(baseDir + '/config/config.json', function (data, err) {
     if (err) {
         console.log('There has been an error parsing');
         console.log(err);
@@ -68,10 +70,10 @@ function authorize(user, pw) {
 //   the user by ID when deserializing.  However, since this example does not
 //   have a database of user records, the complete Google profile is serialized
 //   and deserialized.
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
     done(null, user);
 });
-passport.deserializeUser(function(obj, done) {
+passport.deserializeUser(function (obj, done) {
     done(null, obj);
 });
 // Use the GoogleStrategy within Passport.
@@ -82,9 +84,9 @@ passport.use(new GoogleStrategy({
     returnURL: config.google.returnUrl + ':' + port + '/auth/google/return',
     realm: config.google.returnUrl + ':' + port + '/'
 },
-function(identifier, profile, done) {
+function (identifier, profile, done) {
     // asynchronous verification, for effect...
-    process.nextTick(function() {
+    process.nextTick(function () {
         profile.identifier = identifier;
         return done(null, profile);
     });
@@ -95,9 +97,9 @@ var sessionStore = new express.session.MemoryStore;
 // Passport local
 var LocalStrategy = require('passport-local').Strategy;
 passport.use(new LocalStrategy(
-        function(username, password, done) {
+        function (username, password, done) {
             // asynchronous verification, for effect...
-            process.nextTick(function() {
+            process.nextTick(function () {
                 user = false;
                 //----hash passwrod
                 shasum = crypto.createHash('sha1');
@@ -131,7 +133,7 @@ passport.use(new LocalStrategy(
             });
         }
 ));
-saveFnameInSession = function(req, res, next) {
+saveFnameInSession = function (req, res, next) {
     if (req.body.fname) {
         req.session.fname = req.body.fname;
     }
@@ -153,7 +155,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 // configure Express
-app.configure(function() {
+app.configure(function () {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'ejs');
     if (config.enableLog)
@@ -169,10 +171,10 @@ app.configure(function() {
     app.use(app.router);
     app.use(express.static(__dirname + '/../../public'));
 });
-app.get('/account', ensureAuthenticated, function(req, res) {
+app.get('/account', ensureAuthenticated, function (req, res) {
     res.render('account', {user: req.user});
 });
-app.get('/login', function(req, res) {
+app.get('/login', function (req, res) {
 
     res.render('login', {
         user: req.user,
@@ -188,7 +190,7 @@ app.post('/auth/google',
         //---save fname in session if posted
         saveFnameInSession,
         passport.authenticate('google', {failureRedirect: '/login'}),
-        function(req, res) {
+        function (req, res) {
             res.redirect('/');
         }
 );
@@ -199,7 +201,7 @@ app.post('/auth/google',
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/google/return',
         passport.authenticate('google', {failureRedirect: '/login'}),
-        function(req, res) {
+        function (req, res) {
             req.user = req.user || {};
             res.cookie("_username", req.user.emails[0].value);
             console.log("say hello to new user: " + req.user.displayName + ' knwon as:' + req.user.emails[0].value);
@@ -223,7 +225,7 @@ app.post('/auth/simple',
 //---save fname in session if posted
         saveFnameInSession,
         passport.authenticate('local', {failureRedirect: '/login', failureFlash: true}),
-        function(req, res) {
+        function (req, res) {
             req.user = req.user || {};
             req.session.user = user;
             res.cookie("_username", req.user.emails[0].value);
@@ -233,7 +235,7 @@ app.post('/auth/simple',
             querystring = urlSetup(req);
             res.redirect('/' + querystring);
         });
-app.get('/logout', function(req, res) {
+app.get('/logout', function (req, res) {
     req.logout();
     res.redirect('/');
 });
@@ -244,11 +246,11 @@ app.use(staticProvider); // this is where static files will be served (html, css
 // ------------------------------------------------
 // ------------------------------------------------
 
-app.get('/', ensureAuthenticated, function(req, res, next) {
+app.get('/', ensureAuthenticated, function (req, res, next) {
     req.url = "index.html";
     staticProvider(req, res, next);
 });
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     if (req.user) {
         req.user = req.user || {};
         res.cookie("_username", req.user.emails[0].value);
@@ -297,12 +299,12 @@ function dirTree(filename, projectRoot) {
             if (path.basename(filename)[0] !== '.' || showDotFolders) {
                 info.type = "folder";
                 //info.id=info.id+'/';
-                info.children = fs.readdirSync(filename).map(function(child) {
+                info.children = fs.readdirSync(filename).map(function (child) {
                     scan = filename + '/' + child, projectRoot
                     scan = scan.replace('//', '/');
                     return dirTree(scan, projectRoot);
                 });
-                info.children = info.children.filter(function(n) {
+                info.children = info.children.filter(function (n) {
                     if (n)
                         return n;
                 });
@@ -323,7 +325,7 @@ function dirTree(filename, projectRoot) {
     }
 }
 
-app.get("/getFileTree", ensureAuthenticated, function(req, res) {
+app.get("/getFileTree", ensureAuthenticated, function (req, res) {
     if (req.query.project && req.query.project.length > 2) {
         var project = req.query.project.replace(/\.\./g, "");
         var projectRoot = EDITABLE_APPS_DIR + project;
@@ -348,7 +350,7 @@ app.get("/getFileTree", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.get("/getProjectsTree", ensureAuthenticated, function(req, res) {
+app.get("/getProjectsTree", ensureAuthenticated, function (req, res) {
     if (req) {
         var projects_copy = readProjects();
         var p = {
@@ -382,7 +384,7 @@ app.get("/getProjectsTree", ensureAuthenticated, function(req, res) {
         res.send('[' + JSON.stringify(p) + ']');
     }
 });
-app.post("/launchProject", ensureAuthenticated, function(req, res) {
+app.post("/launchProject", ensureAuthenticated, function (req, res) {
     if (!ENABLE_LAUNCH) {
         res.send("FAIL: Sorry, but launching projects is not currently enabled.");
         return;
@@ -398,7 +400,7 @@ app.post("/launchProject", ensureAuthenticated, function(req, res) {
             killSignal: 'SIGTERM',
             env: null
         },
-        function(error, stdout, stderr) {
+        function (error, stdout, stderr) {
             if (error !== null) {
                 console.log('exec error: ' + error);
                 // return res.send("FAIL:");
@@ -411,7 +413,7 @@ app.post("/launchProject", ensureAuthenticated, function(req, res) {
                 killSignal: 'SIGTERM',
                 env: null
             },
-            function(error, stdout, stderr) {
+            function (error, stdout, stderr) {
                 if (error !== null) {
                     console.log('exec error: ' + error);
                     return res.send("FAIL:");
@@ -428,7 +430,7 @@ app.post("/launchProject", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project name.");
     }
 });
-app.post("/createFile", ensureAuthenticated, function(req, res) {
+app.post("/createFile", ensureAuthenticated, function (req, res) {
     console.log("CREATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -444,7 +446,7 @@ app.post("/createFile", ensureAuthenticated, function(req, res) {
             return res.send("FAIL: File already exists. No need to create it.");
         } catch (ex) {
             console.log("file doesn't exist yet. creating it: " + path);
-            fs.writeFile(path, "", function(err) {
+            fs.writeFile(path, "", function (err) {
                 if (err) {
                     console.log(err);
                     return res.send("FAIL: Error creating new file.");
@@ -459,7 +461,7 @@ app.post("/createFile", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/deleteFile", ensureAuthenticated, function(req, res) {
+app.post("/deleteFile", ensureAuthenticated, function (req, res) {
     console.log("DELETE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -476,7 +478,7 @@ app.post("/deleteFile", ensureAuthenticated, function(req, res) {
         try {
             fs.realpathSync(path);
             console.log("file exists.. delete it: " + path);
-            fs.unlink(path, function(err) {
+            fs.unlink(path, function (err) {
                 if (err) {
                     console.log(err);
                     return res.send("FAIL: could not delete file.");
@@ -491,7 +493,7 @@ app.post("/deleteFile", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/renameFile", ensureAuthenticated, function(req, res) {
+app.post("/renameFile", ensureAuthenticated, function (req, res) {
     console.log("RENAME FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -517,7 +519,7 @@ app.post("/renameFile", ensureAuthenticated, function(req, res) {
             } catch (ex2) {
                 // ok, all set!
                 //console.log("all set to rename file: " + pathA + " >> " + pathB);
-                fs.rename(pathA, pathB, function(err) {
+                fs.rename(pathA, pathB, function (err) {
                     if (err) {
                         console.log(err);
                         return res.send("FAIL: Error renaming file.");
@@ -534,7 +536,7 @@ app.post("/renameFile", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.post("/duplicateFile", ensureAuthenticated, function(req, res) {
+app.post("/duplicateFile", ensureAuthenticated, function (req, res) {
     console.log("DUPLICATE FILE [" + req.user.displayName + "]");
     if (req.query.project && req.query.project.length > 2 && req.body.fname && req.body.newfname) {
         var projectName = req.query.project.replace(/\.\./g, "");
@@ -561,7 +563,7 @@ app.post("/duplicateFile", ensureAuthenticated, function(req, res) {
                 // ok, all set!
                 var is = fs.createReadStream(pathA);
                 var os = fs.createWriteStream(pathB);
-                util.pump(is, os, function(err) {
+                util.pump(is, os, function (err) {
                     if (err) {
                         console.log(err);
                         return res.send("FAIL: Error duplicating file.");
@@ -578,7 +580,7 @@ app.post("/duplicateFile", ensureAuthenticated, function(req, res) {
         res.send("FAIL: no project and/or filename.");
     }
 });
-app.get("/allUsersEditingProjectsIFrame", ensureAuthenticated, function(req, res) {
+app.get("/allUsersEditingProjectsIFrame", ensureAuthenticated, function (req, res) {
     var html = "<html></head><script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script><head><body><script>";
     //html += "var u = "+JSON.stringify(nowUsersList)+";";
     html += "function receiveMessage(event){var o = event.origin; var p = parent; $.get('/allUsersEditingProjects', function(data){p.postMessage(JSON.parse(data), o);});};";
@@ -586,10 +588,10 @@ app.get("/allUsersEditingProjectsIFrame", ensureAuthenticated, function(req, res
     html += "</script></body></html>";
     res.send(html);
 });
-app.get("/allUsersEditingProjects", ensureAuthenticated, function(req, res) {
+app.get("/allUsersEditingProjects", ensureAuthenticated, function (req, res) {
     var nowUsers = everyone.users || {}; //nowjs.server.connected || {};
     var nowUsersList = [];
-    _.each(nowUsers, function(val, name) {
+    _.each(nowUsers, function (val, name) {
         var u = (val || {}).user || {};
         var a = u.about || {};
         a.grouplist = u.grouplist;
@@ -614,7 +616,7 @@ var localFileIsMostRecent = []; // an array of flags indicating if the file has 
 //var nowcollab = require("../CHAOS/nowcollab");
 //nowcollab.initialize(nowjs, everyone, true);
 //-------------------------------------------
-nowjs.on('connect', function() {
+nowjs.on('connect', function () {
     console.log("CONNECT    > " + this.user.clientId);
     this.user.teamID = teamID;
     if (this.now.teamID != undefined) {
@@ -627,9 +629,9 @@ nowjs.on('connect', function() {
     var self = this;
     if (this.user.cookie && this.user.cookie['connect.sid']) {
         var sid = decodeURIComponent(this.user.cookie['connect.sid']).slice(2, 26);
-        sessionStore.get(sid, function(err, session) {
+        sessionStore.get(sid, function (err, session) {
             if (session) {
-                passport.deserializeUser(session.passport.user, function(err, user) {
+                passport.deserializeUser(session.passport.user, function (err, user) {
                     if (!now_user[self.user.clientId]) {
                         self.user = _.extend(self.user, user);
                         now_user[self.user.clientId] = self.user;
@@ -649,7 +651,7 @@ nowjs.on('connect', function() {
  * This function regiter the user data from the saved session
  * @returns {undefined}
  */
-everyone.now.s_user_register = function(teamID) {
+everyone.now.s_user_register = function (teamID) {
     this.user.teamID = teamID;
     if (this.now.teamID != undefined) {
         this.user.teamID = this.now.teamID;
@@ -672,7 +674,7 @@ everyone.now.s_user_register = function(teamID) {
     }
 }
 
-nowjs.on('disconnect', function() {
+nowjs.on('disconnect', function () {
 //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.user.about.name+" <"+this.user.about.email+">"); 
 //console.log("DISCONNECT > "+this.user.clientId+" >> "+this.now.name); 
 //---cleanup presence
@@ -697,7 +699,7 @@ nowjs.on('disconnect', function() {
 });
 //---------
 // NOW: Remote collab messages.
-everyone.now.s_updateTree = function() {
+everyone.now.s_updateTree = function () {
     for (var fname in groupFilesUsers) {
         if (fname != '') {
             if (groupFilesUsers[fname])
@@ -705,7 +707,7 @@ everyone.now.s_updateTree = function() {
         }
     }
 }
-everyone.now.s_setActiveProject = function(pname) {
+everyone.now.s_setActiveProject = function (pname) {
     clientId = this.now.clientId;
     if (!pname) {
         var pathExploded = projects[0].path.split('/');
@@ -713,7 +715,7 @@ everyone.now.s_setActiveProject = function(pname) {
     }
     this.now.c_setTeamID(pname);
 }
-everyone.now.s_setTeamID = function(val) {
+everyone.now.s_setTeamID = function (val) {
     this.user.teamID = val;
     clientId = this.now.clientId;
     addUserToGroup(this.user, this.user.teamID);
@@ -728,20 +730,20 @@ everyone.now.s_setTeamID = function(val) {
         }
     }
 }
-everyone.now.s_sendCursorUpdate = function(fname, range, changedByUser) {
+everyone.now.s_sendCursorUpdate = function (fname, range, changedByUser) {
     var userObj = this.user;
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     //console.log(filegroup);
     filegroup.now.c_updateCollabCursor(this.user.clientId, this.now.name, range, changedByUser, fname);
 };
-everyone.now.s_sendDiffPatchesToCollaborators = function(fname, patches, crc32) {
+everyone.now.s_sendDiffPatchesToCollaborators = function (fname, patches, crc32) {
     var userObj = this.user;
     localFileIsMostRecent[userObj.teamID + "/" + fname] = false; // mark file as changed.
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
     filegroup.now.c_updateWithDiffPatches(this.user.clientId, patches, crc32, fname);
 };
 // NOW: Remote file tools.
-everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileRequesterCallback) {
+everyone.now.s_getLatestFileContentsAndJoinFileGroup = function (fname, fileRequesterCallback) {
     var callerID = this.user.clientId;
     var userObj = this.user;
     addUserToFileGroup(userObj, fname);
@@ -752,13 +754,13 @@ everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileReque
     } else {
         console.log("FILE FETCH (passed to user): " + userObj.teamID + " >> " + fname + ", by user: " + callerID);
         var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
-        var users = filegroup.getUsers(function(users) {
+        var users = filegroup.getUsers(function (users) {
             var foundUser = false;
             for (var i = 0; i < users.length; i++) {
                 if (users[i] != callerID) {
                     // this looks like a valid user to get the file from. :)
                     console.log("Trying to get file from: " + users[i]);
-                    nowjs.getClient(users[i], function() {
+                    nowjs.getClient(users[i], function () {
                         if (this.now === undefined) {
                             console.log("Undefined clientId for requestFullFileFromUserID (using local) >> " + users[i]);
                             localFileFetch(userObj, fname, fileRequesterCallback);
@@ -777,19 +779,19 @@ everyone.now.s_getLatestFileContentsAndJoinFileGroup = function(fname, fileReque
         });
     }
 };
-everyone.now.s_saveUserFileContentsToServer = function(fname, fcontents, fileSaverCallback) {
+everyone.now.s_saveUserFileContentsToServer = function (fname, fcontents, fileSaverCallback) {
     localFileSave(this.user, fname, fcontents, fileSaverCallback);
 };
 //-------
 // get rid of this is possible...
-everyone.now.s_requestFullFileFromUserID = function(fname, id, fileRequesterCallback) {
+everyone.now.s_requestFullFileFromUserID = function (fname, id, fileRequesterCallback) {
     var callerID = this.user.clientId;
     var userObj = this.user;
     var filegroup = nowjs.getGroup(userObj.teamID + "/" + fname);
-    filegroup.hasClient(id, function(bool) {
+    filegroup.hasClient(id, function (bool) {
         if (bool) {
             //console.log("requesting full file. valid filegroup. :)");
-            nowjs.getClient(id, function() {
+            nowjs.getClient(id, function () {
                 if (this.now === undefined) {
                     console.log("Undefined clientId for requestFullFileFromUserID >> " + id);
                 } else {
@@ -800,14 +802,14 @@ everyone.now.s_requestFullFileFromUserID = function(fname, id, fileRequesterCall
     });
 };
 //-------
-everyone.now.s_teamMessageBroadcast = function(type, message) {
+everyone.now.s_teamMessageBroadcast = function (type, message) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
     var scope = "team";
     var fromUserId = this.user.clientId;
     var fromUserName = this.now.name;
     teamgroup.now.c_processMessage(scope, type, message, fromUserId, fromUserName);
 };
-everyone.now.s_enterFile = function(fname) {
+everyone.now.s_enterFile = function (fname) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
     var scope = "team";
     var fromUserId = this.user.clientId;
@@ -815,24 +817,24 @@ everyone.now.s_enterFile = function(fname) {
     addUserToFileGroup(this.user, fname);
     teamgroup.now.c_processMessage(scope, 'type', "opened:" + fname, fromUserId, fromUserName);
 };
-everyone.now.s_leaveFile = function(fname) {
+everyone.now.s_leaveFile = function (fname) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
     var fromUserId = this.user.clientId;
     removeUserFromFileGroup(this.user, fname);
 };
-everyone.now.s_sendUserEvent = function(event) {
+everyone.now.s_sendUserEvent = function (event) {
     var teamgroup = nowjs.getGroup(this.user.teamID);
     var fromUserId = this.user.clientId;
     var fromUserName = this.now.name;
     teamgroup.now.c_processUserEvent(event, fromUserId, fromUserName);
 };
 //-------
-everyone.now.s_getAllProjectsFiles = function(callback) {
+everyone.now.s_getAllProjectsFiles = function (callback) {
     var team = this.user.teamID;
     var projectRoot = EDITABLE_APPS_DIR + team;
     var walker = walk.walk(projectRoot, {followLinks: false});
     var filesAndInfo = [];
-    walker.on("names", function(root, nodeNamesArray) {
+    walker.on("names", function (root, nodeNamesArray) {
         // use this to remove/sort files before doing the more expensive "stat" operation.
         //console.log(root + " / " + nodeNamesArray);
         for (var i = nodeNamesArray.length - 1; i >= 0; i--) {
@@ -841,7 +843,7 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
             }
         }
     });
-    walker.on("file", function(root, fileStats, next) {
+    walker.on("file", function (root, fileStats, next) {
         var rt = root.substring(projectRoot.length + 1);
         if (rt.length > 0) {
             rt += "/";
@@ -861,7 +863,7 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
         }
         next();
     });
-    walker.on("end", function() {
+    walker.on("end", function () {
         console.log("Recursively listed project files for: " + team);
         // indicate total team members online.
         var n = usersInGroup[team];
@@ -873,16 +875,16 @@ everyone.now.s_getAllProjectsFiles = function(callback) {
         callback(null, filesAndInfo);
     });
 };
-everyone.now.s_createNewFolder = function(newFoldername, fileCreatorCallback) {
+everyone.now.s_createNewFolder = function (newFoldername, fileCreatorCallback) {
     localFolderCreate(this.user, newFoldername, fileCreatorCallback);
 };
-everyone.now.s_deleteFolder = function(newFoldername, fileCreatorCallback) {
+everyone.now.s_deleteFolder = function (newFoldername, fileCreatorCallback) {
     localFolderDelete(this.user, newFoldername, fileCreatorCallback);
 };
-everyone.now.s_createNewFile = function(newFilename, fileCreatorCallback) {
+everyone.now.s_createNewFile = function (newFilename, fileCreatorCallback) {
     localFileCreate(this.user, newFilename, fileCreatorCallback);
 };
-everyone.now.s_deleteFile = function(fname, fileDeleterCallback) {
+everyone.now.s_deleteFile = function (fname, fileDeleterCallback) {
     var usersInFile = usersInGroup[this.user.teamID + fname];
     if (usersInFile === undefined || usersInFile === 0) {
         localFileDelete(this.user, fname, fileDeleterCallback);
@@ -891,7 +893,7 @@ everyone.now.s_deleteFile = function(fname, fileDeleterCallback) {
         fileCallback(fname, ["Cannot delete file. There are users in it!"]);
     }
 };
-everyone.now.s_renameFile = function(fname, newFName, fileRenamerCallback) {
+everyone.now.s_renameFile = function (fname, newFName, fileRenamerCallback) {
     var usersInFile = usersInGroup[this.user.teamID + fname];
     if (usersInFile === undefined || usersInFile === 0) {
         localFileRename(this.user, fname, newFName, fileRenamerCallback);
@@ -900,15 +902,15 @@ everyone.now.s_renameFile = function(fname, newFName, fileRenamerCallback) {
         fileCallback(fname, ["Cannot rename file. There are users in it!"]);
     }
 };
-everyone.now.s_duplicateFile = function(fname, newFName, fileDuplicatorCallback) {
+everyone.now.s_duplicateFile = function (fname, newFName, fileDuplicatorCallback) {
     localFileDuplicate(this.user, fname, newFName, fileDuplicatorCallback);
 };
 //---GIT Related Functions
-everyone.now.s_git_init = function(Calback) {
+everyone.now.s_git_init = function (Calback) {
     var team = this.user.teamID;
     console.log("git init project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
-    var repo = git.init(teamProjGitPath, function(err, repo) {
+    var repo = git.init(teamProjGitPath, function (err, repo) {
         if (err) {
             Calback(err);
         } else {
@@ -916,7 +918,7 @@ everyone.now.s_git_init = function(Calback) {
         }
     });
 }
-everyone.now.s_git_status = function(Calback) {
+everyone.now.s_git_status = function (Calback) {
     var team = this.user.teamID;
     console.log("git status project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -925,7 +927,7 @@ everyone.now.s_git_status = function(Calback) {
     var err = null
     repo.status(Calback);
 }
-everyone.now.s_git_sync = function(Callback) {
+everyone.now.s_git_sync = function (Callback) {
     var team = this.user.teamID;
     console.log("git status project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -935,38 +937,38 @@ everyone.now.s_git_sync = function(Callback) {
     repo.sync(Callback);
 }
 
-everyone.now.s_git_remove = function(paths, Calback) {
+everyone.now.s_git_remove = function (paths, Calback) {
     var team = this.user.teamID;
     console.log("remove from git: project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
-    repo.remove(paths, function(err) {
+    repo.remove(paths, function (err) {
         Calback(err);
     });
 }
-everyone.now.s_git_add = function(paths, Calback) {
+everyone.now.s_git_add = function (paths, Calback) {
     var team = this.user.teamID;
     console.log("Add:" + team);
     console.log("paths:");
     console.log(paths);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
-    repo.add(paths, function(err) {
+    repo.add(paths, function (err) {
         console.log('s_git_add', err);
         Calback(err);
     });
 }
-everyone.now.s_git_checkout = function(paths, Calback) {
+everyone.now.s_git_checkout = function (paths, Calback) {
     var team = this.user.teamID;
     console.log("checkout project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
     var repo = git(teamProjGitPath);
-    repo.checkout(paths, function(err) {
+    repo.checkout(paths, function (err) {
         Calback(err);
     });
 }
 
-everyone.now.s_git_branch = function(Calback) {
+everyone.now.s_git_branch = function (Calback) {
     var team = this.user.teamID;
     console.log("git branch... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -975,7 +977,7 @@ everyone.now.s_git_branch = function(Calback) {
     repo.branch(Calback);
 }
 
-everyone.now.s_git_commit = function(txt, paths, Calback) {
+everyone.now.s_git_commit = function (txt, paths, Calback) {
     var team = this.user.teamID;
     console.log("committing project... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
@@ -987,34 +989,34 @@ everyone.now.s_git_commit = function(txt, paths, Calback) {
             paths[i] = './';
     }
 
-    repo.add(paths, function(err) {
+    repo.add(paths, function (err) {
         if (err) {
             console.log('s_git_ciommit-> add', err);
             Calback(err);
         }
     });
-    repo.identify({name: this.user.about.name, email: this.user.about.email}, function(err) {
+    repo.identify({name: this.user.about.name, email: this.user.about.email}, function (err) {
         if (err) {
             console.log('s_git_ciommit-> identify', err);
             Calback(err);
         }
     });
-    repo.commit(safeMsg, {}, function(err) {
+    repo.commit(safeMsg, {}, function (err) {
         if (err) {
             console.log('s_git_ciommit-> commit', err);
         }
         Calback(err);
     });
 };
-everyone.now.s_git_fetchCommits = function(fetcherCallback) {
+everyone.now.s_git_fetchCommits = function (fetcherCallback) {
     var team = this.user.teamID;
     console.log("fetching project commits... >> " + team);
     var teamProjGitPath = EDITABLE_APPS_DIR + team;
-    localRepoFetchGitLog(this.user, teamProjGitPath, "", function(err, gitlog) {
+    localRepoFetchGitLog(this.user, teamProjGitPath, "", function (err, gitlog) {
         if (err) {
             console.log(err);
             if (err && err[0] && err[0].indexOf("Not a git repository") > 0) {
-                localRepoInitBare(teamProjGitPath, function(err) {
+                localRepoInitBare(teamProjGitPath, function (err) {
                     if (err) {
                         console.log("ERROR INITITIALIZING GIT REPO.");
                     } else {
@@ -1031,7 +1033,7 @@ everyone.now.s_git_fetchCommits = function(fetcherCallback) {
 //    console.log("DEPLOYING Project >> " + team);
 //    localProjectDeploy(this.user, deployerCallback);
 //};
-everyone.now.s_project_delete = function(project, deleteCallback) {
+everyone.now.s_project_delete = function (project, deleteCallback) {
     //---Check that the user is an Admin
     if (!this.user.isAdmin) {
         this.now.c_showMsg('Project Delete ', 'Only Admin can delete projects', 'error', null);
@@ -1049,7 +1051,7 @@ everyone.now.s_project_delete = function(project, deleteCallback) {
     console.log('Deleted Project:' + project.name);
     writeJSON('/config/projects.json', projects, deleteCallback);
 }
-everyone.now.s_project_save = function(project, createCallback) {
+everyone.now.s_project_save = function (project, createCallback) {
     //---Check that the user is an Admin
     if (!this.user.isAdmin) {
         this.now.c_showMsg('Project Save', 'Only Admins can save/add Projects', 'error', null);
@@ -1076,7 +1078,7 @@ everyone.now.s_project_save = function(project, createCallback) {
     }
     writeJSON('/config/projects.json', projects, createCallback);
 }
-everyone.now.s_user_save = function(user, project, createCallback) {
+everyone.now.s_user_save = function (user, project, createCallback) {
     //---Check that the user is an Admin
     if (!this.user.isAdmin) {
         this.now.c_showMsg('User Save', 'Only Admin can save modifications', 'error', null);
@@ -1120,7 +1122,7 @@ everyone.now.s_user_save = function(user, project, createCallback) {
     }
     writeJSON('/config/projects.json', projects, createCallback);
 }
-everyone.now.s_user_delete = function(user, project, deleteCallback) {
+everyone.now.s_user_delete = function (user, project, deleteCallback) {
     //---Check that the user is an Admin
     if (!this.user.isAdmin) {
         this.now.c_showMsg('User Delete ', 'Only Admin can delete users', 'error', null);
@@ -1155,7 +1157,7 @@ everyone.now.s_user_delete = function(user, project, deleteCallback) {
 function writeJSON(file, data, callback) {
     try {
         var data = JSON.stringify(data);
-        fs.writeFile(baseDir + file, data, function(err) {
+        fs.writeFile(baseDir + file, data, function (err) {
             if (err) {
                 console.log('There has been an error saving your configuration data.');
                 console.log(err.message);
@@ -1204,7 +1206,7 @@ function localRepoInitBare(gitRepoPath, paths, callback) {
         killSignal: 'SIGTERM',
         cwd: gitRepoPath,
         env: null
-    }, function(error, stdout, stderr) {
+    }, function (error, stdout, stderr) {
         if (error !== null) {
             console.log('git init exec error: ' + error);
         }
@@ -1224,7 +1226,7 @@ function localRepoCommit(userObj, gitRepoPath, message, callback) {
         killSignal: 'SIGTERM',
         cwd: gitRepoPath,
         env: null
-    }, function(error, stdout, stderr) {
+    }, function (error, stdout, stderr) {
         if (error !== null) {
             console.log('exec error: ' + error);
         } else {
@@ -1256,7 +1258,7 @@ function localRepoFetchGitLog(userObj, gitRepoPath, fname, fetcherCallback) {
         cwd: gitRepoPath,
         env: null
     },
-    function(error, stdout, stderr) {
+    function (error, stdout, stderr) {
         if (error !== null) {
             console.log('exec error: ' + error);
             if (fetcherCallback) {
@@ -1440,7 +1442,7 @@ var fileTodoCache = {};
 var fileFixMeCache = {};
 function localFileFetch(userObj, fname, fileRequesterCallback) {
     var team = userObj.teamID;
-    fs.readFile(EDITABLE_APPS_DIR + team + "/" + fname, "utf-8", function(err, data) {
+    fs.readFile(EDITABLE_APPS_DIR + team + "/" + fname, "utf-8", function (err, data) {
         if (err) {
             console.warn("couldn't open: " + team + "/" + fname);
         }
@@ -1449,7 +1451,7 @@ function localFileFetch(userObj, fname, fileRequesterCallback) {
 }
 function localFileSave(userObj, fname, fcontents, fileSaverCallback) {
     var team = userObj.teamID;
-    fs.writeFile(EDITABLE_APPS_DIR + team + "/" + fname, fcontents, function(err) {
+    fs.writeFile(EDITABLE_APPS_DIR + team + "/" + fname, fcontents, function (err) {
         if (err) {
             console.log(err);
         } else {
@@ -1483,7 +1485,7 @@ function localFolderCreate(userObj, fname, fileCreatorCallback) {
     } catch (ex) {
         console.log("file doesn't exist yet. creating it: " + path);
         try {
-            fs.mkdir(path, '644', function(err) {
+            fs.mkdir(path, '644', function (err) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -1511,7 +1513,7 @@ function localFolderDelete(userObj, fname, folderDeleterCallback) {
     try {
         fs.realpathSync(path);
         console.log("all set to delete folder: " + path);
-        fs.rmdir(path, function(err) {
+        fs.rmdir(path, function (err) {
             if (err)
                 throw err;
             console.log("successfully deleted: " + path);
@@ -1539,7 +1541,7 @@ function localFileCreate(userObj, fname, fileCreatorCallback) {
         fileCreatorCallback(safeFName, ["File already exists. No need to create it."]);
     } catch (ex) {
         console.log("file doesn't exist yet. creating it: " + path);
-        fs.writeFile(path, "", function(err) {
+        fs.writeFile(path, "", function (err) {
             if (err) {
                 console.log(err);
             } else {
@@ -1565,7 +1567,7 @@ function localFileDelete(userObj, fname, fileDeleterCallback) {
     try {
         fs.realpathSync(path);
         console.log("all set to delete file: " + path);
-        fs.unlink(path, function(err) {
+        fs.unlink(path, function (err) {
             if (err)
                 throw err;
             console.log("successfully deleted: " + path);
@@ -1598,7 +1600,7 @@ function localFileRename(userObj, fname, newFName, fileRenamerCallback) {
         } catch (ex2) {
             // ok, all set!
             console.log("all set to rename file: " + pathA + " >> " + pathB);
-            fs.rename(pathA, pathB, function(err) {
+            fs.rename(pathA, pathB, function (err) {
                 if (err)
                     throw err;
                 console.log("successfully renamed file: " + pathA + " >> " + pathB);
@@ -1634,7 +1636,7 @@ function localFileDuplicate(userObj, fname, newFName, fileDuplicatorCallback) {
             console.log("all set to duplicate file: " + pathA + " >> " + pathB);
             var is = fs.createReadStream(pathA);
             var os = fs.createWriteStream(pathB);
-            util.pump(is, os, function(err) {
+            util.pump(is, os, function (err) {
                 if (err)
                     throw err;
                 console.log("successfully duplicated file: " + pathA + " >> " + pathB);
@@ -1665,7 +1667,7 @@ function localProjectDeploy(userObj, deployerCallback) {
         killSignal: 'SIGTERM',
         env: null
     },
-    function(error, stdout, stderr) {
+    function (error, stdout, stderr) {
         if (error !== null) {
             console.log('exec error: ' + error);
         }
@@ -1677,18 +1679,18 @@ function localProjectDeploy(userObj, deployerCallback) {
             killSignal: 'SIGTERM',
             env: null
         },
-        function(error, stdout, stderr) {
+        function (error, stdout, stderr) {
             if (error !== null) {
                 console.log('exec error: ' + error);
             }
             var launchURL = "http://" + userObj.teamID + ".chaoscollective.org/";
             console.log("START: " + stdout);
             console.log("DEPLOY SUCCESSFUL: " + launchURL);
-            setTimeout(function() {
+            setTimeout(function () {
                 var teamgroup = nowjs.getGroup(team);
                 teamgroup.now.c_processUserFileEvent("", "launchProject", fromUserId, 0);
             }, 50);
-            setTimeout(function() {
+            setTimeout(function () {
                 deployerCallback(null, launchURL);
             }, 1500);
         }
@@ -1737,7 +1739,7 @@ function localProjectDeploy(userObj, deployerCallback) {
 //
 // UTF-8 data encode/decode: http://www.webtoolkit.info/
 var Utf8 = {
-    encode: function(string) { // public method for url encoding
+    encode: function (string) { // public method for url encoding
         string = string.replace(/\r\n/g, "\n");
         var utftext = "";
         for (var n = 0; n < string.length; n++) {
@@ -1757,7 +1759,7 @@ var Utf8 = {
         }
         return utftext;
     },
-    decode: function(utftext) { // public method for url decoding
+    decode: function (utftext) { // public method for url decoding
         var string = "";
         var i = 0;
         var c = c1 = c2 = 0;

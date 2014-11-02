@@ -60,23 +60,23 @@ function BroadcastKeydown(event) {
             if (txt.length == 1) {
                 switch (txt.toLowerCase()) {
                     case "f":
-                        {
-                            followMe();
-                            usedAsCommand = true;
-                            break;
-                        }
+                    {
+                        followMe();
+                        usedAsCommand = true;
+                        break;
+                    }
                     case "l":
-                        {
-                            toggleLog();
-                            usedAsCommand = true;
-                            break;
-                        }
+                    {
+                        toggleLog();
+                        usedAsCommand = true;
+                        break;
+                    }
                     case "o":
-                        {
-                            toggleLogOutput();
-                            usedAsCommand = true;
-                            break;
-                        }
+                    {
+                        toggleLogOutput();
+                        usedAsCommand = true;
+                        break;
+                    }
                 }
             }
             if (!usedAsCommand) {
@@ -99,11 +99,11 @@ function followMe(fname) {
 }
 function addCollaborator(userId, fromUserName, color) {
     if (userId && fromUserName && !Ext.get(userId) && userId !== now.core.clientId) {
-
-        avatar = '<div class="avatar"><img src="http://s3-us-west-2.amazonaws.com/s.cdpn.io/3/profile/profile-80_20.jpg"/></div>';
-        avatar = '<div class="avatar" style="background-color:' + color + '"></div>';
-        timeStamp = '<time datetime="' + Date() + '">' + fromUserName + '</time>';
-        Ext.get('contact-ol').createChild('<li id="' + userId + '" class="other">' + avatar + ' <div class="contact">' + timeStamp + '</div></li>');
+        Ext.getCmp('TeamTree').getRootNode().appendChild({
+            id:userId,
+            name:fromUserName,
+            color:color
+        });
     }
 }
 function removeCollaborator(userId) {
@@ -328,7 +328,7 @@ var patchingInProcess = false;
 var dmp = new diff_match_patch();
 dmp.Diff_Timeout = 1;
 dmp.Diff_EditCost = 4;
-var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
+var updateWithDiffPatchesLocal = function (id, patches, md5, fname) {
     tab = Ext.getCmp('filetabs').child('[path=' + fname + ']');
     editor = tab.getEditor();
     if (patchingInProcess) {
@@ -368,68 +368,68 @@ var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
             //console.log(type + " >> " + data);
             switch (type) {
                 case "=":
-                    { // equals for number of characters.
-                        var sameLen = parseInt(data);
-                        for (var j = 0; j < sameLen; j++) {
-                            if (currentText.charAt(offset + j) == "\n") {
-                                row++;
-                                col = 1;
-                            } else {
-                                col++;
-                            }
+                { // equals for number of characters.
+                    var sameLen = parseInt(data);
+                    for (var j = 0; j < sameLen; j++) {
+                        if (currentText.charAt(offset + j) == "\n") {
+                            row++;
+                            col = 1;
+                        } else {
+                            col++;
                         }
-                        offset += sameLen;
-                        break;
                     }
+                    offset += sameLen;
+                    break;
+                }
                 case "+":
-                    { // add string.
-                        var newLen = data.length;
-                        //console.log("at row="+row+" col="+col+" >> " + data);
-                        var aceDelta = {
-                            action: "insertText",
-                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (row - 1), column: (col - 1)}}, //Range.fromPoints(position, end),
-                            text: data
-                        };
-                        aceDeltas.push(aceDelta);
-                        var innerRows = data.split("\n");
-                        var innerRowsCount = innerRows.length - 1;
-                        row += innerRowsCount;
-                        if (innerRowsCount <= 0) {
-                            col += data.length;
-                        } else {
-                            col = innerRows[innerRowsCount].length + 1;
-                        }
-                        //console.log("ended at row="+row+" col="+col);
-                        break;
+                { // add string.
+                    var newLen = data.length;
+                    //console.log("at row="+row+" col="+col+" >> " + data);
+                    var aceDelta = {
+                        action: "insertText",
+                        range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (row - 1), column: (col - 1)}}, //Range.fromPoints(position, end),
+                        text: data
+                    };
+                    aceDeltas.push(aceDelta);
+                    var innerRows = data.split("\n");
+                    var innerRowsCount = innerRows.length - 1;
+                    row += innerRowsCount;
+                    if (innerRowsCount <= 0) {
+                        col += data.length;
+                    } else {
+                        col = innerRows[innerRowsCount].length + 1;
                     }
+                    //console.log("ended at row="+row+" col="+col);
+                    break;
+                }
                 case "-":
-                    { // subtract number of characters.
-                        var delLen = parseInt(data);
-                        //console.log("at row="+row+" col="+col+" >> " + data);
-                        var removedData = currentText.substring(offset, offset + delLen);
-                        //console.log("REMOVING: " + removedData);
-                        var removedRows = removedData.split("\n");
-                        //console.log(removedRows);
-                        var removedRowsCount = removedRows.length - 1;
-                        //console.log("removed rows count: " + removedRowsCount);
-                        var endRow = row + removedRowsCount;
-                        var endCol = col;
-                        if (removedRowsCount <= 0) {
-                            endCol = col + delLen;
-                        } else {
-                            endCol = removedRows[removedRowsCount].length + 1;
-                        }
-                        //console.log("end delete selection at row="+endRow+" col="+endCol);
-                        var aceDelta = {
-                            action: "removeText",
-                            range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (endRow - 1), column: (endCol - 1)}}, //Range.fromPoints(position, end),
-                            text: data
-                        };
-                        aceDeltas.push(aceDelta);
-                        //console.log("ended at row="+row+" col="+col);      
-                        offset += delLen;
-                        break;
+                { // subtract number of characters.
+                    var delLen = parseInt(data);
+                    //console.log("at row="+row+" col="+col+" >> " + data);
+                    var removedData = currentText.substring(offset, offset + delLen);
+                    //console.log("REMOVING: " + removedData);
+                    var removedRows = removedData.split("\n");
+                    //console.log(removedRows);
+                    var removedRowsCount = removedRows.length - 1;
+                    //console.log("removed rows count: " + removedRowsCount);
+                    var endRow = row + removedRowsCount;
+                    var endCol = col;
+                    if (removedRowsCount <= 0) {
+                        endCol = col + delLen;
+                    } else {
+                        endCol = removedRows[removedRowsCount].length + 1;
                     }
+                    //console.log("end delete selection at row="+endRow+" col="+endCol);
+                    var aceDelta = {
+                        action: "removeText",
+                        range: {start: {row: (row - 1), column: (col - 1)}, end: {row: (endRow - 1), column: (endCol - 1)}}, //Range.fromPoints(position, end),
+                        text: data
+                    };
+                    aceDeltas.push(aceDelta);
+                    //console.log("ended at row="+row+" col="+col);      
+                    offset += delLen;
+                    break;
+                }
             }
         }
 
@@ -445,7 +445,7 @@ var updateWithDiffPatchesLocal = function(id, patches, md5, fname) {
             } else {
                 setFileStatusIndicator(fname, "error");
                 console.log("** OH NO: MD5 mismatch. this=" + newMD5 + ", wanted=" + md5);
-                now.s_requestFullFileFromUserID(infile, id, function(fname, fdata, err, isSaved) {
+                now.s_requestFullFileFromUserID(infile, id, function (fname, fdata, err, isSaved) {
                     if (fname != infile) {
                         console.log("Oh No! They sent me a file that I don't want: " + fname);
                         return;
@@ -494,15 +494,17 @@ function openFileFromServer(fname, forceOpen, editor) {
     //---get tab editor
     if (editor) {
         //----attach analizecode to tokenizer
-        editor.session.bgTokenizer.on('update',AnalizeCode);
+        /* analize disable
+        editor.session.bgTokenizer.on('update', AnalizeCode);
+        */
         editor.setReadOnly(true);
         ignoreAceChange = true;
         editor.getSession().setValue(""); // clear the editor.
-        initialFileloadTimeout = setTimeout(function() {
+        initialFileloadTimeout = setTimeout(function () {
             initialStateIsWelcome = false;
         }, 3000);
         editor.setFadeFoldWidgets(false);
-        now.s_getLatestFileContentsAndJoinFileGroup(fname, function(fname, fdata, err, isSaved) {
+        now.s_getLatestFileContentsAndJoinFileGroup(fname, function (fname, fdata, err, isSaved) {
             if (err) {
                 console.log("ERROR: couldn't load file.");
                 console.log(err);
@@ -527,11 +529,11 @@ function openFileFromServer(fname, forceOpen, editor) {
             removeAllCollaborators(fname);
             ifOnlineLetCollaboratorsKnowImHere();
             openIsPending = false;
-             //setTimeout(AnalizeCode(editor),500);
+            //setTimeout(AnalizeCode(editor),500);
         });
         initialFileloadTimeout = null;
         setFileStatusIndicator(fname, "unknown");
-        
+
     }
 }
 function saveFileToServer(fname, previousText) {
@@ -543,7 +545,7 @@ function saveFileToServer(fname, previousText) {
     saveIsPending = true;
     console.log("SAVING FILE:" + fname);
     sendTextChange(fname);
-    now.s_saveUserFileContentsToServer(fname, previousText, function(err) {
+    now.s_saveUserFileContentsToServer(fname, previousText, function (err) {
         if (err) {
             console.log("File save error!");
             setFileStatusIndicator(fname, "error");
@@ -558,41 +560,41 @@ function setFileStatusIndicator(fname, status) {
     console.log(fname, status);
     switch (status) {
         case "ok":
-            {
-                fileIsUnsaved = false;
-                iconCls = 'fa-check-square';
-                colorCls = 'status-green';
-                break;
-            }
+        {
+            fileIsUnsaved = false;
+            iconCls = 'fa-check-square';
+            colorCls = 'status-green';
+            break;
+        }
         case "saved":
-            {
-                fileIsUnsaved = false;
-                iconCls = 'fa-cloud-upload';
-                colorCls = 'status-green';
-                break;
-            }
+        {
+            fileIsUnsaved = false;
+            iconCls = 'fa-cloud-upload';
+            colorCls = 'status-green';
+            break;
+        }
         case "changed":
-            {
-                fileIsUnsaved = true;
-                iconCls = 'fa-pencil';
-                colorCls = 'status-blue';
-                break;
-            }
+        {
+            fileIsUnsaved = true;
+            iconCls = 'fa-pencil';
+            colorCls = 'status-blue';
+            break;
+        }
         case "error":
             iconCls = 'fa-exclamation-triangle';
             colorCls = 'status-red';
             break;
         case "offline":
-            {
-                iconCls = 'fa-unlink';
-                colorCls = 'status-red';
-                break;
-            }
+        {
+            iconCls = 'fa-unlink';
+            colorCls = 'status-red';
+            break;
+        }
         default:
-            {
-                iconCls = 'fa-square';
-                colorCls = 'status-gray';
-            }
+        {
+            iconCls = 'fa-square';
+            colorCls = 'status-gray';
+        }
     }
     tab = Ext.getCmp('filetabs').child('[path=' + fname + ']');
     if (tab) {
