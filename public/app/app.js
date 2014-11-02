@@ -906,7 +906,7 @@ Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
     models: ['file', 'user', 'code'],
-    stores: ['FileTree', 'ProjectTree', 'NavTree'],
+    stores: ['FileTree', 'ProjectTree', 'NavTree','TeamTree'],
     //,controllers: ['Station', 'Song']
     launch: function() {
 

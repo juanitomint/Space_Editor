@@ -6,11 +6,12 @@ Ext.define('Codespace.view.Viewport', {
         //'app.view.WithToolbar',
         'Codespace.view.FileTree',
         'Codespace.view.ProjectTree',
+        'Codespace.view.TeamTree',
         'Codespace.view.FileCode',
         'Codespace.view.ToolBar',
         'Codespace.view.NavTree',
     ],
-    initComponent: function() {
+    initComponent: function () {
         this.items = [
             {
                 region: 'north',
@@ -45,11 +46,9 @@ Ext.define('Codespace.view.Viewport', {
                             },
                             {
                                 title: 'Team <span id="contacts-count"></span>',
-                                id: 'contacts-tab',
-                                bodyCls: 'discussion',
-                                autoScroll: true,
-                                overflowY: 'scroll',
-                                html: '<ol id="contact-ol" class="discussion"></ol>'
+                                id: 'TeamTree',
+                                layout: 'fit',
+                                xtype: 'teamtree',
                             }
                             //----chat tab
                         ]
@@ -70,19 +69,19 @@ Ext.define('Codespace.view.Viewport', {
                         enableKeyEvents: true,
                         width: '100%',
                         listeners: {
-                            keypress: function(field, e) {
+                            keypress: function (field, e) {
                                 if (e.getKey() == e.ENTER) {
-                                    msg=this.value;
+                                    msg = this.value;
                                     //----url replace only if is a pure url
-                                    if(msg.indexOf('http')==0){
-                                       msg=msg.replace(msg,'<a href="'+msg+'">Follow this url</a>');
+                                    if (msg.indexOf('http') == 0) {
+                                        msg = msg.replace(msg, '<a href="' + msg + '">Follow this url</a>');
                                     }
                                     now.s_teamMessageBroadcast("personal", msg);
                                     this.setValue();
                                     e.stopEvent();
                                 }
                             },
-                            specialkey: function(field, e) {
+                            specialkey: function (field, e) {
                                 // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
                                 // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
                                 if (e.getKey() == e.ESC) {
@@ -151,12 +150,12 @@ Ext.define('Codespace.view.Viewport', {
                                             items: [{
                                                     xtype: 'trigger',
                                                     triggerCls: 'x-form-clear-trigger',
-                                                    onTriggerClick: function() {
+                                                    onTriggerClick: function () {
                                                         this.reset();
                                                         this.focus();
                                                     }
                                                     , listeners: {
-                                                        change: function(field, newVal) {
+                                                        change: function (field, newVal) {
                                                             var tree = Ext.getCmp('FileTree');
                                                             tree.filter(newVal, 'name');
                                                         }
@@ -168,7 +167,7 @@ Ext.define('Codespace.view.Viewport', {
                                     },
                                     {
                                         title: 'NavTree',
-                                        id:'NavTree',
+                                        id: 'NavTree',
                                         region: 'south',
                                         split: true,
                                         collapsible: true,
@@ -248,7 +247,7 @@ Ext.define('Codespace.view.Viewport', {
                 xtype: 'panel',
                 layout: 'border',
                 listeners: {
-                    resize: function() {
+                    resize: function () {
 
                     }
                 },
