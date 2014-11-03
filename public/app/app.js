@@ -931,17 +931,6 @@ Ext.application({
         tabs.items.each(function (tab) {
             if (tab.getEditor()) {
                 tab.getEditor().resize();
-                /*
-                 * Fix size
-                 */
-                viewSize = tab.body.getViewSize();
-                console.log('viewSize', viewSize);
-                div = Ext.get(tab.body.query('.ace_content'));
-                console.log("div", div);
-                div.setWidth(966);
-                /*
-                 * 
-                 */
             }
         });
     },
