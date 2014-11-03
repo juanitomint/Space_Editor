@@ -931,6 +931,17 @@ Ext.application({
         tabs.items.each(function (tab) {
             if (tab.getEditor()) {
                 tab.getEditor().resize();
+                /*
+                 * Fix size
+                 */
+                viewSize = tab.body.getViewSize();
+                console.log('viewSize', viewSize);
+                div = Ext.get(tab.body.query('.ace_content'));
+                console.log("div", div);
+                div.setWidth(966);
+                /*
+                 * 
+                 */
             }
         });
     },
@@ -967,6 +978,7 @@ Ext.application({
                 tab = Ext.create('widget.AceEditor.WithToolbar',
                         {
                             xtype: 'AceEditor.WithToolbar',
+                            layout: 'fit',
                             id: node.data.id + '-tab',
                             closable: true,
                             title: node.data.name,
@@ -982,6 +994,7 @@ Ext.application({
                             listeners: {
                                 activate: function () {
                                     if (this.getEditor()) {
+                                        console.log("editor Activated!");
                                         Codespace.app.setToolbarSettings(this);
                                         this.getEditor().resize();
                                         setFileStatusIndicator(this.path, this.status);
@@ -992,8 +1005,10 @@ Ext.application({
                                     console.log("editor Created!");
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);
-                                    now.s_sendUserEvent("join"); // let everyone know who I am!
+//                                    now.s_sendUserEvent("join"); // let everyone know who I am!
                                     editor = this.getEditor();
+                                    editor.resize(true);
+
                                     //---bind change Event
                                     editor.getSession().on('change', function (a, b, c) {
                                         fname = Ext.getCmp('filetabs').getActiveTab().path;
@@ -1045,7 +1060,7 @@ Ext.application({
                 ); ///-----end create tab
                 tabs.add(tab);
                 tabs.setActiveTab(tab);
-                Codespace.app.updateHash();
+                //Codespace.app.updateHash();
             }
         }
     }

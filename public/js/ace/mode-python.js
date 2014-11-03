@@ -1,1 +1,264 @@
-define("ace/mode/python",["require","exports","module","ace/lib/oop","ace/mode/text","ace/tokenizer","ace/mode/python_highlight_rules","ace/mode/folding/pythonic","ace/range"],function(require,exports,module){var oop=require("../lib/oop"),TextMode=require("./text").Mode,Tokenizer=require("../tokenizer").Tokenizer,PythonHighlightRules=require("./python_highlight_rules").PythonHighlightRules,PythonFoldMode=require("./folding/pythonic").FoldMode,Range=require("../range").Range,Mode=function(){this.$tokenizer=new Tokenizer((new PythonHighlightRules).getRules()),this.foldingRules=new PythonFoldMode("\\:")};oop.inherits(Mode,TextMode),function(){this.toggleCommentLines=function(state,doc,startRow,endRow){var outdent=!0,re=/^(\s*)#/;for(var i=startRow;i<=endRow;i++)if(!re.test(doc.getLine(i))){outdent=!1;break}if(outdent){var deleteRange=new Range(0,0,0,0);for(var i=startRow;i<=endRow;i++){var line=doc.getLine(i),m=line.match(re);deleteRange.start.row=i,deleteRange.end.row=i,deleteRange.end.column=m[0].length,doc.replace(deleteRange,m[1])}}else doc.indentRows(startRow,endRow,"#")},this.getNextLineIndent=function(state,line,tab){var indent=this.$getIndent(line),tokenizedLine=this.$tokenizer.getLineTokens(line,state),tokens=tokenizedLine.tokens;if(tokens.length&&tokens[tokens.length-1].type=="comment")return indent;if(state=="start"){var match=line.match(/^.*[\{\(\[\:]\s*$/);match&&(indent+=tab)}return indent};var outdents={pass:1,"return":1,raise:1,"break":1,"continue":1};this.checkOutdent=function(state,line,input){if(input!=="\r\n"&&input!=="\r"&&input!=="\n")return!1;var tokens=this.$tokenizer.getLineTokens(line.trim(),state).tokens;if(!tokens)return!1;do var last=tokens.pop();while(last&&(last.type=="comment"||last.type=="text"&&last.value.match(/^\s+$/)));return last?last.type=="keyword"&&outdents[last.value]:!1},this.autoOutdent=function(state,doc,row){row+=1;var indent=this.$getIndent(doc.getLine(row)),tab=doc.getTabString();indent.slice(-tab.length)==tab&&doc.remove(new Range(row,indent.length-tab.length,row,indent.length))}}.call(Mode.prototype),exports.Mode=Mode}),define("ace/mode/python_highlight_rules",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text_highlight_rules"],function(require,exports,module){var oop=require("../lib/oop"),lang=require("../lib/lang"),TextHighlightRules=require("./text_highlight_rules").TextHighlightRules,PythonHighlightRules=function(){var keywords=lang.arrayToMap("and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while|with|yield".split("|")),builtinConstants=lang.arrayToMap("True|False|None|NotImplemented|Ellipsis|__debug__".split("|")),builtinFunctions=lang.arrayToMap("abs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|binfile|iter|property|tuple|bool|filter|len|range|type|bytearray|float|list|raw_input|unichr|callable|format|locals|reduce|unicode|chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|__import__|complex|hash|min|set|apply|delattr|help|next|setattr|buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern".split("|")),futureReserved=lang.arrayToMap("".split("|")),strPre="(?:r|u|ur|R|U|UR|Ur|uR)?",decimalInteger="(?:(?:[1-9]\\d*)|(?:0))",octInteger="(?:0[oO]?[0-7]+)",hexInteger="(?:0[xX][\\dA-Fa-f]+)",binInteger="(?:0[bB][01]+)",integer="(?:"+decimalInteger+"|"+octInteger+"|"+hexInteger+"|"+binInteger+")",exponent="(?:[eE][+-]?\\d+)",fraction="(?:\\.\\d+)",intPart="(?:\\d+)",pointFloat="(?:(?:"+intPart+"?"+fraction+")|(?:"+intPart+"\\.))",exponentFloat="(?:(?:"+pointFloat+"|"+intPart+")"+exponent+")",floatNumber="(?:"+exponentFloat+"|"+pointFloat+")";this.$rules={start:[{token:"comment",regex:"#.*$"},{token:"string",regex:strPre+'"{3}(?:[^\\\\]|\\\\.)*?"{3}'},{token:"string",merge:!0,regex:strPre+'"{3}.*$',next:"qqstring"},{token:"string",regex:strPre+'"(?:[^\\\\]|\\\\.)*?"'},{token:"string",regex:strPre+"'{3}(?:[^\\\\]|\\\\.)*?'{3}"},{token:"string",merge:!0,regex:strPre+"'{3}.*$",next:"qstring"},{token:"string",regex:strPre+"'(?:[^\\\\]|\\\\.)*?'"},{token:"constant.numeric",regex:"(?:"+floatNumber+"|\\d+)[jJ]\\b"},{token:"constant.numeric",regex:floatNumber},{token:"constant.numeric",regex:integer+"[lL]\\b"},{token:"constant.numeric",regex:integer+"\\b"},{token:function(value){return keywords.hasOwnProperty(value)?"keyword":builtinConstants.hasOwnProperty(value)?"constant.language":futureReserved.hasOwnProperty(value)?"invalid.illegal":builtinFunctions.hasOwnProperty(value)?"support.function":value=="debugger"?"invalid.deprecated":"identifier"},regex:"[a-zA-Z_$][a-zA-Z0-9_$]*\\b"},{token:"keyword.operator",regex:"\\+|\\-|\\*|\\*\\*|\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|="},{token:"paren.lparen",regex:"[\\[\\(\\{]"},{token:"paren.rparen",regex:"[\\]\\)\\}]"},{token:"text",regex:"\\s+"}],qqstring:[{token:"string",regex:'(?:[^\\\\]|\\\\.)*?"{3}',next:"start"},{token:"string",merge:!0,regex:".+"}],qstring:[{token:"string",regex:"(?:[^\\\\]|\\\\.)*?'{3}",next:"start"},{token:"string",merge:!0,regex:".+"}]}};oop.inherits(PythonHighlightRules,TextHighlightRules),exports.PythonHighlightRules=PythonHighlightRules}),define("ace/mode/folding/pythonic",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode"],function(require,exports,module){var oop=require("../../lib/oop"),BaseFoldMode=require("./fold_mode").FoldMode,FoldMode=exports.FoldMode=function(markers){this.foldingStartMarker=new RegExp("(?:([\\[{])|("+markers+"))(?:\\s*)(?:#.*)?$")};oop.inherits(FoldMode,BaseFoldMode),function(){this.getFoldWidgetRange=function(session,foldStyle,row){var line=session.getLine(row),match=line.match(this.foldingStartMarker);if(match)return match[1]?this.openingBracketBlock(session,match[1],row,match.index):match[2]?this.indentationBlock(session,row,match.index+match[2].length):this.indentationBlock(session,row)}}.call(FoldMode.prototype)}),define("ace/mode/folding/fold_mode",["require","exports","module","ace/range"],function(require,exports,module){var Range=require("../../range").Range,FoldMode=exports.FoldMode=function(){};(function(){this.foldingStartMarker=null,this.foldingStopMarker=null,this.getFoldWidget=function(session,foldStyle,row){var line=session.getLine(row);return this.foldingStartMarker.test(line)?"start":foldStyle=="markbeginend"&&this.foldingStopMarker&&this.foldingStopMarker.test(line)?"end":""},this.getFoldWidgetRange=function(session,foldStyle,row){return null},this.indentationBlock=function(session,row,column){var re=/^\s*/,startRow=row,endRow=row,line=session.getLine(row),startColumn=column||line.length,startLevel=line.match(re)[0].length,maxRow=session.getLength();while(++row<maxRow){line=session.getLine(row);var level=line.match(re)[0].length;if(level==line.length)continue;if(level<=startLevel)break;endRow=row}if(endRow>startRow){var endColumn=session.getLine(endRow).length;return new Range(startRow,startColumn,endRow,endColumn)}},this.openingBracketBlock=function(session,bracket,row,column,typeRe,allowBlankLine){var start={row:row,column:column+1},end=session.$findClosingBracket(bracket,start,typeRe,allowBlankLine);if(!end)return;var fw=session.foldWidgets[end.row];return fw==null&&(fw=this.getFoldWidget(session,end.row)),fw=="start"&&(end.row--,end.column=session.getLine(end.row).length),Range.fromPoints(start,end)}}).call(FoldMode.prototype)})
+define("ace/mode/python_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+
+var PythonHighlightRules = function() {
+
+    var keywords = (
+        "and|as|assert|break|class|continue|def|del|elif|else|except|exec|" +
+        "finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|" +
+        "raise|return|try|while|with|yield"
+    );
+
+    var builtinConstants = (
+        "True|False|None|NotImplemented|Ellipsis|__debug__"
+    );
+
+    var builtinFunctions = (
+        "abs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|" +
+        "eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|" +
+        "binfile|iter|property|tuple|bool|filter|len|range|type|bytearray|" +
+        "float|list|raw_input|unichr|callable|format|locals|reduce|unicode|" +
+        "chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|" +
+        "cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|" +
+        "__import__|complex|hash|min|set|apply|delattr|help|next|setattr|" +
+        "buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern"
+    );
+    var keywordMapper = this.createKeywordMapper({
+        "invalid.deprecated": "debugger",
+        "support.function": builtinFunctions,
+        "constant.language": builtinConstants,
+        "keyword": keywords
+    }, "identifier");
+
+    var strPre = "(?:r|u|ur|R|U|UR|Ur|uR)?";
+
+    var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
+    var octInteger = "(?:0[oO]?[0-7]+)";
+    var hexInteger = "(?:0[xX][\\dA-Fa-f]+)";
+    var binInteger = "(?:0[bB][01]+)";
+    var integer = "(?:" + decimalInteger + "|" + octInteger + "|" + hexInteger + "|" + binInteger + ")";
+
+    var exponent = "(?:[eE][+-]?\\d+)";
+    var fraction = "(?:\\.\\d+)";
+    var intPart = "(?:\\d+)";
+    var pointFloat = "(?:(?:" + intPart + "?" + fraction + ")|(?:" + intPart + "\\.))";
+    var exponentFloat = "(?:(?:" + pointFloat + "|" +  intPart + ")" + exponent + ")";
+    var floatNumber = "(?:" + exponentFloat + "|" + pointFloat + ")";
+
+    var stringEscape =  "\\\\(x[0-9A-Fa-f]{2}|[0-7]{3}|[\\\\abfnrtv'\"]|U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})";
+
+    this.$rules = {
+        "start" : [ {
+            token : "comment",
+            regex : "#.*$"
+        }, {
+            token : "string",           // multi line """ string start
+            regex : strPre + '"{3}',
+            next : "qqstring3"
+        }, {
+            token : "string",           // " string
+            regex : strPre + '"(?=.)',
+            next : "qqstring"
+        }, {
+            token : "string",           // multi line ''' string start
+            regex : strPre + "'{3}",
+            next : "qstring3"
+        }, {
+            token : "string",           // ' string
+            regex : strPre + "'(?=.)",
+            next : "qstring"
+        }, {
+            token : "constant.numeric", // imaginary
+            regex : "(?:" + floatNumber + "|\\d+)[jJ]\\b"
+        }, {
+            token : "constant.numeric", // float
+            regex : floatNumber
+        }, {
+            token : "constant.numeric", // long integer
+            regex : integer + "[lL]\\b"
+        }, {
+            token : "constant.numeric", // integer
+            regex : integer + "\\b"
+        }, {
+            token : keywordMapper,
+            regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+        }, {
+            token : "keyword.operator",
+            regex : "\\+|\\-|\\*|\\*\\*|\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|="
+        }, {
+            token : "paren.lparen",
+            regex : "[\\[\\(\\{]"
+        }, {
+            token : "paren.rparen",
+            regex : "[\\]\\)\\}]"
+        }, {
+            token : "text",
+            regex : "\\s+"
+        } ],
+        "qqstring3" : [ {
+            token : "constant.language.escape",
+            regex : stringEscape
+        }, {
+            token : "string", // multi line """ string end
+            regex : '"{3}',
+            next : "start"
+        }, {
+            defaultToken : "string"
+        } ],
+        "qstring3" : [ {
+            token : "constant.language.escape",
+            regex : stringEscape
+        }, {
+            token : "string",  // multi line ''' string end
+            regex : "'{3}",
+            next : "start"
+        }, {
+            defaultToken : "string"
+        } ],
+        "qqstring" : [{
+            token : "constant.language.escape",
+            regex : stringEscape
+        }, {
+            token : "string",
+            regex : "\\\\$",
+            next  : "qqstring"
+        }, {
+            token : "string",
+            regex : '"|$',
+            next  : "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "qstring" : [{
+            token : "constant.language.escape",
+            regex : stringEscape
+        }, {
+            token : "string",
+            regex : "\\\\$",
+            next  : "qstring"
+        }, {
+            token : "string",
+            regex : "'|$",
+            next  : "start"
+        }, {
+            defaultToken: "string"
+        }]
+    };
+};
+
+oop.inherits(PythonHighlightRules, TextHighlightRules);
+
+exports.PythonHighlightRules = PythonHighlightRules;
+});
+
+define("ace/mode/folding/pythonic",["require","exports","module","ace/lib/oop","ace/mode/folding/fold_mode"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../../lib/oop");
+var BaseFoldMode = require("./fold_mode").FoldMode;
+
+var FoldMode = exports.FoldMode = function(markers) {
+    this.foldingStartMarker = new RegExp("([\\[{])(?:\\s*)$|(" + markers + ")(?:\\s*)(?:#.*)?$");
+};
+oop.inherits(FoldMode, BaseFoldMode);
+
+(function() {
+
+    this.getFoldWidgetRange = function(session, foldStyle, row) {
+        var line = session.getLine(row);
+        var match = line.match(this.foldingStartMarker);
+        if (match) {
+            if (match[1])
+                return this.openingBracketBlock(session, match[1], row, match.index);
+            if (match[2])
+                return this.indentationBlock(session, row, match.index + match[2].length);
+            return this.indentationBlock(session, row);
+        }
+    }
+
+}).call(FoldMode.prototype);
+
+});
+
+define("ace/mode/python",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/python_highlight_rules","ace/mode/folding/pythonic","ace/range"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var TextMode = require("./text").Mode;
+var PythonHighlightRules = require("./python_highlight_rules").PythonHighlightRules;
+var PythonFoldMode = require("./folding/pythonic").FoldMode;
+var Range = require("../range").Range;
+
+var Mode = function() {
+    this.HighlightRules = PythonHighlightRules;
+    this.foldingRules = new PythonFoldMode("\\:");
+};
+oop.inherits(Mode, TextMode);
+
+(function() {
+
+    this.lineCommentStart = "#";
+
+    this.getNextLineIndent = function(state, line, tab) {
+        var indent = this.$getIndent(line);
+
+        var tokenizedLine = this.getTokenizer().getLineTokens(line, state);
+        var tokens = tokenizedLine.tokens;
+
+        if (tokens.length && tokens[tokens.length-1].type == "comment") {
+            return indent;
+        }
+
+        if (state == "start") {
+            var match = line.match(/^.*[\{\(\[\:]\s*$/);
+            if (match) {
+                indent += tab;
+            }
+        }
+
+        return indent;
+    };
+
+    var outdents = {
+        "pass": 1,
+        "return": 1,
+        "raise": 1,
+        "break": 1,
+        "continue": 1
+    };
+    
+    this.checkOutdent = function(state, line, input) {
+        if (input !== "\r\n" && input !== "\r" && input !== "\n")
+            return false;
+
+        var tokens = this.getTokenizer().getLineTokens(line.trim(), state).tokens;
+        
+        if (!tokens)
+            return false;
+        do {
+            var last = tokens.pop();
+        } while (last && (last.type == "comment" || (last.type == "text" && last.value.match(/^\s+$/))));
+        
+        if (!last)
+            return false;
+        
+        return (last.type == "keyword" && outdents[last.value]);
+    };
+
+    this.autoOutdent = function(state, doc, row) {
+        
+        row += 1;
+        var indent = this.$getIndent(doc.getLine(row));
+        var tab = doc.getTabString();
+        if (indent.slice(-tab.length) == tab)
+            doc.remove(new Range(row, indent.length-tab.length, row, indent.length));
+    };
+
+    this.$id = "ace/mode/python";
+}).call(Mode.prototype);
+
+exports.Mode = Mode;
+});

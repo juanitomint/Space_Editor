@@ -1,1 +1,612 @@
-define("ace/mode/xml",["require","exports","module","ace/lib/oop","ace/mode/text","ace/tokenizer","ace/mode/xml_highlight_rules","ace/mode/behaviour/xml","ace/mode/folding/xml"],function(require,exports,module){var oop=require("../lib/oop"),TextMode=require("./text").Mode,Tokenizer=require("../tokenizer").Tokenizer,XmlHighlightRules=require("./xml_highlight_rules").XmlHighlightRules,XmlBehaviour=require("./behaviour/xml").XmlBehaviour,XmlFoldMode=require("./folding/xml").FoldMode,Mode=function(){this.$tokenizer=new Tokenizer((new XmlHighlightRules).getRules()),this.$behaviour=new XmlBehaviour,this.foldingRules=new XmlFoldMode};oop.inherits(Mode,TextMode),function(){this.getNextLineIndent=function(state,line,tab){return this.$getIndent(line)}}.call(Mode.prototype),exports.Mode=Mode}),define("ace/mode/xml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/xml_util","ace/mode/text_highlight_rules"],function(require,exports,module){var oop=require("../lib/oop"),xmlUtil=require("./xml_util"),TextHighlightRules=require("./text_highlight_rules").TextHighlightRules,XmlHighlightRules=function(){this.$rules={start:[{token:"text",regex:"<\\!\\[CDATA\\[",next:"cdata"},{token:"xml_pe",regex:"<\\?.*?\\?>"},{token:"comment",merge:!0,regex:"<\\!--",next:"comment"},{token:"xml_pe",regex:"<\\!.*?>"},{token:"meta.tag",regex:"<\\/?",next:"tag"},{token:"text",regex:"\\s+"},{token:"constant.character.entity",regex:"(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"},{token:"text",regex:"[^<]+"}],cdata:[{token:"text",regex:"\\]\\]>",next:"start"},{token:"text",regex:"\\s+"},{token:"text",regex:"(?:[^\\]]|\\](?!\\]>))+"}],comment:[{token:"comment",regex:".*?-->",next:"start"},{token:"comment",merge:!0,regex:".+"}]},xmlUtil.tag(this.$rules,"tag","start")};oop.inherits(XmlHighlightRules,TextHighlightRules),exports.XmlHighlightRules=XmlHighlightRules}),define("ace/mode/xml_util",["require","exports","module","ace/lib/lang"],function(require,exports,module){function string(state){return[{token:"string",regex:'".*?"'},{token:"string",merge:!0,regex:'["].*',next:state+"_qqstring"},{token:"string",regex:"'.*?'"},{token:"string",merge:!0,regex:"['].*",next:state+"_qstring"}]}function multiLineString(quote,state){return[{token:"string",merge:!0,regex:".*?"+quote,next:state},{token:"string",merge:!0,regex:".+"}]}var lang=require("../lib/lang"),formTags=lang.arrayToMap("button|form|input|label|select|textarea".split("|")),tableTags=lang.arrayToMap("table|tbody|td|tfoot|th|tr".split("|"));exports.tag=function(states,name,nextState){states[name]=[{token:"text",regex:"\\s+"},{token:function(value){return value==="a"?"meta.tag.anchor":value==="img"?"meta.tag.image":value==="script"?"meta.tag.script":value==="style"?"meta.tag.style":formTags.hasOwnProperty(value.toLowerCase())?"meta.tag.form":tableTags.hasOwnProperty(value.toLowerCase())?"meta.tag.table":"meta.tag"},merge:!0,regex:"[-_a-zA-Z0-9:]+",next:name+"_embed_attribute_list"},{token:"empty",regex:"",next:name+"_embed_attribute_list"}],states[name+"_qstring"]=multiLineString("'",name+"_embed_attribute_list"),states[name+"_qqstring"]=multiLineString('"',name+"_embed_attribute_list"),states[name+"_embed_attribute_list"]=[{token:"meta.tag",merge:!0,regex:"/?>",next:nextState},{token:"keyword.operator",regex:"="},{token:"entity.other.attribute-name",regex:"[-_a-zA-Z0-9:]+"},{token:"constant.numeric",regex:"[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"},{token:"text",regex:"\\s+"}].concat(string(name))}}),define("ace/mode/behaviour/xml",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/mode/behaviour/cstyle"],function(require,exports,module){var oop=require("../../lib/oop"),Behaviour=require("../behaviour").Behaviour,CstyleBehaviour=require("./cstyle").CstyleBehaviour,XmlBehaviour=function(){this.inherit(CstyleBehaviour,["string_dquotes"]),this.add("brackets","insertion",function(state,action,editor,session,text){if(text=="<"){var selection=editor.getSelectionRange(),selected=session.doc.getTextRange(selection);return selected!==""?!1:{text:"<>",selection:[1,1]}}if(text==">"){var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),rightChar=line.substring(cursor.column,cursor.column+1);if(rightChar==">")return{text:"",selection:[1,1]}}else if(text=="\n"){var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),rightChars=line.substring(cursor.column,cursor.column+2);if(rightChars=="</"){var indent=this.$getIndent(session.doc.getLine(cursor.row))+session.getTabString(),next_indent=this.$getIndent(session.doc.getLine(cursor.row));return{text:"\n"+indent+"\n"+next_indent,selection:[1,indent.length,1,indent.length]}}}})};oop.inherits(XmlBehaviour,Behaviour),exports.XmlBehaviour=XmlBehaviour}),define("ace/mode/behaviour/cstyle",["require","exports","module","ace/lib/oop","ace/mode/behaviour"],function(require,exports,module){var oop=require("../../lib/oop"),Behaviour=require("../behaviour").Behaviour,CstyleBehaviour=function(){this.add("braces","insertion",function(state,action,editor,session,text){if(text=="{"){var selection=editor.getSelectionRange(),selected=session.doc.getTextRange(selection);return selected!==""?{text:"{"+selected+"}",selection:!1}:{text:"{}",selection:[1,1]}}if(text=="}"){var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),rightChar=line.substring(cursor.column,cursor.column+1);if(rightChar=="}"){var matching=session.$findOpeningBracket("}",{column:cursor.column+1,row:cursor.row});if(matching!==null)return{text:"",selection:[1,1]}}}else if(text=="\n"){var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),rightChar=line.substring(cursor.column,cursor.column+1);if(rightChar=="}"){var openBracePos=session.findMatchingBracket({row:cursor.row,column:cursor.column+1});if(!openBracePos)return null;var indent=this.getNextLineIndent(state,line.substring(0,line.length-1),session.getTabString()),next_indent=this.$getIndent(session.doc.getLine(openBracePos.row));return{text:"\n"+indent+"\n"+next_indent,selection:[1,indent.length,1,indent.length]}}}}),this.add("braces","deletion",function(state,action,editor,session,range){var selected=session.doc.getTextRange(range);if(!range.isMultiLine()&&selected=="{"){var line=session.doc.getLine(range.start.row),rightChar=line.substring(range.end.column,range.end.column+1);if(rightChar=="}")return range.end.column++,range}}),this.add("parens","insertion",function(state,action,editor,session,text){if(text=="("){var selection=editor.getSelectionRange(),selected=session.doc.getTextRange(selection);return selected!==""?{text:"("+selected+")",selection:!1}:{text:"()",selection:[1,1]}}if(text==")"){var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),rightChar=line.substring(cursor.column,cursor.column+1);if(rightChar==")"){var matching=session.$findOpeningBracket(")",{column:cursor.column+1,row:cursor.row});if(matching!==null)return{text:"",selection:[1,1]}}}}),this.add("parens","deletion",function(state,action,editor,session,range){var selected=session.doc.getTextRange(range);if(!range.isMultiLine()&&selected=="("){var line=session.doc.getLine(range.start.row),rightChar=line.substring(range.start.column+1,range.start.column+2);if(rightChar==")")return range.end.column++,range}}),this.add("string_dquotes","insertion",function(state,action,editor,session,text){if(text=='"'||text=="'"){var quote=text,selection=editor.getSelectionRange(),selected=session.doc.getTextRange(selection);if(selected!=="")return{text:quote+selected+quote,selection:!1};var cursor=editor.getCursorPosition(),line=session.doc.getLine(cursor.row),leftChar=line.substring(cursor.column-1,cursor.column);if(leftChar=="\\")return null;var tokens=session.getTokens(selection.start.row),col=0,token,quotepos=-1;for(var x=0;x<tokens.length;x++){token=tokens[x],token.type=="string"?quotepos=-1:quotepos<0&&(quotepos=token.value.indexOf(quote));if(token.value.length+col>selection.start.column)break;col+=tokens[x].value.length}if(!token||quotepos<0&&token.type!=="comment"&&(token.type!=="string"||selection.start.column!==token.value.length+col-1&&token.value.lastIndexOf(quote)===token.value.length-1))return{text:quote+quote,selection:[1,1]};if(token&&token.type==="string"){var rightChar=line.substring(cursor.column,cursor.column+1);if(rightChar==quote)return{text:"",selection:[1,1]}}}}),this.add("string_dquotes","deletion",function(state,action,editor,session,range){var selected=session.doc.getTextRange(range);if(!range.isMultiLine()&&(selected=='"'||selected=="'")){var line=session.doc.getLine(range.start.row),rightChar=line.substring(range.start.column+1,range.start.column+2);if(rightChar=='"')return range.end.column++,range}})};oop.inherits(CstyleBehaviour,Behaviour),exports.CstyleBehaviour=CstyleBehaviour}),define("ace/mode/folding/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/range","ace/mode/folding/fold_mode","ace/token_iterator"],function(require,exports,module){var oop=require("../../lib/oop"),lang=require("../../lib/lang"),Range=require("../../range").Range,BaseFoldMode=require("./fold_mode").FoldMode,TokenIterator=require("../../token_iterator").TokenIterator,FoldMode=exports.FoldMode=function(voidElements){BaseFoldMode.call(this),this.voidElements=voidElements||{}};oop.inherits(FoldMode,BaseFoldMode),function(){this.getFoldWidget=function(session,foldStyle,row){var tag=this._getFirstTagInLine(session,row);return tag.closing?foldStyle=="markbeginend"?"end":"":!tag.tagName||this.voidElements[tag.tagName.toLowerCase()]?"":tag.selfClosing?"":tag.value.indexOf("/"+tag.tagName)!==-1?"":"start"},this._getFirstTagInLine=function(session,row){var tokens=session.getTokens(row),value="";for(var i=0;i<tokens.length;i++){var token=tokens[i];token.type.indexOf("meta.tag")===0?value+=token.value:value+=lang.stringRepeat(" ",token.value.length)}return this._parseTag(value)},this.tagRe=/^(\s*)(<?(\/?)([-_a-zA-Z0-9:!]*)\s*(\/?)>?)/,this._parseTag=function(tag){var match=this.tagRe.exec(tag),column=this.tagRe.lastIndex||0;return this.tagRe.lastIndex=0,{value:tag,match:match?match[2]:"",closing:match?!!match[3]:!1,selfClosing:match?!!match[5]||match[2]=="/>":!1,tagName:match?match[4]:"",column:match[1]?column+match[1].length:column}},this._readTagForward=function(iterator){var token=iterator.getCurrentToken();if(!token)return null;var value="",start;do if(token.type.indexOf("meta.tag")===0){if(!start)var start={row:iterator.getCurrentTokenRow(),column:iterator.getCurrentTokenColumn()};value+=token.value;if(value.indexOf(">")!==-1){var tag=this._parseTag(value);return tag.start=start,tag.end={row:iterator.getCurrentTokenRow(),column:iterator.getCurrentTokenColumn()+token.value.length},iterator.stepForward(),tag}}while(token=iterator.stepForward());return null},this._readTagBackward=function(iterator){var token=iterator.getCurrentToken();if(!token)return null;var value="",end;do if(token.type.indexOf("meta.tag")===0){end||(end={row:iterator.getCurrentTokenRow(),column:iterator.getCurrentTokenColumn()+token.value.length}),value=token.value+value;if(value.indexOf("<")!==-1){var tag=this._parseTag(value);return tag.end=end,tag.start={row:iterator.getCurrentTokenRow(),column:iterator.getCurrentTokenColumn()},iterator.stepBackward(),tag}}while(token=iterator.stepBackward());return null},this._pop=function(stack,tag){while(stack.length){var top=stack[stack.length-1];if(!tag||top.tagName==tag.tagName)return stack.pop();if(this.voidElements[tag.tagName])return;if(this.voidElements[top.tagName]){stack.pop();continue}return null}},this.getFoldWidgetRange=function(session,foldStyle,row){var firstTag=this._getFirstTagInLine(session,row);if(!firstTag.match)return null;var isBackward=firstTag.closing||firstTag.selfClosing,stack=[],tag;if(!isBackward){var iterator=new TokenIterator(session,row,firstTag.column),start={row:row,column:firstTag.column+firstTag.tagName.length+2};while(tag=this._readTagForward(iterator)){if(tag.selfClosing){if(!stack.length)return tag.start.column+=tag.tagName.length+2,tag.end.column-=2,Range.fromPoints(tag.start,tag.end);continue}if(tag.closing){this._pop(stack,tag);if(stack.length==0)return Range.fromPoints(start,tag.start)}else stack.push(tag)}}else{var iterator=new TokenIterator(session,row,firstTag.column+firstTag.match.length),end={row:row,column:firstTag.column};while(tag=this._readTagBackward(iterator)){if(tag.selfClosing){if(!stack.length)return tag.start.column+=tag.tagName.length+2,tag.end.column-=2,Range.fromPoints(tag.start,tag.end);continue}if(!tag.closing){this._pop(stack,tag);if(stack.length==0)return tag.start.column+=tag.tagName.length+2,Range.fromPoints(tag.start,end)}else stack.push(tag)}}}}.call(FoldMode.prototype)}),define("ace/mode/folding/fold_mode",["require","exports","module","ace/range"],function(require,exports,module){var Range=require("../../range").Range,FoldMode=exports.FoldMode=function(){};(function(){this.foldingStartMarker=null,this.foldingStopMarker=null,this.getFoldWidget=function(session,foldStyle,row){var line=session.getLine(row);return this.foldingStartMarker.test(line)?"start":foldStyle=="markbeginend"&&this.foldingStopMarker&&this.foldingStopMarker.test(line)?"end":""},this.getFoldWidgetRange=function(session,foldStyle,row){return null},this.indentationBlock=function(session,row,column){var re=/^\s*/,startRow=row,endRow=row,line=session.getLine(row),startColumn=column||line.length,startLevel=line.match(re)[0].length,maxRow=session.getLength();while(++row<maxRow){line=session.getLine(row);var level=line.match(re)[0].length;if(level==line.length)continue;if(level<=startLevel)break;endRow=row}if(endRow>startRow){var endColumn=session.getLine(endRow).length;return new Range(startRow,startColumn,endRow,endColumn)}},this.openingBracketBlock=function(session,bracket,row,column,typeRe,allowBlankLine){var start={row:row,column:column+1},end=session.$findClosingBracket(bracket,start,typeRe,allowBlankLine);if(!end)return;var fw=session.foldWidgets[end.row];return fw==null&&(fw=this.getFoldWidget(session,end.row)),fw=="start"&&(end.row--,end.column=session.getLine(end.row).length),Range.fromPoints(start,end)}}).call(FoldMode.prototype)})
+define("ace/mode/xml_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+
+var XmlHighlightRules = function(normalize) {
+    this.$rules = {
+        start : [
+            {token : "string.cdata.xml", regex : "<\\!\\[CDATA\\[", next : "cdata"},
+            {
+                token : ["punctuation.xml-decl.xml", "keyword.xml-decl.xml"],
+                regex : "(<\\?)(xml)(?=[\\s])", next : "xml_decl", caseInsensitive: true
+            },
+            {
+                token : ["punctuation.instruction.xml", "keyword.instruction.xml"],
+                regex : "(<\\?)([-_a-zA-Z0-9]+)", next : "processing_instruction",
+            },
+            {token : "comment.xml", regex : "<\\!--", next : "comment"},
+            {
+                token : ["xml-pe.doctype.xml", "xml-pe.doctype.xml"],
+                regex : "(<\\!)(DOCTYPE)(?=[\\s])", next : "doctype", caseInsensitive: true
+            },
+            {include : "tag"},
+            {token : "text.end-tag-open.xml", regex: "</"},
+            {token : "text.tag-open.xml", regex: "<"},
+            {include : "reference"},
+            {defaultToken : "text.xml"}
+        ],
+
+        xml_decl : [{
+            token : "entity.other.attribute-name.decl-attribute-name.xml",
+            regex : "(?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+"
+        }, {
+            token : "keyword.operator.decl-attribute-equals.xml",
+            regex : "="
+        }, {
+            include: "whitespace"
+        }, {
+            include: "string"
+        }, {
+            token : "punctuation.xml-decl.xml",
+            regex : "\\?>",
+            next : "start"
+        }],
+
+        processing_instruction : [
+            {token : "punctuation.instruction.xml", regex : "\\?>", next : "start"},
+            {defaultToken : "instruction.xml"}
+        ],
+
+        doctype : [
+            {include : "whitespace"},
+            {include : "string"},
+            {token : "xml-pe.doctype.xml", regex : ">", next : "start"},
+            {token : "xml-pe.xml", regex : "[-_a-zA-Z0-9:]+"},
+            {token : "punctuation.int-subset", regex : "\\[", push : "int_subset"}
+        ],
+
+        int_subset : [{
+            token : "text.xml",
+            regex : "\\s+"
+        }, {
+            token: "punctuation.int-subset.xml",
+            regex: "]",
+            next: "pop"
+        }, {
+            token : ["punctuation.markup-decl.xml", "keyword.markup-decl.xml"],
+            regex : "(<\\!)([-_a-zA-Z0-9]+)",
+            push : [{
+                token : "text",
+                regex : "\\s+"
+            },
+            {
+                token : "punctuation.markup-decl.xml",
+                regex : ">",
+                next : "pop"
+            },
+            {include : "string"}]
+        }],
+
+        cdata : [
+            {token : "string.cdata.xml", regex : "\\]\\]>", next : "start"},
+            {token : "text.xml", regex : "\\s+"},
+            {token : "text.xml", regex : "(?:[^\\]]|\\](?!\\]>))+"}
+        ],
+
+        comment : [
+            {token : "comment.xml", regex : "-->", next : "start"},
+            {defaultToken : "comment.xml"}
+        ],
+
+        reference : [{
+            token : "constant.language.escape.reference.xml",
+            regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
+        }],
+
+        attr_reference : [{
+            token : "constant.language.escape.reference.attribute-value.xml",
+            regex : "(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"
+        }],
+
+        tag : [{
+            token : ["meta.tag.punctuation.tag-open.xml", "meta.tag.punctuation.end-tag-open.xml", "meta.tag.tag-name.xml"],
+            regex : "(?:(<)|(</))((?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+)",
+            next: [
+                {include : "attributes"},
+                {token : "meta.tag.punctuation.tag-close.xml", regex : "/?>", next : "start"}
+            ]
+        }],
+
+        tag_whitespace : [
+            {token : "text.tag-whitespace.xml", regex : "\\s+"}
+        ],
+        whitespace : [
+            {token : "text.whitespace.xml", regex : "\\s+"}
+        ],
+        string: [{
+            token : "string.xml",
+            regex : "'",
+            push : [
+                {token : "string.xml", regex: "'", next: "pop"},
+                {defaultToken : "string.xml"}
+            ]
+        }, {
+            token : "string.xml",
+            regex : '"',
+            push : [
+                {token : "string.xml", regex: '"', next: "pop"},
+                {defaultToken : "string.xml"}
+            ]
+        }],
+
+        attributes: [{
+            token : "entity.other.attribute-name.xml",
+            regex : "(?:[-_a-zA-Z0-9]+:)?[-_a-zA-Z0-9]+"
+        }, {
+            token : "keyword.operator.attribute-equals.xml",
+            regex : "="
+        }, {
+            include: "tag_whitespace"
+        }, {
+            include: "attribute_value"
+        }],
+
+        attribute_value: [{
+            token : "string.attribute-value.xml",
+            regex : "'",
+            push : [
+                {token : "string.attribute-value.xml", regex: "'", next: "pop"},
+                {include : "attr_reference"},
+                {defaultToken : "string.attribute-value.xml"}
+            ]
+        }, {
+            token : "string.attribute-value.xml",
+            regex : '"',
+            push : [
+                {token : "string.attribute-value.xml", regex: '"', next: "pop"},
+                {include : "attr_reference"},
+                {defaultToken : "string.attribute-value.xml"}
+            ]
+        }]
+    };
+
+    if (this.constructor === XmlHighlightRules)
+        this.normalizeRules();
+};
+
+
+(function() {
+
+    this.embedTagRules = function(HighlightRules, prefix, tag){
+        this.$rules.tag.unshift({
+            token : ["meta.tag.punctuation.tag-open.xml", "meta.tag." + tag + ".tag-name.xml"],
+            regex : "(<)(" + tag + "(?=\\s|>|$))",
+            next: [
+                {include : "attributes"},
+                {token : "meta.tag.punctuation.tag-close.xml", regex : "/?>", next : prefix + "start"}
+            ]
+        });
+
+        this.$rules[tag + "-end"] = [
+            {include : "attributes"},
+            {token : "meta.tag.punctuation.tag-close.xml", regex : "/?>",  next: "start",
+                onMatch : function(value, currentState, stack) {
+                    stack.splice(0);
+                    return this.token;
+            }}
+        ]
+
+        this.embedRules(HighlightRules, prefix, [{
+            token: ["meta.tag.punctuation.end-tag-open.xml", "meta.tag." + tag + ".tag-name.xml"],
+            regex : "(</)(" + tag + "(?=\\s|>|$))",
+            next: tag + "-end"
+        }, {
+            token: "string.cdata.xml",
+            regex : "<\\!\\[CDATA\\["
+        }, {
+            token: "string.cdata.xml",
+            regex : "\\]\\]>"
+        }]);
+    };
+
+}).call(TextHighlightRules.prototype);
+
+oop.inherits(XmlHighlightRules, TextHighlightRules);
+
+exports.XmlHighlightRules = XmlHighlightRules;
+});
+
+define("ace/mode/behaviour/xml",["require","exports","module","ace/lib/oop","ace/mode/behaviour","ace/token_iterator"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../../lib/oop");
+var Behaviour = require("../behaviour").Behaviour;
+var TokenIterator = require("../../token_iterator").TokenIterator;
+
+function is(token, type) {
+    return token.type.lastIndexOf(type + ".xml") > -1;
+}
+
+var XmlBehaviour = function () {
+
+    this.add("string_dquotes", "insertion", function (state, action, editor, session, text) {
+        if (text == '"' || text == "'") {
+            var quote = text;
+            var selected = session.doc.getTextRange(editor.getSelectionRange());
+            if (selected !== "" && selected !== "'" && selected != '"' && editor.getWrapBehavioursEnabled()) {
+                return {
+                    text: quote + selected + quote,
+                    selection: false
+                };
+            }
+
+            var cursor = editor.getCursorPosition();
+            var line = session.doc.getLine(cursor.row);
+            var rightChar = line.substring(cursor.column, cursor.column + 1);
+            var iterator = new TokenIterator(session, cursor.row, cursor.column);
+            var token = iterator.getCurrentToken();
+
+            if (rightChar == quote && (is(token, "attribute-value") || is(token, "string"))) {
+                return {
+                    text: "",
+                    selection: [1, 1]
+                };
+            }
+
+            if (!token)
+                token = iterator.stepBackward();
+
+            if (!token)
+                return;
+
+            while (is(token, "tag-whitespace") || is(token, "whitespace")) {
+                token = iterator.stepBackward();
+            }
+            var rightSpace = !rightChar || rightChar.match(/\s/);
+            if (is(token, "attribute-equals") && (rightSpace || rightChar == '>') || (is(token, "decl-attribute-equals") && (rightSpace || rightChar == '?'))) {
+                return {
+                    text: quote + quote,
+                    selection: [1, 1]
+                };
+            }
+        }
+    });
+
+    this.add("string_dquotes", "deletion", function(state, action, editor, session, range) {
+        var selected = session.doc.getTextRange(range);
+        if (!range.isMultiLine() && (selected == '"' || selected == "'")) {
+            var line = session.doc.getLine(range.start.row);
+            var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+            if (rightChar == selected) {
+                range.end.column++;
+                return range;
+            }
+        }
+    });
+
+    this.add("autoclosing", "insertion", function (state, action, editor, session, text) {
+        if (text == '>') {
+            var position = editor.getCursorPosition();
+            var iterator = new TokenIterator(session, position.row, position.column);
+            var token = iterator.getCurrentToken() || iterator.stepBackward();
+            if (!token || !(is(token, "tag-name") || is(token, "tag-whitespace") || is(token, "attribute-name") || is(token, "attribute-equals") || is(token, "attribute-value")))
+                return;
+            if (is(token, "reference.attribute-value"))
+                return;
+            if (is(token, "attribute-value")) {
+                var firstChar = token.value.charAt(0);
+                if (firstChar == '"' || firstChar == "'") {
+                    var lastChar = token.value.charAt(token.value.length - 1);
+                    var tokenEnd = iterator.getCurrentTokenColumn() + token.value.length;
+                    if (tokenEnd > position.column || tokenEnd == position.column && firstChar != lastChar)
+                        return;
+                }
+            }
+            while (!is(token, "tag-name")) {
+                token = iterator.stepBackward();
+            }
+
+            var tokenRow = iterator.getCurrentTokenRow();
+            var tokenColumn = iterator.getCurrentTokenColumn();
+            if (is(iterator.stepBackward(), "end-tag-open"))
+                return;
+
+            var element = token.value;
+            if (tokenRow == position.row)
+                element = element.substring(0, position.column - tokenColumn);
+
+            if (this.voidElements.hasOwnProperty(element.toLowerCase()))
+                 return;
+
+            return {
+               text: '>' + '</' + element + '>',
+               selection: [1, 1]
+            };
+        }
+    });
+
+    this.add('autoindent', 'insertion', function (state, action, editor, session, text) {
+        if (text == "\n") {
+            var cursor = editor.getCursorPosition();
+            var line = session.getLine(cursor.row);
+            var rightChars = line.substring(cursor.column, cursor.column + 2);
+            if (rightChars == '</') {
+                var next_indent = this.$getIndent(line);
+                var indent = next_indent + session.getTabString();
+
+                return {
+                    text: '\n' + indent + '\n' + next_indent,
+                    selection: [1, indent.length, 1, indent.length]
+                };
+            }
+        }
+    });
+    
+};
+
+oop.inherits(XmlBehaviour, Behaviour);
+
+exports.XmlBehaviour = XmlBehaviour;
+});
+
+define("ace/mode/folding/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/range","ace/mode/folding/fold_mode","ace/token_iterator"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../../lib/oop");
+var lang = require("../../lib/lang");
+var Range = require("../../range").Range;
+var BaseFoldMode = require("./fold_mode").FoldMode;
+var TokenIterator = require("../../token_iterator").TokenIterator;
+
+var FoldMode = exports.FoldMode = function(voidElements, optionalEndTags) {
+    BaseFoldMode.call(this);
+    this.voidElements = voidElements || {};
+    this.optionalEndTags = oop.mixin({}, this.voidElements);
+    if (optionalEndTags)
+        oop.mixin(this.optionalEndTags, optionalEndTags);
+    
+};
+oop.inherits(FoldMode, BaseFoldMode);
+
+var Tag = function() {
+    this.tagName = "";
+    this.closing = false;
+    this.selfClosing = false;
+    this.start = {row: 0, column: 0};
+    this.end = {row: 0, column: 0};
+};
+
+function is(token, type) {
+    return token.type.lastIndexOf(type + ".xml") > -1;
+}
+
+(function() {
+
+    this.getFoldWidget = function(session, foldStyle, row) {
+        var tag = this._getFirstTagInLine(session, row);
+
+        if (!tag)
+            return "";
+
+        if (tag.closing || (!tag.tagName && tag.selfClosing))
+            return foldStyle == "markbeginend" ? "end" : "";
+
+        if (!tag.tagName || tag.selfClosing || this.voidElements.hasOwnProperty(tag.tagName.toLowerCase()))
+            return "";
+
+        if (this._findEndTagInLine(session, row, tag.tagName, tag.end.column))
+            return "";
+
+        return "start";
+    };
+    this._getFirstTagInLine = function(session, row) {
+        var tokens = session.getTokens(row);
+        var tag = new Tag();
+
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (is(token, "tag-open")) {
+                tag.end.column = tag.start.column + token.value.length;
+                tag.closing = is(token, "end-tag-open");
+                token = tokens[++i];
+                if (!token)
+                    return null;
+                tag.tagName = token.value;
+                tag.end.column += token.value.length;
+                for (i++; i < tokens.length; i++) {
+                    token = tokens[i];
+                    tag.end.column += token.value.length;
+                    if (is(token, "tag-close")) {
+                        tag.selfClosing = token.value == '/>';
+                        break;
+                    }
+                }
+                return tag;
+            } else if (is(token, "tag-close")) {
+                tag.selfClosing = token.value == '/>';
+                return tag;
+            }
+            tag.start.column += token.value.length;
+        }
+
+        return null;
+    };
+
+    this._findEndTagInLine = function(session, row, tagName, startColumn) {
+        var tokens = session.getTokens(row);
+        var column = 0;
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i];
+            column += token.value.length;
+            if (column < startColumn)
+                continue;
+            if (is(token, "end-tag-open")) {
+                token = tokens[i + 1];
+                if (token && token.value == tagName)
+                    return true;
+            }
+        }
+        return false;
+    };
+    this._readTagForward = function(iterator) {
+        var token = iterator.getCurrentToken();
+        if (!token)
+            return null;
+
+        var tag = new Tag();
+        do {
+            if (is(token, "tag-open")) {
+                tag.closing = is(token, "end-tag-open");
+                tag.start.row = iterator.getCurrentTokenRow();
+                tag.start.column = iterator.getCurrentTokenColumn();
+            } else if (is(token, "tag-name")) {
+                tag.tagName = token.value;
+            } else if (is(token, "tag-close")) {
+                tag.selfClosing = token.value == "/>";
+                tag.end.row = iterator.getCurrentTokenRow();
+                tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
+                iterator.stepForward();
+                return tag;
+            }
+        } while(token = iterator.stepForward());
+
+        return null;
+    };
+    
+    this._readTagBackward = function(iterator) {
+        var token = iterator.getCurrentToken();
+        if (!token)
+            return null;
+
+        var tag = new Tag();
+        do {
+            if (is(token, "tag-open")) {
+                tag.closing = is(token, "end-tag-open");
+                tag.start.row = iterator.getCurrentTokenRow();
+                tag.start.column = iterator.getCurrentTokenColumn();
+                iterator.stepBackward();
+                return tag;
+            } else if (is(token, "tag-name")) {
+                tag.tagName = token.value;
+            } else if (is(token, "tag-close")) {
+                tag.selfClosing = token.value == "/>";
+                tag.end.row = iterator.getCurrentTokenRow();
+                tag.end.column = iterator.getCurrentTokenColumn() + token.value.length;
+            }
+        } while(token = iterator.stepBackward());
+
+        return null;
+    };
+    
+    this._pop = function(stack, tag) {
+        while (stack.length) {
+            
+            var top = stack[stack.length-1];
+            if (!tag || top.tagName == tag.tagName) {
+                return stack.pop();
+            }
+            else if (this.optionalEndTags.hasOwnProperty(tag.tagName)) {
+                return;
+            }
+            else if (this.optionalEndTags.hasOwnProperty(top.tagName)) {
+                stack.pop();
+                continue;
+            } else {
+                return null;
+            }
+        }
+    };
+    
+    this.getFoldWidgetRange = function(session, foldStyle, row) {
+        var firstTag = this._getFirstTagInLine(session, row);
+        
+        if (!firstTag)
+            return null;
+        
+        var isBackward = firstTag.closing || firstTag.selfClosing;
+        var stack = [];
+        var tag;
+        
+        if (!isBackward) {
+            var iterator = new TokenIterator(session, row, firstTag.start.column);
+            var start = {
+                row: row,
+                column: firstTag.start.column + firstTag.tagName.length + 2
+            };
+            while (tag = this._readTagForward(iterator)) {
+                if (tag.selfClosing) {
+                    if (!stack.length) {
+                        tag.start.column += tag.tagName.length + 2;
+                        tag.end.column -= 2;
+                        return Range.fromPoints(tag.start, tag.end);
+                    } else
+                        continue;
+                }
+                
+                if (tag.closing) {
+                    this._pop(stack, tag);
+                    if (stack.length == 0)
+                        return Range.fromPoints(start, tag.start);
+                }
+                else {
+                    stack.push(tag);
+                }
+            }
+        }
+        else {
+            var iterator = new TokenIterator(session, row, firstTag.end.column);
+            var end = {
+                row: row,
+                column: firstTag.start.column
+            };
+            
+            while (tag = this._readTagBackward(iterator)) {
+                if (tag.selfClosing) {
+                    if (!stack.length) {
+                        tag.start.column += tag.tagName.length + 2;
+                        tag.end.column -= 2;
+                        return Range.fromPoints(tag.start, tag.end);
+                    } else
+                        continue;
+                }
+                
+                if (!tag.closing) {
+                    this._pop(stack, tag);
+                    if (stack.length == 0) {
+                        tag.start.column += tag.tagName.length + 2;
+                        return Range.fromPoints(tag.start, end);
+                    }
+                }
+                else {
+                    stack.push(tag);
+                }
+            }
+        }
+        
+    };
+
+}).call(FoldMode.prototype);
+
+});
+
+define("ace/mode/xml",["require","exports","module","ace/lib/oop","ace/lib/lang","ace/mode/text","ace/mode/xml_highlight_rules","ace/mode/behaviour/xml","ace/mode/folding/xml"], function(require, exports, module) {
+"use strict";
+
+var oop = require("../lib/oop");
+var lang = require("../lib/lang");
+var TextMode = require("./text").Mode;
+var XmlHighlightRules = require("./xml_highlight_rules").XmlHighlightRules;
+var XmlBehaviour = require("./behaviour/xml").XmlBehaviour;
+var XmlFoldMode = require("./folding/xml").FoldMode;
+
+var Mode = function() {
+    this.HighlightRules = XmlHighlightRules;
+    this.$behaviour = new XmlBehaviour();
+    this.foldingRules = new XmlFoldMode();
+};
+
+oop.inherits(Mode, TextMode);
+
+(function() {
+
+    this.voidElements = lang.arrayToMap([]);
+
+    this.blockComment = {start: "<!--", end: "-->"};
+
+    this.$id = "ace/mode/xml";
+}).call(Mode.prototype);
+
+exports.Mode = Mode;
+});
