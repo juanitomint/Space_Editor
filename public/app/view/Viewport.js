@@ -34,16 +34,9 @@ Ext.define('Codespace.view.Viewport', {
                     {
                         id: 'utiltabs',
                         xtype: 'tabpanel',
-                        activeTab:'TeamTree',
+                        activeTab: 'TeamTree',
                         items: [
                             //----chat tab
-                            {
-                                title: 'Team <span id="contacts-count"></span>',
-                                id: 'TeamTree',
-                                layout: 'fit',
-                                xtype: 'teamtree',
-                                
-                            },
                             {
                                 title: 'chat',
                                 id: 'chat-tab',
@@ -166,6 +159,15 @@ Ext.define('Codespace.view.Viewport', {
                                                 }]
                                         }
                                         //---end tbar
+                                    },
+                                    {
+                                        title: 'Team <span id="contacts-count"></span>',
+                                        id: 'TeamTree',
+                                        xtype: 'teamtree',
+                                        region: 'south',
+                                        split: true,
+                                        collapsible: true,
+                                        height: '55%'
                                     }
 //                                    ,
 //                                    {
@@ -175,7 +177,6 @@ Ext.define('Codespace.view.Viewport', {
 //                                        split: true,
 //                                        collapsible: true,
 //                                        collapsed: false,
-//                                        height: '55%',
 //                                        layout: 'fit',
 //                                        xtype: 'navtree',
 //

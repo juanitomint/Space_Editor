@@ -4,7 +4,7 @@ Ext.state.Manager.setProvider(new Ext.state.CookieProvider({
 }));
 //---ext actions
 var searchArr = ['support.function', 'identifier', 'keyword'];
-var GetParamsFromToken = function(param, token) {
+var GetParamsFromToken = function (param, token) {
     data = [];
     for (j in token) {
         if (token[j].type == param) {
@@ -13,14 +13,14 @@ var GetParamsFromToken = function(param, token) {
     }
     return data;
 }
-var GetParamFromToken = function(param, token) {
+var GetParamFromToken = function (param, token) {
     for (j in token) {
         if (token[j].type == param) {
             return token[j].value;
         }
     }
 }
-var isWorthToken = function(token) {
+var isWorthToken = function (token) {
     rtoken = {};
     for (x in token) {
         if (searchArr.indexOf(token[x].type) !== -1) {
@@ -33,10 +33,10 @@ var isWorthToken = function(token) {
     }
     return rtoken;
 };
-var ClearNavTree = function() {
+var ClearNavTree = function () {
     Ext.getCmp('NavTree').getRootNode().removeAll();
 };
-var AnalizeCode = function() {
+var AnalizeCode = function () {
     var tabs = Ext.getCmp('filetabs');
     var navtree = Ext.getCmp('NavTree');
     var editor = tabs.getActiveTab().getEditor();
@@ -59,7 +59,7 @@ var AnalizeCode = function() {
                     params = GetParamsFromToken('identifier', token);
                     node.text = params.join('.');
                     node.line = i;
-                    node.vline = +i+1;
+                    node.vline = +i + 1;
                     node.leaf = true;
                     node.type = rtoken.value;
                     CreateCodeNode(rtoken.value, node);
@@ -103,14 +103,14 @@ var AnalizeCode = function() {
     navtree.expandAll();
     navtree.store.isLoading(false);
 };
-var CreateCodeNode = function(type, data) {
+var CreateCodeNode = function (type, data) {
     var navtree = Ext.getCmp('NavTree');
     node = navtree.store.getById(type);
     if (node) {
         node.appendChild(data);
     }
 };
-var CreateTypeNode = function(type) {
+var CreateTypeNode = function (type) {
     var navtree = Ext.getCmp('NavTree');
     var root = navtree.getRootNode();
     if (!navtree.store.getById(type)) {
@@ -121,10 +121,10 @@ var CreateTypeNode = function(type) {
         });
     }
 };
-var LoadErr = function(err) {
+var LoadErr = function (err) {
     console.log(err);
 };
-EditProjectLoad = function() {
+EditProjectLoad = function () {
 
     console.log(">>>> Now bindings <<<<<");
 };
@@ -148,17 +148,17 @@ function AppLaunch() {
      }*/
 }
 function clearCls(node) {
-    node.eachChild(function(n) {
+    node.eachChild(function (n) {
         n.set('cls', '');
         if (n.childNodes.length) {
             clearCls(n);
         }
     });
 }
-var ProjectDel = function(rec) {
-    Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + rec.get('name'), function(btn, text) {
+var ProjectDel = function (rec) {
+    Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + rec.get('name'), function (btn, text) {
         if (btn == 'yes') {
-            now.s_project_delete(rec.data, function(errs) {
+            now.s_project_delete(rec.data, function (errs) {
                 if (errs) {
                     console.log(errs);
                     Ext.Msg.alert('Status', 'Error Deleting: ' + fname + '<br/>' + errs[0] + '<br/>');
@@ -175,7 +175,7 @@ var ProjectDel = function(rec) {
 var ProjectOpen = Ext.create('Ext.Action', {
     text: 'Open',
     iconCls: 'fa fa-folder-open',
-    handler: function() {
+    handler: function () {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var rec = sm.getSelection()[0];
         window.location = '?project=' + rec.data['path'];
@@ -185,7 +185,7 @@ var ProjectOpen = Ext.create('Ext.Action', {
 var ProjectAdd = Ext.create('Ext.Action', {
     text: 'Edit',
     iconCls: 'fa fa-edit',
-    handler: function() {
+    handler: function () {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var rec = sm.getSelection()[0];
         Ext.create('widget.window', {
@@ -236,7 +236,7 @@ var ProjectAdd = Ext.create('Ext.Action', {
                         {
                             text: 'Open',
                             iconCls: 'fa fa-folder-open',
-                            handler: function() {
+                            handler: function () {
                                 var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
                                 var rec = sm.getSelection()[0];
                                 window.location = '?project=' + rec.data['path'];
@@ -247,9 +247,9 @@ var ProjectAdd = Ext.create('Ext.Action', {
                             xtype: 'button',
                             iconCls: 'fa fa-save',
                             text: 'save',
-                            handler: function() {
+                            handler: function () {
                                 project = this.up('form').getValues();
-                                now.s_project_save(project, function(errs) {
+                                now.s_project_save(project, function (errs) {
                                     if (errs) {
                                         console.log(errs);
                                         Ext.MessageBox.show({
@@ -269,7 +269,7 @@ var ProjectAdd = Ext.create('Ext.Action', {
                     ]
                 }],
             listeners: {
-                show: function() {
+                show: function () {
                     rec = this.rec;
                     form = this.down('form');
                     if (rec) {
@@ -283,13 +283,13 @@ var ProjectAdd = Ext.create('Ext.Action', {
 var UserRemoveBtn = Ext.create('Ext.Action', {
     text: 'Remove',
     iconCls: 'fa fa-minus-square',
-    handler: function() {
+    handler: function () {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var user = sm.getSelection()[0];
         var project = user.parentNode;
-        Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + user.get('name'), function(btn, text) {
+        Ext.MessageBox.confirm('Delete Project', 'Are you sure to delete:<br>' + user.get('name'), function (btn, text) {
             if (btn == 'yes') {
-                now.s_user_delete(user.raw, project.raw, function(errs) {
+                now.s_user_delete(user.raw, project.raw, function (errs) {
                     if (errs) {
                         console.log(errs);
                         Ext.MessageBox.show({
@@ -312,13 +312,13 @@ var UserRemoveBtn = Ext.create('Ext.Action', {
 var UserAddBtn = Ext.create('Ext.Action', {
     iconCls: 'fa fa-save',
     text: 'save',
-    handler: function() {
+    handler: function () {
         var sm = Ext.getCmp('ProjectsTree').getSelectionModel();
         var st = Ext.getCmp('ProjectsTree').store;
         var node = sm.getSelection()[0].data;
-        var project=st.getById(node.id).data;
+        var project = st.getById(node.id).data;
         user = this.up('form').getValues();
-        now.s_user_save(user, project, function(errs) {
+        now.s_user_save(user, project, function (errs) {
             if (errs) {
                 console.log(errs);
                 Ext.MessageBox.show({
@@ -336,7 +336,7 @@ var UserAddBtn = Ext.create('Ext.Action', {
             this.up('window').destroy();
     }
 });
-var UserAdd = function(rec) {
+var UserAdd = function (rec) {
     Ext.create('widget.window', {
         title: 'Add User',
         closable: true,
@@ -388,7 +388,7 @@ var UserAdd = function(rec) {
                 ]
             }],
         listeners: {
-            show: function() {
+            show: function () {
                 rec = this.rec;
                 form = this.down('form');
                 if (rec) {
@@ -398,8 +398,8 @@ var UserAdd = function(rec) {
         }
     }).show(); //---end show;
 };
-var GitBranch = function() {
-    now.s_git_branch(function(errs, branch) {
+var GitBranch = function () {
+    now.s_git_branch(function (errs, branch) {
         console.log("Git branch recived");
         if (errs) {
             console.log(errs);
@@ -420,8 +420,8 @@ var GitBranch = function() {
 var GitInit = Ext.create('Ext.Action', {
     text: 'Init',
     iconCls: 'fa fa-check',
-    handler: function() {
-        now.s_git_init(function(errs) {
+    handler: function () {
+        now.s_git_init(function (errs) {
             console.log("Git Init");
             if (errs) {
                 console.log(errs);
@@ -440,9 +440,9 @@ var GitInit = Ext.create('Ext.Action', {
 var GitStatus = Ext.create('Ext.Action', {
     iconCls: 'fa fa-info-circle',
     text: 'Status',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
-        now.s_git_status(function(errs, status) {
+        now.s_git_status(function (errs, status) {
             console.log("Git status recived");
             if (errs) {
                 console.log(errs);
@@ -508,8 +508,8 @@ var GitStatus = Ext.create('Ext.Action', {
 var GitSync = Ext.create('Ext.Action', {
     iconCls: 'fa fa-refresh',
     text: 'Sync',
-    handler: function(widget, event) {
-        now.s_git_sync(function(errs, status) {
+    handler: function (widget, event) {
+        now.s_git_sync(function (errs, status) {
             console.log("Git sync recived");
             if (errs) {
                 console.log(errs);
@@ -546,18 +546,18 @@ var GitSync = Ext.create('Ext.Action', {
 var GitCheckout = Ext.create('Ext.Action', {
     iconCls: 'fa fa-hand-o-left',
     text: 'Checkout',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         var paths = [];
         sel = tree.selModel.getSelection();
-        sel.forEach(function(node) {
+        sel.forEach(function (node) {
             paths.push(node.data.path.replace(/^\//, ''));
         });
-        Ext.MessageBox.confirm('Checkout from Head', 'Are you sure you want back:<br>' + paths.join('<br/>'), function(btn, text) {
+        Ext.MessageBox.confirm('Checkout from Head', 'Are you sure you want back:<br>' + paths.join('<br/>'), function (btn, text) {
             if (btn == 'yes') {
                 console.log('About to checkout', paths);
-                now.s_git_checkout(paths, function(errs) {
+                now.s_git_checkout(paths, function (errs) {
                     console.log("checkout finished.. any errors?");
                     if (errs) {
                         console.log(errs);
@@ -582,7 +582,7 @@ var GitCheckout = Ext.create('Ext.Action', {
 var GitCommit = Ext.create('Ext.Action', {
     iconCls: 'fa fa-hand-o-right',
     text: 'Commit',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         Ext.MessageBox.prompt(
@@ -593,15 +593,15 @@ var GitCommit = Ext.create('Ext.Action', {
                     buttons: Ext.MessageBox.OKCANCEL,
                     multiline: true,
                     animateTarget: 'GitCommit',
-                    fn: function(btn, text) {
+                    fn: function (btn, text) {
                         if (btn == 'ok' && text) {
                             var paths = [];
                             sel = tree.selModel.getSelection();
-                            sel.forEach(function(node) {
+                            sel.forEach(function (node) {
                                 paths.push(node.data.path.replace(/^\//, ''));
                             });
                             console.log('About to commit', paths);
-                            now.s_git_commit(text, paths, function(errs) {
+                            now.s_git_commit(text, paths, function (errs) {
                                 console.log("Commit finished.. any errors?");
                                 if (errs) {
                                     console.log(errs);
@@ -627,23 +627,23 @@ var GitCommit = Ext.create('Ext.Action', {
 var GitAdd = Ext.create('Ext.Action', {
     iconCls: 'fa fa-plus-square',
     text: 'Add Items',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         var paths = [];
         sel = tree.selModel.getSelection();
-        sel.forEach(function(node) {
+        sel.forEach(function (node) {
             paths.push(node.data.path.replace(/^\//, ''));
         });
-        Ext.MessageBox.confirm('Add files to repository', 'You are about to add:<br>' + paths.length + ' Items', function(btn, text) {
+        Ext.MessageBox.confirm('Add files to repository', 'You are about to add:<br>' + paths.length + ' Items', function (btn, text) {
             if (btn == 'yes') {
                 var paths = [];
                 sel = tree.selModel.getSelection();
-                sel.forEach(function(node) {
+                sel.forEach(function (node) {
                     paths.push(node.data.path.replace(/^\//, '').replace('', '.'));
                 });
                 console.log('About to commit', paths);
-                now.s_git_add(paths, function(errs) {
+                now.s_git_add(paths, function (errs) {
                     console.log("add finished.. any errors?");
                     if (errs) {
                         console.log(errs);
@@ -668,23 +668,23 @@ var GitAdd = Ext.create('Ext.Action', {
 var GitRemove = Ext.create('Ext.Action', {
     iconCls: 'fa fa-minus-square',
     text: 'Remove Items',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         var paths = [];
         sel = tree.selModel.getSelection();
-        sel.forEach(function(node) {
+        sel.forEach(function (node) {
             paths.push(node.data.path.replace(/^\//, ''));
         });
-        Ext.MessageBox.confirm('Remove files from repository', 'You are about to remove:<br>' + paths.length + ' items', function(btn, text) {
+        Ext.MessageBox.confirm('Remove files from repository', 'You are about to remove:<br>' + paths.length + ' items', function (btn, text) {
             if (btn == 'yes') {
                 var paths = [];
                 sel = tree.selModel.getSelection();
-                sel.forEach(function(node) {
+                sel.forEach(function (node) {
                     paths.push(node.data.path.replace(/^\//, ''));
                 });
                 console.log('About to commit', paths);
-                now.s_git_remove(paths, function(errs) {
+                now.s_git_remove(paths, function (errs) {
                     console.log("add finished.. any errors?");
                     if (errs) {
                         console.log(errs);
@@ -709,14 +709,14 @@ var GitRemove = Ext.create('Ext.Action', {
 var CreateFolder = Ext.create('Ext.Action', {
     iconCls: 'fa fa-folder',
     text: 'Add Folder',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         if (!n.isLeaf()) {
-            Ext.MessageBox.prompt('New Folder', 'Provide a Folder name:', function(btn, text) {
+            Ext.MessageBox.prompt('New Folder', 'Provide a Folder name:', function (btn, text) {
                 if (btn == 'ok' && text) {
                     path = n.data.path + '/' + text
-                    now.s_createNewFolder(path, function(fname, errs) {
+                    now.s_createNewFolder(path, function (fname, errs) {
                         console.log("Created file.. any errors?");
                         if (errs) {
                             console.log(errs);
@@ -751,14 +751,14 @@ var CreateFolder = Ext.create('Ext.Action', {
 var DeleteFolder = Ext.create('Ext.Action', {
     iconCls: 'fa fa-ban',
     text: 'Delete Folder',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         if (!n.isLeaf()) {
-            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function (btn, text) {
                 if (btn == 'yes') {
                     path = n.data.path;
-                    now.s_deleteFolder(path, function(fname, errs) {
+                    now.s_deleteFolder(path, function (fname, errs) {
                         console.log("Created file.. any errors?");
                         if (errs) {
                             console.log(errs);
@@ -781,15 +781,15 @@ var DeleteFolder = Ext.create('Ext.Action', {
 var DeleteFile = Ext.create('Ext.Action', {
     iconCls: 'fa fa-ban',
     text: 'Delete File',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         if (n) {
             if (n.isLeaf()) {
-                Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+                Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function (btn, text) {
                     if (btn == 'yes') {
                         path = n.data.path;
-                        now.s_deleteFile(path, function(fname, errs) {
+                        now.s_deleteFile(path, function (fname, errs) {
                             console.log("Created file.. any errors?");
                             if (errs.length) {
                                 console.log(errs);
@@ -816,14 +816,14 @@ var DeleteFile = Ext.create('Ext.Action', {
 var CreateFile = Ext.create('Ext.Action', {
     iconCls: 'fa fa-file',
     text: 'New File',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         if (!n.isLeaf()) {
-            Ext.MessageBox.prompt('New File', 'Provide a File name:', function(btn, text) {
+            Ext.MessageBox.prompt('New File', 'Provide a File name:', function (btn, text) {
                 if (btn == 'ok' && text) {
                     path = n.data.path + '/' + text
-                    now.s_createNewFile(path, function(fname, errs) {
+                    now.s_createNewFile(path, function (fname, errs) {
                         console.log("Created file.. any errors?");
                         if (errs) {
                             console.log(errs);
@@ -857,14 +857,14 @@ var CreateFile = Ext.create('Ext.Action', {
 var DeleteNode = Ext.create('Ext.Action', {
     iconCls: 'fa fa-ban',
     text: 'Delete File',
-    handler: function(widget, event) {
+    handler: function (widget, event) {
         tree = Ext.getCmp('FileTree');
         var n = tree.getSelectionModel().getSelection()[0];
         if (n.isLeaf()) {
-            Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+            Ext.MessageBox.confirm('Delete File', 'Are you sure to delete:<br>' + n.data.path, function (btn, text) {
                 if (btn == 'yes') {
                     path = n.data.path;
-                    now.s_deleteFile(path, function(fname, errs) {
+                    now.s_deleteFile(path, function (fname, errs) {
                         console.log("Created file.. any errors?");
                         if (errs.length) {
                             console.log(errs);
@@ -879,10 +879,10 @@ var DeleteNode = Ext.create('Ext.Action', {
             }
             );
         } else {
-            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function(btn, text) {
+            Ext.MessageBox.confirm('Delete Folder', 'Are you sure to delete:<br>' + n.data.path, function (btn, text) {
                 if (btn == 'yes') {
                     path = n.data.path;
-                    now.s_deleteFolder(path, function(fname, errs) {
+                    now.s_deleteFolder(path, function (fname, errs) {
                         console.log("Created file.. any errors?");
                         if (errs.length) {
                             console.log(errs);
@@ -905,14 +905,14 @@ var DeleteNode = Ext.create('Ext.Action', {
 Ext.application({
     name: 'Codespace',
     autoCreateViewport: true,
-    models: ['file', 'user', 'code','team'],
-    stores: ['FileTree', 'ProjectTree', 'NavTree','TeamTree'],
+    models: ['file', 'user', 'code', 'team'],
+    stores: ['FileTree', 'ProjectTree', 'NavTree', 'TeamTree'],
     //,controllers: ['Station', 'Song']
-    launch: function() {
+    launch: function () {
 
         AppLaunch();
     },
-    setToolbarSettings: function(me) {
+    setToolbarSettings: function (me) {
         if (me) {
             Ext.getCmp('EditorToolbar').setDisabled(false);
             Ext.getCmp('CodeFolding').setValue(me.codeFolding);
@@ -926,22 +926,22 @@ Ext.application({
         }
 
     },
-    resizeTabs: function() {
+    resizeTabs: function () {
         tabs = Ext.getCmp('filetabs');
-        tabs.items.each(function(tab) {
+        tabs.items.each(function (tab) {
             if (tab.getEditor()) {
                 tab.getEditor().resize();
             }
         });
     },
-    updateHash: function() {
+    updateHash: function () {
         fhash = [];
-        Ext.getCmp('filetabs').items.each(function(tab) {
+        Ext.getCmp('filetabs').items.each(function (tab) {
             fhash.push(tab.path);
         });
         window.location.hash = 'fname=' + fhash.join(',');
     },
-    createCodeTab: function(node) {
+    createCodeTab: function (node) {
 
         extension_map = {
             js: 'javascript',
@@ -980,7 +980,7 @@ Ext.application({
                             showInvisible: false,
                             printMargin: false,
                             listeners: {
-                                activate: function() {
+                                activate: function () {
                                     if (this.getEditor()) {
                                         Codespace.app.setToolbarSettings(this);
                                         this.getEditor().resize();
@@ -988,14 +988,14 @@ Ext.application({
                                         //AnalizeCode.call();
                                     }
                                 },
-                                editorcreated: function() {
+                                editorcreated: function () {
                                     console.log("editor Created!");
                                     console.log("Getting data for:" + this.path);
                                     console.log("Using NowJS -- this clientId: " + now.core.clientId);
                                     now.s_sendUserEvent("join"); // let everyone know who I am!
                                     editor = this.getEditor();
                                     //---bind change Event
-                                    editor.getSession().on('change', function(a, b, c) {
+                                    editor.getSession().on('change', function (a, b, c) {
                                         fname = Ext.getCmp('filetabs').getActiveTab().path;
                                         if (!ignoreAceChange) {
                                             if (textChangeTimeout !== null) {
@@ -1005,7 +1005,7 @@ Ext.application({
                                                 setFileStatusIndicator(fname, "changed");
                                             }
                                             timeOfLastLocalKepress = (new Date()).getTime();
-                                            textChangeTimeout = setTimeout(function() {
+                                            textChangeTimeout = setTimeout(function () {
                                                 if (!nowIsOnline) {
                                                     return;
                                                 }
@@ -1015,7 +1015,7 @@ Ext.application({
                                         }
                                     });
                                     //---bind
-                                    editor.getSession().selection.on('changeCursor', function(a) {
+                                    editor.getSession().selection.on('changeCursor', function (a) {
                                         var range = editor.getSelectionRange();
                                         if (cursorChangeTimeout !== null) {
                                             clearTimeout(cursorChangeTimeout);
@@ -1033,7 +1033,7 @@ Ext.application({
                                         // error openFileFromServer("app.js", true);
                                     }
                                 },
-                                destroy: function() {
+                                destroy: function () {
                                     ///----unsuscribe
                                     Codespace.app.setToolbarSettings(Ext.getCmp('filetabs').getActiveTab());
                                     now.s_leaveFile(this.path);
