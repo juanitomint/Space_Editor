@@ -6,12 +6,12 @@ Ext.define('Codespace.view.Viewport', {
         //'app.view.WithToolbar',
         'Codespace.view.FileTree',
         'Codespace.view.ProjectTree',
-        'Codespace.view.TeamTree',
         'Codespace.view.FileCode',
         'Codespace.view.ToolBar',
         'Codespace.view.NavTree',
+        'Codespace.view.TeamTree'
     ],
-    initComponent: function () {
+    initComponent: function() {
         this.items = [
             {
                 region: 'north',
@@ -34,8 +34,20 @@ Ext.define('Codespace.view.Viewport', {
                     {
                         id: 'utiltabs',
                         xtype: 'tabpanel',
-                        activeTab: 'TeamTree',
                         items: [
+                            {
+                                title: 'Team <span id="contacts-count"></span>',
+                                id: 'team-tab',
+                                active:true,
+                                items:[
+                                    {
+                                        id: "TeamTree",
+                                        xtype:"teamtree"
+                                    }
+                                ]
+                                
+                            },
+                            
                             //----chat tab
                             {
                                 title: 'chat',
@@ -44,7 +56,7 @@ Ext.define('Codespace.view.Viewport', {
                                 overflowY: 'scroll',
                                 bodyCls: 'discussion',
                                 html: '<ol id="chat-ol" class="discussion"></ol>'
-                            }
+                            },
                             //----chat tab
                         ]
                     }
@@ -64,19 +76,19 @@ Ext.define('Codespace.view.Viewport', {
                         enableKeyEvents: true,
                         width: '100%',
                         listeners: {
-                            keypress: function (field, e) {
+                            keypress: function(field, e) {
                                 if (e.getKey() == e.ENTER) {
-                                    msg = this.value;
+                                    msg=this.value;
                                     //----url replace only if is a pure url
-                                    if (msg.indexOf('http') == 0) {
-                                        msg = msg.replace(msg, '<a href="' + msg + '">Follow this url</a>');
+                                    if(msg.indexOf('http')==0){
+                                       msg=msg.replace(msg,'<a href="'+msg+'">Follow this url</a>');
                                     }
                                     now.s_teamMessageBroadcast("personal", msg);
                                     this.setValue();
                                     e.stopEvent();
                                 }
                             },
-                            specialkey: function (field, e) {
+                            specialkey: function(field, e) {
                                 // e.HOME, e.END, e.PAGE_UP, e.PAGE_DOWN,
                                 // e.TAB, e.ESC, arrow keys: e.LEFT, e.RIGHT, e.UP, e.DOWN
                                 if (e.getKey() == e.ESC) {
@@ -145,12 +157,12 @@ Ext.define('Codespace.view.Viewport', {
                                             items: [{
                                                     xtype: 'trigger',
                                                     triggerCls: 'x-form-clear-trigger',
-                                                    onTriggerClick: function () {
+                                                    onTriggerClick: function() {
                                                         this.reset();
                                                         this.focus();
                                                     }
                                                     , listeners: {
-                                                        change: function (field, newVal) {
+                                                        change: function(field, newVal) {
                                                             var tree = Ext.getCmp('FileTree');
                                                             tree.filter(newVal, 'name');
                                                         }
@@ -161,26 +173,51 @@ Ext.define('Codespace.view.Viewport', {
                                         //---end tbar
                                     },
                                     {
-                                        title: 'Team <span id="contacts-count"></span>',
-                                        id: 'TeamTree',
-                                        xtype: 'teamtree',
+                                        title: 'NavTree',
+                                        id:'NavTree',
                                         region: 'south',
                                         split: true,
                                         collapsible: true,
-                                        height: '55%'
+                                        collapsed: false,
+                                        height: '55%',
+                                        layout: 'fit',
+                                        xtype: 'navtree',
+                                        /*
+                                         items: [
+                                         Ext.create('Ext.tree.Panel', {
+                                         id: "NavTree",
+                                         store: "NavTree",
+                                         columns: [
+                                         {
+                                         text: 'Line',
+                                         flex: 1,
+                                         dataIndex: 'vline',
+                                         },
+                                         {
+                                         xtype: 'treecolumn', //this is so we know which column will show the tree
+                                         text: "</>",
+                                         flex: 3,
+                                         sortable: true,
+                                         dataIndex: 'text'
+                                         
+                                         },
+                                         {
+                                         text: 'type',
+                                         flex: 1,
+                                         dataIndex: 'type',
+                                         }
+                                         ],
+                                         listeners: {
+                                         itemdblclick: function(me, record, item, index, e, eOpts) {
+                                         e.stopEvent();
+                                         if (record.isLeaf())
+                                         editor.scrollToLine(record.data.line);
+                                         }
+                                         },
+                                         })
+                                         ],
+                                         */
                                     }
-//                                    ,
-//                                    {
-//                                        title: 'NavTree',
-//                                        id: 'NavTree',
-//                                        region: 'south',
-//                                        split: true,
-//                                        collapsible: true,
-//                                        collapsed: false,
-//                                        layout: 'fit',
-//                                        xtype: 'navtree',
-//
-//                                    }
                                     //----left-side
                                 ]},
                             //----project panel
@@ -217,7 +254,7 @@ Ext.define('Codespace.view.Viewport', {
                 xtype: 'panel',
                 layout: 'border',
                 listeners: {
-                    resize: function () {
+                    resize: function() {
 
                     }
                 },

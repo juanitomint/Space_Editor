@@ -205,7 +205,7 @@ now.c_updateCollabCursor = function(id, name, range, changedByUser) {
     cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", 
     function(html, range, left, top, config) {
         html.push("<div class='collab_cursor' style='top: " + top 
-                + "px;width:"+(viewSize['width']-60)+"px; left:" + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + name + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+                + "px;widtfh:"+(viewSize['width']-60)+"px; left:" + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + name + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
     }, false); // range, clazz, type, inFront
     cInfo['isShown'] = true;
 }
