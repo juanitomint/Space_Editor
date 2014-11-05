@@ -1049,7 +1049,7 @@ Ext.application({
                 ); ///-----end create tab
                 tabs.add(tab);
                 tabs.setActiveTab(tab);
-                //Codespace.app.updateHash();
+                Codespace.app.updateHash();
             }
         }
     }

@@ -105,7 +105,8 @@ function addCollaborator(userId, fromUserName, color) {
             Ext.getCmp('TeamTree').getRootNode().appendChild({
                 id: userId,
                 name: fromUserName,
-                color: color
+                color: color,
+                expanded:true
             });
         }
     }

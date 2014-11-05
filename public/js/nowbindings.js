@@ -57,7 +57,7 @@ now.c_processUserFileEvent = function (fname, event, fromUserId, usersInFile, se
     if (event == "joinFile") {
         setUsersInFile(fromUserId, usersInFile);
         addCollaboratorToFile(fromUserId, fname);
-        var userColor =getColor(name);
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "joined file: <div class='itemType_fileAction'>" + fname + "</div>");
         console.log("added notify for joinFile");
     }
@@ -104,7 +104,7 @@ now.c_processUserFileEvent = function (fname, event, fromUserId, usersInFile, se
     if (event == "renameFile" && secondaryFilename != undefined) {
         removeFileFromList(fname);
         addFileToList(secondaryFilename);
-        var userColor =getColor(name);
+        var userColor = getColor(name);
         notifyAndAddMessageToLog(userColor, uName, "renamed file: <div class='itemType_fileAction'>" + fname + "</div><div style='text-align: right'>to</div><div class='itemType_fileAction'>" + secondaryFilename + "</div>");
     }
     if (event == "duplicateFile" && secondaryFilename != undefined) {
@@ -161,7 +161,7 @@ function setUsersInFile(fname, usersInFile) {
             }
         }
     }
-    console.log("setUsersInFile: " + fname, usersInFile);
+//    console.log("setUsersInFile: " + fname, usersInFile);
     return
 }
 now.c_confirmProject = function (teamID) {
@@ -170,44 +170,46 @@ now.c_confirmProject = function (teamID) {
     // <a href='http://"+teamID+".chaoscollective.org/'
     $("#topProjName").html(teamID + "");
 }
-now.c_updateCollabCursor = function(id, name, range, changedByUser) {
+now.c_updateCollabCursor = function (id, name, range, changedByUser, fname) {
     if (id == now.core.clientId) {
         return;
     }
+    fname_stripped = id + '_' + fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     var cInfo = allCollabInfo[id];
     if (cInfo == undefined) {
         // first time seeing this user!
         allCollabInfo[id] = [];
         cInfo = allCollabInfo[id];
-        cInfo['name'] = name;
+        //cInfo['name'] = name;
         // let collaborator know I'm here.
         ifOnlineLetCollaboratorsKnowImHere();
     }
+    if (cInfo[fname] == null)
+        cInfo[fname] = [];
     cInfo['timeLastSeen'] = (new Date()).getTime();
     var ses = editor.getSession();
     var rSel = Range.fromPoints(range.start, range.end);
-    var rCur = Range.fromPoints(range.start, {row: range.start.row, column: range.start.column + 1});
-    var lastSelID = cInfo['lastSelectionMarkerID'];
+    var rCur = Range.fromPoints(range.start, {row: range.start.row, column:  range.start.column + 1});
+    var lastSelID = (cInfo[fname]) ? cInfo[fname]['lastSelectionMarkerID'] : null;
     if (lastSelID !== undefined) {
         ses.removeMarker(lastSelID);
     }
-    var lastCursorID = cInfo['lastCursorMarkerID'];
+    var lastCursorID = (cInfo[fname]) ? cInfo[fname]['lastCursorMarkerID'] : null;
     if (lastCursorID !== undefined) {
         ses.removeMarker(lastCursorID);
     }
-    var uid = id;
-//    if (name.indexOf("_") > 0) {
-//        uid = parseInt(name.substring(name.indexOf("_") + 1), 10);
-//    }
     var userColor = getColor(name);
-    viewSize=tabs.getActiveTab().body.getViewSize();
-    cInfo['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
-    cInfo['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor", 
-    function(html, range, left, top, config) {
-        html.push("<div class='collab_cursor' style='top: " + top 
-                + "px;widtfh:"+(viewSize['width']-60)+"px; left:" + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + name + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
-    }, false); // range, clazz, type, inFront
-    cInfo['isShown'] = true;
+    cInfo[fname]['lastSelectionMarkerID'] = ses.addMarker(rSel, "collab_selection", "line", false); // range, clazz, type/fn(), inFront
+    cInfo[fname]['lastCursorMarkerID'] = ses.addMarker(rCur, "collab_cursor",
+            function (html, range, left, top, config) {
+                html.push("<div class='collab_cursor' style='top: " + top
+                        + "px; left:" + left + "px; border-left-color: " + userColor + "; border-bottom-color: " + userColor + ";'><div class='collab_cursor_nametag' style='background: " + userColor + ";'>&nbsp;" + name + "&nbsp;<div class='collab_cursor_nametagFlag' style='border-right-color: " + userColor + "; border-bottom-color: " + userColor + ";'></div></div>&nbsp;</div>");
+            }, false); // range, clazz, type, inFront
+    cInfo[fname]['isShown'] = true;
+    node=Ext.getCmp('TeamTree').store.getNodeById(fname_stripped);
+    if(node){
+        node.set('status','r:'+range.start.row+' c:'+ range.start.column + 1);
+    }
 }
 now.c_updateWithDiffPatches = function (id, patches, md5, fname) {
 //console.log(patches);

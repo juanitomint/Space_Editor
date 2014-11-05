@@ -41,7 +41,8 @@ Ext.define('Codespace.view.TeamTree', {
             dataIndex: 'name',
             flex: 3
         }, {
-            text: 'status'
+            text: 'status',
+            dataIndex: 'status'
         }
     ]
     ,
