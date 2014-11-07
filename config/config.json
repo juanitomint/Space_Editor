@@ -4,7 +4,7 @@
     "defaultTeamId": "CodeSpace",
     "enableLog": false,
     "google": {
-        "returnUrl":"http://localhost"
+        "returnUrl":"http://10.25.16.88"
     },
     "tree": {
         "showDotFolders": false,

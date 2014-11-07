@@ -174,7 +174,7 @@ now.c_updateCollabCursor = function (id, name, range, changedByUser, fname) {
     if (id == now.core.clientId) {
         return;
     }
-    fname_stripped = id + '_' + fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+    fname_stripped = fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     var cInfo = allCollabInfo[id];
     if (cInfo == undefined) {
         // first time seeing this user!

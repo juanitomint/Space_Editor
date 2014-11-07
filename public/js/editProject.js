@@ -111,9 +111,8 @@ function addCollaborator(userId, fromUserName, color) {
         }
     }
 }
-function removeCollaboratorFromFile(userId, fname) {
-    fname_stripped = userId + '_' + fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
-
+function removeCollaboratorFromFile(userId, path) {
+    fname_stripped = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
     user = Ext.getCmp('TeamTree').store.getById(userId);
     if (user) {
         if (Ext.getCmp('TeamTree').store.getById(fname_stripped)) {
@@ -121,8 +120,10 @@ function removeCollaboratorFromFile(userId, fname) {
         }
     }
 }
-function addCollaboratorToFile(userId, fname) {
-    fname_stripped = userId + '_' + fname.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
+function addCollaboratorToFile(userId, path) {
+	farr=path.split('/');
+	fname=farr[farr.length-1];
+    fname_stripped = path.replace(/[-[\]{}()*+?.,\/\\^$|#\s]/g, "_");
 
     user = Ext.getCmp('TeamTree').store.getById(userId);
     if (user) {
@@ -130,6 +131,7 @@ function addCollaboratorToFile(userId, fname) {
             user.appendChild({
                 id: fname_stripped,
                 name: fname,
+                path:path,
                 leaf: true
             });
         }

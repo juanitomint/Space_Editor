@@ -964,7 +964,7 @@ Ext.application({
             exten = f[f.length - 1];
             parser = (extension_map[exten]) ? extension_map[exten] : 'textile';
             if (!Ext.getCmp(node.data.id + '-tab')) {
-                tab = Ext.create('widget.AceEditor.WithToolbar',
+                  tab = Ext.create('widget.AceEditor.WithToolbar',
                         {
                             xtype: 'AceEditor.WithToolbar',
                             layout: 'fit',
