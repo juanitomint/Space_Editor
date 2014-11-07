@@ -977,7 +977,7 @@ Ext.application({
                             fontSize: '15px',
                             highlightActiveLine: true,
                             codeFolding: true,
-                            useWrapMode: false,
+                            useWrapMode: true,
                             showInvisible: false,
                             printMargin: false,
                             listeners: {
